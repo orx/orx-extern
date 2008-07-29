@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<CodeLite_Workspace Name="Box2D" Database=".\Box2D.tags">
-  <Project Name="Box2D" Path="Box2D\Box2D.project" Active="Yes"/>
+<CodeLite_Workspace Name="Box2D" Database="./Box2D.tags">
+  <Project Name="Box2D" Path="Box2D/Box2D.project" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Linux Release" Selected="no">
       <Project Name="Box2D" ConfigName="Linux Release"/>
