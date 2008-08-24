@@ -189,8 +189,9 @@ private:
 	int32 m_bodyCount;
 	int32 m_contactCount;
 	int32 m_jointCount;
-
+public:
 	b2Vec2 m_gravity;
+private:
 	bool m_allowSleep;
 
 	b2Body* m_groundBody;
