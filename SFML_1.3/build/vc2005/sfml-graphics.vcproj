@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="sfml-graphics"
 	ProjectGUID="{FA4620B1-393A-4719-9BB4-3BC8CAA70C4B}"
 	RootNamespace="sfml-graphics"
@@ -143,7 +143,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)..\..\include&quot;;&quot;$(SolutionDir)..\..\src&quot;;&quot;$(SolutionDir)..\..\extlibs\headers&quot;"
-				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;SFML_EXPORTS;SFML_DYNAMIC;GLEW_STATIC"
+				PreprocessorDefinitions="WIN32;_LIB;SFML_EXPORTS;SFML_DYNAMIC;GLEW_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -314,7 +314,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)..\..\include&quot;;&quot;$(SolutionDir)..\..\src&quot;;&quot;$(SolutionDir)..\..\extlibs\headers&quot;"
-				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;SFML_EXPORTS;GLEW_STATIC"
+				PreprocessorDefinitions="WIN32;_LIB;SFML_EXPORTS;GLEW_STATIC"
 				StringPooling="true"
 				MinimalRebuild="false"
 				ExceptionHandling="1"

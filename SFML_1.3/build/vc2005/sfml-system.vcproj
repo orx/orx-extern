@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="sfml-system"
 	ProjectGUID="{C061A27D-7CA0-4179-9869-672FA04A86A8}"
 	RootNamespace="sfml-system"
@@ -132,7 +132,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)..\..\include&quot;;&quot;$(SolutionDir)..\..\src&quot;"
-				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;SFML_EXPORTS;SFML_DYNAMIC"
+				PreprocessorDefinitions="WIN32;_LIB;SFML_EXPORTS;SFML_DYNAMIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -292,7 +292,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)..\..\include&quot;;&quot;$(SolutionDir)..\..\src&quot;"
-				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;SFML_EXPORTS"
+				PreprocessorDefinitions="WIN32;_LIB;SFML_EXPORTS"
 				StringPooling="true"
 				MinimalRebuild="false"
 				ExceptionHandling="1"

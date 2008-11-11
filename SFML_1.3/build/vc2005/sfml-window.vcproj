@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="sfml-window"
 	ProjectGUID="{0F9CE5F0-4D89-4314-9147-8AAB1B8842ED}"
 	RootNamespace="sfml-window"
@@ -134,7 +134,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)..\..\include&quot;;&quot;$(SolutionDir)..\..\src&quot;"
-				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;SFML_EXPORTS;SFML_DYNAMIC;GLEW_BUILD"
+				PreprocessorDefinitions="WIN32;_LIB;SFML_EXPORTS;SFML_DYNAMIC;GLEW_BUILD"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -298,7 +298,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)..\..\include&quot;;&quot;$(SolutionDir)..\..\src&quot;"
-				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;SFML_EXPORTS"
+				PreprocessorDefinitions="WIN32;_LIB;SFML_EXPORTS"
 				StringPooling="true"
 				MinimalRebuild="false"
 				ExceptionHandling="1"

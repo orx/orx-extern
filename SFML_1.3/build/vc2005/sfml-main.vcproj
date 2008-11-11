@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="sfml-main"
 	ProjectGUID="{2BD26A09-E1B6-42E2-A0D0-63987B76BB97}"
 	RootNamespace="sfml-main"
@@ -107,7 +107,7 @@
 				Optimization="3"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="false"
-				PreprocessorDefinitions="NDEBUG;WIN32;_LIB"
+				PreprocessorDefinitions="WIN32;_LIB"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="4"
