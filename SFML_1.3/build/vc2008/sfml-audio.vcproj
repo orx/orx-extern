@@ -298,7 +298,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)..\..\src&quot;;&quot;$(SolutionDir)..\..\include&quot;;&quot;$(SolutionDir)..\..\extlibs\headers&quot;"
-				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;SFML_EXPORTS"
+				PreprocessorDefinitions="WIN32;_LIB;SFML_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
