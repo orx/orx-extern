@@ -39,6 +39,7 @@
 					<Add option="-O3" />
 					<Add option="-Wall" />
 					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
 					<Add option="-D_LIB" />
 					<Add option="-DSFML_EXPORTS" />
 				</Compiler>
