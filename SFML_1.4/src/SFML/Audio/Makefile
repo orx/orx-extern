@@ -4,7 +4,7 @@ OBJ       = $(SRC:.cpp=.o)
 OBJVORBIS = $(SRCVORBIS:.c=.o)
 
 ifeq ($(STATIC), yes)
-    LIB     = libsfml-audio-s.a
+    LIB     = libsfml-audio.a
     LIBNAME = $(LIBPATH)/$(LIB)
     INSTALL = 
 else
@@ -15,7 +15,7 @@ endif
 
 all: $(LIB)
 
-libsfml-audio-s.a: $(OBJ) $(OBJVORBIS)
+libsfml-audio.a: $(OBJ) $(OBJVORBIS)
 	$(AR) $(ARFLAGS) $(LIBNAME) $(OBJ) $(OBJVORBIS)
 
 libsfml-audio.so: $(OBJ) $(OBJVORBIS)

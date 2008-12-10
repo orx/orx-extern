@@ -2,7 +2,7 @@ SRC = $(wildcard *.cpp ./Unix/*.cpp)
 OBJ = $(SRC:.cpp=.o)
 
 ifeq ($(STATIC), yes)
-    LIB     = libsfml-system-s.a
+    LIB     = libsfml-system.a
     LIBNAME = $(LIBPATH)/$(LIB)
     INSTALL = 
 else
@@ -13,7 +13,7 @@ endif
 
 all: $(LIB)
 
-libsfml-system-s.a: $(OBJ)
+libsfml-system.a: $(OBJ)
 	$(AR) $(ARFLAGS) $(LIBNAME) $(OBJ)
 
 libsfml-system.so: $(OBJ)

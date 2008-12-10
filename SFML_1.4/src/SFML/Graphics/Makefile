@@ -12,7 +12,7 @@ OBJSOIL = $(SRCSOIL:.c=.o)
 OBJZLIB = $(SRCZLIB:.c=.o)
 
 ifeq ($(STATIC), yes)
-    LIB     = libsfml-graphics-s.a
+    LIB     = libsfml-graphics.a
     LIBNAME = $(LIBPATH)/$(LIB)
     INSTALL = 
 else
@@ -23,7 +23,7 @@ endif
 
 all: $(LIB)
 
-libsfml-graphics-s.a: $(OBJ) $(OBJGLEW) $(OBJJPEG) $(OBJPNG) $(OBJSOIL) $(OBJZLIB)
+libsfml-graphics.a: $(OBJ) $(OBJGLEW) $(OBJJPEG) $(OBJPNG) $(OBJSOIL) $(OBJZLIB)
 	$(AR) $(ARFLAGS) $(LIBNAME) $(OBJ) $(OBJGLEW) $(OBJJPEG) $(OBJPNG) $(OBJSOIL) $(OBJZLIB)
 
 libsfml-graphics.so: $(OBJ) $(OBJGLEW) $(OBJJPEG) $(OBJPNG) $(OBJSOIL) $(OBJZLIB)
