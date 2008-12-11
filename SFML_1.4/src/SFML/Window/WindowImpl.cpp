@@ -88,12 +88,6 @@ myWidth       (0),
 myHeight      (0),
 myJoyThreshold(0.1f)
 {
-    // Initialize the joysticks
-    for (unsigned int i = 0; i < JoysticksCount; ++i)
-    {
-        myJoysticks[i].Initialize(i);
-        myJoyStates[i] = myJoysticks[i].UpdateState();
-    }
 }
 
 

@@ -50,7 +50,6 @@ namespace priv
 ////////////////////////////////////////////////////////////
 class WindowImpl : NonCopyable
 {
-  friend class Window;
 public :
 
     ////////////////////////////////////////////////////////////
@@ -288,14 +287,17 @@ private :
     ////////////////////////////////////////////////////////////
     // Total number of joysticks supported
     ////////////////////////////////////////////////////////////
+public:
     enum {JoysticksCount = 2};
-
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     std::set<WindowListener*> myListeners;                 ///< Array of listeners connected to the window
+public:
     Joystick                  myJoysticks[JoysticksCount]; ///< Joysticks to observe
     JoystickState             myJoyStates[JoysticksCount]; ///< Current states of the joysticks
+private:
     float                     myJoyThreshold;              ///< Joystick threshold (minimum motion for MOVE event to be generated)
 };
 
