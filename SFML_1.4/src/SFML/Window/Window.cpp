@@ -413,6 +413,13 @@ void Window::OnEvent(const Event& EventReceived)
 ////////////////////////////////////////////////////////////
 void Window::Initialize(priv::WindowImpl* Window)
 {
+    // Initialize the joysticks
+    for (unsigned int i = 0; i < Window->JoysticksCount; ++i)
+    {
+        Window->myJoysticks[i].Initialize(i);
+        Window->myJoyStates[i] = Window->myJoysticks[i].UpdateState();
+    }
+
     // Assign new window and listen to its events
     myWindow = Window;
     myWindow->AddListener(this);
@@ -433,12 +440,6 @@ void Window::Initialize(priv::WindowImpl* Window)
     // Activate the window
     SetActive(true);
 
-    // Initialize the joysticks
-    for (unsigned int i = 0; i < Window->JoysticksCount; ++i)
-    {
-        Window->myJoysticks[i].Initialize(i);
-        Window->myJoyStates[i] = Window->myJoysticks[i].UpdateState();
-    }
     // Notify the derived class
     OnCreate();
 }

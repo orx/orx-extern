@@ -88,6 +88,11 @@ myWidth       (0),
 myHeight      (0),
 myJoyThreshold(0.1f)
 {
+    // Clears  the joysticks states
+    for (unsigned int i = 0; i < JoysticksCount; ++i)
+    {
+        memset(&myJoyStates[i], 0, sizeof(JoystickState));
+    }
 }
 
 
