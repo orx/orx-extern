@@ -441,6 +441,14 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath="..\..\src\SFML\Window\Context.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\include\SFML\Window\Context.hpp"
+			>
+		</File>
+		<File
 			RelativePath="..\..\include\SFML\Window\Event.hpp"
 			>
 		</File>

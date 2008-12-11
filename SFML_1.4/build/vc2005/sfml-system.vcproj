@@ -403,6 +403,18 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\include\SFML\System\Resource.hpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\include\SFML\System\Resource.inl"
+			>
+		</File>
+		<File
+			RelativePath="..\..\include\SFML\System\ResourcePtr.inl"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\SFML\System\Sleep.cpp"
 			>
 		</File>
@@ -412,6 +424,18 @@
 		</File>
 		<File
 			RelativePath="..\..\include\SFML\System\Thread.hpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\SFML\System\Unicode.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\include\SFML\System\Unicode.hpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\include\SFML\System\Unicode.inl"
 			>
 		</File>
 		<File

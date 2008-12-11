@@ -353,6 +353,22 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath="..\..\src\SFML\Network\Ftp.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\include\SFML\Network\Ftp.hpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\SFML\Network\Http.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\include\SFML\Network\Http.hpp"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\SFML\Network\IPAddress.cpp"
 			>
 		</File>
