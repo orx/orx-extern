@@ -391,10 +391,9 @@ int WindowImplCocoa::HandleKeyDown(void *eventRef)
 	
 	Event sfEvent;
 	unichar chr = 0, rawchr = 0;
-	unsigned long length = [[event characters] length];
 	unsigned mods = [event modifierFlags];
 	
-	if (length) {
+	if ([[event characters] length]) {
 		chr = [[event characters] characterAtIndex:0];
 		
 		// Note : I got a crash (out of bounds exception) while typing so now I test...
@@ -417,29 +416,10 @@ int WindowImplCocoa::HandleKeyDown(void *eventRef)
 #if 1
 	// Is it also a text event ?
 	if (IsTextEvent(event)) {
-		// tampon d'accueil des caracteres UTF-16 recuperes a partir de l'evenement clavier
-		unichar *utf16Characters = new unichar[length];
+		sfEvent.Type = Event::TextEntered;
+		sfEvent.Text.Unicode = chr;
 		
-		// recuperation des caracteres
-		[[event characters] getCharacters:utf16Characters];
-		
-		// tampon d'accueil des caracteres convertis en UTF-32
-		Uint32 utf32Characters[2];
-		
-		// conversion des caracteres
-		const Uint32 *addr = Unicode::UTF16ToUTF32(utf16Characters,
-												   utf16Characters + length,
-												   utf32Characters);
-		
-		// si il y a eu des caracteres convertis ?
-		if (addr > utf32Characters) {
-			sfEvent.Type = Event::TextEntered;
-			sfEvent.Text.Unicode = utf32Characters[0];
-			
-			SendEvent(sfEvent);
-		}
-		
-		delete[] utf16Characters;
+		SendEvent(sfEvent);
 	}
 #else
 	// Is it also a text event ?
@@ -473,7 +453,7 @@ int WindowImplCocoa::HandleKeyDown(void *eventRef)
 	sfEvent.Type = Event::KeyPressed;
 	
 	// Get the keys
-	if (Key::Code(0) == (sfEvent.Key.Code = KeyForUnicode(rawchr))) {
+	if (Key::Code(0) == (sfEvent.Key.Code = KeyForUnicode(chr))) {
 		sfEvent.Key.Code = KeyForVirtualCode([event keyCode]);
 	}
 	
@@ -498,14 +478,10 @@ int WindowImplCocoa::HandleKeyUp(void *eventRef)
 	
 	Event sfEvent;
 	unsigned mods = [event modifierFlags];
-	unichar chr = 0, rawchr = 0;
+	unichar chr = 0;
 	
 	if ([[event characters] length]) {
 		chr = [[event characters] characterAtIndex:0];
-		
-		if ([[event charactersIgnoringModifiers] length])
-			rawchr = [[event charactersIgnoringModifiers] characterAtIndex:0];
-		
 	}
 	
 	if (mods & NSCommandKeyMask) {
@@ -515,7 +491,7 @@ int WindowImplCocoa::HandleKeyUp(void *eventRef)
 	sfEvent.Type = Event::KeyReleased;
 	
 	// Get the code
-	if (Key::Code(0) == (sfEvent.Key.Code = KeyForUnicode(rawchr))) {
+	if (Key::Code(0) == (sfEvent.Key.Code = KeyForUnicode(chr))) {
 		sfEvent.Key.Code = KeyForVirtualCode([event keyCode]);
 	}
 	
