@@ -139,6 +139,12 @@ desktopMode(0, 0, 0)
 		
 		// Then we make it the current active OpenGL context
 		SetActive();
+		
+		// And set the current working directory to
+		// the Resources folder is it's a bundled app,
+		// or to the directory containing the executable otherwise
+		chdir([[[NSBundle mainBundle] resourcePath] UTF8String]);
+		
 	} else {
 		std::cerr << "*** SFML: Unable to make the main shared OpenGL context" << std::endl;
 	}
@@ -271,26 +277,28 @@ desktopMode(0, 0, 0)
 ////////////////////////////////////////////////////////////
 WindowImplCocoa::~WindowImplCocoa()
 {
-    // Destroy the OpenGL context, the window and every resource allocated by this class
-	Show(false);
-	
+
+	// Release the notification receiver
 	if (members) {
-		if (members->window)
-			[[NSNotificationCenter defaultCenter] removeObserver:members->window];
-		if (members->view)
-			[[NSNotificationCenter defaultCenter] removeObserver:members->view];
+		[[NSNotificationCenter defaultCenter] removeObserver:members->controller];
 		[members->controller release];
 	}
 	
+	// Make sure the window is closed
+	Show(false);
+	
+	// Decrement the shared context counter
 	[sharedContext release];
+	
+	// Release the window objects
 	if (members) {
 		[members->context release];
 		[members->view release];
 		[members->window release];
 	}
 	
-	[[AppController sharedController] unregisterWindow:this];
-	free (members);
+	// Free the private members struct
+	delete members;
 }
 
 
@@ -391,9 +399,10 @@ int WindowImplCocoa::HandleKeyDown(void *eventRef)
 	
 	Event sfEvent;
 	unichar chr = 0, rawchr = 0;
+	unsigned long length = [[event characters] length];
 	unsigned mods = [event modifierFlags];
 	
-	if ([[event characters] length]) {
+	if (length) {
 		chr = [[event characters] characterAtIndex:0];
 		
 		// Note : I got a crash (out of bounds exception) while typing so now I test...
@@ -416,10 +425,24 @@ int WindowImplCocoa::HandleKeyDown(void *eventRef)
 #if 1
 	// Is it also a text event ?
 	if (IsTextEvent(event)) {
-		sfEvent.Type = Event::TextEntered;
-		sfEvent.Text.Unicode = chr;
+		// buffer for the UTF-8 characters
+		const char *utf8Characters = [[event characters] UTF8String];
 		
-		SendEvent(sfEvent);
+		// buffer for the UTF-32 characters
+		Uint32 utf32Characters[2];
+		
+		// convert the characters
+		const Uint32 *addr = Unicode::UTF8ToUTF32(utf8Characters,
+												  utf8Characters + length,
+												  utf32Characters);
+		
+		// si il y a eu des caracteres convertis ?
+		if (addr > utf32Characters) {
+			sfEvent.Type = Event::TextEntered;
+			sfEvent.Text.Unicode = utf32Characters[0];
+			
+			SendEvent(sfEvent);
+		}
 	}
 #else
 	// Is it also a text event ?
@@ -453,7 +476,7 @@ int WindowImplCocoa::HandleKeyDown(void *eventRef)
 	sfEvent.Type = Event::KeyPressed;
 	
 	// Get the keys
-	if (Key::Code(0) == (sfEvent.Key.Code = KeyForUnicode(chr))) {
+	if (Key::Code(0) == (sfEvent.Key.Code = KeyForUnicode(rawchr))) {
 		sfEvent.Key.Code = KeyForVirtualCode([event keyCode]);
 	}
 	
@@ -478,10 +501,14 @@ int WindowImplCocoa::HandleKeyUp(void *eventRef)
 	
 	Event sfEvent;
 	unsigned mods = [event modifierFlags];
-	unichar chr = 0;
+	unichar chr = 0, rawchr = 0;
 	
 	if ([[event characters] length]) {
 		chr = [[event characters] characterAtIndex:0];
+		
+		if ([[event charactersIgnoringModifiers] length])
+			rawchr = [[event charactersIgnoringModifiers] characterAtIndex:0];
+		
 	}
 	
 	if (mods & NSCommandKeyMask) {
@@ -491,7 +518,7 @@ int WindowImplCocoa::HandleKeyUp(void *eventRef)
 	sfEvent.Type = Event::KeyReleased;
 	
 	// Get the code
-	if (Key::Code(0) == (sfEvent.Key.Code = KeyForUnicode(chr))) {
+	if (Key::Code(0) == (sfEvent.Key.Code = KeyForUnicode(rawchr))) {
 		sfEvent.Key.Code = KeyForVirtualCode([event keyCode]);
 	}
 	
@@ -978,7 +1005,7 @@ static SFWindow *MakeWindow(WindowSettings& params, unsigned long style, VideoMo
 	if (style & Style::None || style & Style::Fullscreen) {
 		mask |= NSBorderlessWindowMask;
 		
-		if (style & style & Style::Fullscreen) {
+		if (style & Style::Fullscreen) {
 			// Check display mode and put new values in 'mode' if needed
 			boolean_t exact = true;
 			CFDictionaryRef properties = CGDisplayBestModeForParameters(kCGDirectMainDisplay, mode.BitsPerPixel,
