@@ -197,11 +197,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		A01269660E6318C000B96A5D /* libsfml-system-d.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libsfml-system-d.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A012696F0E6318FE00B96A5D /* libsfml-network-d.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libsfml-network-d.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A01269760E63190F00B96A5D /* libsfml-audio-d.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libsfml-audio-d.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A012697D0E63192000B96A5D /* libsfml-window-d.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libsfml-window-d.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A01269840E63192B00B96A5D /* libsfml-graphics-d.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libsfml-graphics-d.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A01269660E6318C000B96A5D /* libsfml-system.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libsfml-system.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A012696F0E6318FE00B96A5D /* libsfml-network.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libsfml-network.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A01269760E63190F00B96A5D /* libsfml-audio.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libsfml-audio.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A012697D0E63192000B96A5D /* libsfml-window.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libsfml-window.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A01269840E63192B00B96A5D /* libsfml-graphics.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libsfml-graphics.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A018A2AD0EA21A2C005FFAC3 /* Http.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Http.cpp; path = ../../src/SFML/Network/Http.cpp; sourceTree = SOURCE_ROOT; };
 		A018A2AE0EA21A2C005FFAC3 /* Ftp.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Ftp.cpp; path = ../../src/SFML/Network/Ftp.cpp; sourceTree = SOURCE_ROOT; };
 		A04C5A930EDDD88B00935061 /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = AppController.h; path = ../../src/SFML/Window/Cocoa/AppController.h; sourceTree = SOURCE_ROOT; };
@@ -441,11 +441,11 @@
 		A01269670E6318C000B96A5D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A01269660E6318C000B96A5D /* libsfml-system-d.dylib */,
-				A012696F0E6318FE00B96A5D /* libsfml-network-d.dylib */,
-				A01269760E63190F00B96A5D /* libsfml-audio-d.dylib */,
-				A012697D0E63192000B96A5D /* libsfml-window-d.dylib */,
-				A01269840E63192B00B96A5D /* libsfml-graphics-d.dylib */,
+				A01269660E6318C000B96A5D /* libsfml-system.dylib */,
+				A012696F0E6318FE00B96A5D /* libsfml-network.dylib */,
+				A01269760E63190F00B96A5D /* libsfml-audio.dylib */,
+				A012697D0E63192000B96A5D /* libsfml-window.dylib */,
+				A01269840E63192B00B96A5D /* libsfml-graphics.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -765,7 +765,7 @@
 			);
 			name = "sfml-system";
 			productName = "sfml-system";
-			productReference = A01269660E6318C000B96A5D /* libsfml-system-d.dylib */;
+			productReference = A01269660E6318C000B96A5D /* libsfml-system.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		A012696E0E6318FE00B96A5D /* sfml-network */ = {
@@ -781,7 +781,7 @@
 			);
 			name = "sfml-network";
 			productName = "sfml-network";
-			productReference = A012696F0E6318FE00B96A5D /* libsfml-network-d.dylib */;
+			productReference = A012696F0E6318FE00B96A5D /* libsfml-network.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		A01269750E63190F00B96A5D /* sfml-audio */ = {
@@ -797,7 +797,7 @@
 			);
 			name = "sfml-audio";
 			productName = "sfml-audio";
-			productReference = A01269760E63190F00B96A5D /* libsfml-audio-d.dylib */;
+			productReference = A01269760E63190F00B96A5D /* libsfml-audio.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		A012697C0E63192000B96A5D /* sfml-window */ = {
@@ -813,7 +813,7 @@
 			);
 			name = "sfml-window";
 			productName = "sfml-window";
-			productReference = A012697D0E63192000B96A5D /* libsfml-window-d.dylib */;
+			productReference = A012697D0E63192000B96A5D /* libsfml-window.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		A01269830E63192B00B96A5D /* sfml-graphics */ = {
@@ -829,7 +829,7 @@
 			);
 			name = "sfml-graphics";
 			productName = "sfml-graphics";
-			productReference = A01269840E63192B00B96A5D /* libsfml-graphics-d.dylib */;
+			productReference = A01269840E63192B00B96A5D /* libsfml-graphics.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -1106,6 +1106,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				PREBINDING = NO;
 				PRODUCT_NAME = "sfml-system-d";
+				SYMROOT = ../../lib/mac;
 			};
 			name = Debug;
 		};
@@ -1121,6 +1122,7 @@
 				LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";
 				PREBINDING = NO;
 				PRODUCT_NAME = "sfml-system";
+				SYMROOT = ../../lib/mac;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1137,6 +1139,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				PREBINDING = NO;
 				PRODUCT_NAME = "sfml-network-d";
+				SYMROOT = ../../lib/mac;
 			};
 			name = Debug;
 		};
@@ -1151,6 +1154,7 @@
 				GCC_MODEL_TUNING = G5;
 				PREBINDING = NO;
 				PRODUCT_NAME = "sfml-network";
+				SYMROOT = ../../lib/mac;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1173,6 +1177,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "sfml-audio-d";
+				SYMROOT = ../../lib/mac;
 			};
 			name = Debug;
 		};
@@ -1193,6 +1198,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "sfml-audio";
+				SYMROOT = ../../lib/mac;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1217,6 +1223,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "sfml-window-d";
+				SYMROOT = ../../lib/mac;
 			};
 			name = Debug;
 		};
@@ -1239,6 +1246,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "sfml-window";
+				SYMROOT = ../../lib/mac;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1268,6 +1276,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "sfml-graphics-d";
+				SYMROOT = ../../lib/mac;
 			};
 			name = Debug;
 		};
@@ -1295,6 +1304,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = "sfml-graphics";
+				SYMROOT = ../../lib/mac;
 				ZERO_LINK = NO;
 			};
 			name = Release;
