@@ -123,10 +123,12 @@ public :
     /// distant website ; as a consequence, this function may be
     /// very slow -- use it as few as possible !
     ///
+    /// \param Timeout : Maximum time to wait, in seconds (0 by default : no timeout)
+    ///
     /// \return Public IP address
     ///
     ////////////////////////////////////////////////////////////
-    static IPAddress GetPublicAddress();
+    static IPAddress GetPublicAddress(float Timeout = 0.f);
 
     ////////////////////////////////////////////////////////////
     /// Comparison operator ==

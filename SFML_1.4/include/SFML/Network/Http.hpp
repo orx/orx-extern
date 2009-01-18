@@ -315,12 +315,13 @@ public :
     /// not return instantly; use a thread if you don't want to block your
     /// application.
     ///
-    /// \param Req : Request to send
+    /// \param Req :     Request to send
+    /// \param Timeout : Maximum time to wait, in seconds (0 by default, means no timeout)
     ///
     /// \return Server's response
     ///
     ////////////////////////////////////////////////////////////
-    Response SendRequest(const Request& Req);
+    Response SendRequest(const Request& Req, float Timeout = 0.f);
 
 private :
 

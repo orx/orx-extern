@@ -49,7 +49,7 @@ namespace sf
 
 #elif defined(SFML_SYSTEM_MACOS)
 
-    // OSX - A GrafPort struct defined as WindowRef
+    // Mac OS X defines a void* handle (NSWindow)
 	typedef void* WindowHandle;
 
 #endif
