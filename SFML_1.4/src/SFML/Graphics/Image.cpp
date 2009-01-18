@@ -463,21 +463,24 @@ void Image::Bind() const
 ////////////////////////////////////////////////////////////
 void Image::SetSmooth(bool Smooth)
 {
-    myIsSmooth = Smooth;
-
-    if (myTexture)
+    if (Smooth != myIsSmooth)
     {
-        // Make sure we have a valid context
-        priv::GraphicsContext Ctx;
+        myIsSmooth = Smooth;
 
-        GLint PreviousTexture;
-        GLCheck(glGetIntegerv(GL_TEXTURE_BINDING_2D, &PreviousTexture));
+        if (myTexture)
+        {
+            // Make sure we have a valid context
+            priv::GraphicsContext Ctx;
 
-        GLCheck(glBindTexture(GL_TEXTURE_2D, myTexture));
-        GLCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, myIsSmooth ? GL_LINEAR : GL_NEAREST));
-        GLCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, myIsSmooth ? GL_LINEAR : GL_NEAREST));
+            GLint PreviousTexture;
+            GLCheck(glGetIntegerv(GL_TEXTURE_BINDING_2D, &PreviousTexture));
 
-        GLCheck(glBindTexture(GL_TEXTURE_2D, PreviousTexture));
+            GLCheck(glBindTexture(GL_TEXTURE_2D, myTexture));
+            GLCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, myIsSmooth ? GL_LINEAR : GL_NEAREST));
+            GLCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, myIsSmooth ? GL_LINEAR : GL_NEAREST));
+
+            GLCheck(glBindTexture(GL_TEXTURE_2D, PreviousTexture));
+        }
     }
 }
 

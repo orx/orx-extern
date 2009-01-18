@@ -36,7 +36,7 @@
     #include <SFML/Window/Win32/WindowImplWin32.hpp>
     typedef sf::priv::WindowImplWin32 WindowImplType;
 
-#elif defined(SFML_SYSTEM_LINUX)
+#elif defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD)
 
     #include <SFML/Window/Linux/WindowImplX11.hpp>
     typedef sf::priv::WindowImplX11 WindowImplType;
@@ -88,7 +88,7 @@ myWidth       (0),
 myHeight      (0),
 myJoyThreshold(0.1f)
 {
-    // Clears  the joysticks states
+    // Clears the joysticks states
     for (unsigned int i = 0; i < JoysticksCount; ++i)
     {
         memset(&myJoyStates[i], 0, sizeof(JoystickState));

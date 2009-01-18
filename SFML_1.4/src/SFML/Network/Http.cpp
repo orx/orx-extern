@@ -364,7 +364,7 @@ void Http::SetHost(const std::string& Host, unsigned short Port)
 /// not return instantly; use a thread if you don't want to block your
 /// application.
 ////////////////////////////////////////////////////////////
-Http::Response Http::SendRequest(const Http::Request& Req)
+Http::Response Http::SendRequest(const Http::Request& Req, float Timeout)
 {
     // First make sure the request is valid -- add missing mandatory fields
     Request ToSend(Req);
@@ -391,7 +391,7 @@ Http::Response Http::SendRequest(const Http::Request& Req)
     Response Received;
 
     // Connect the socket to the host
-    if (myConnection.Connect(myPort, myHost) == Socket::Done)
+    if (myConnection.Connect(myPort, myHost, Timeout) == Socket::Done)
     {
         // Convert the request to string and send it through the connected socket
         std::string RequestStr = ToSend.ToString();

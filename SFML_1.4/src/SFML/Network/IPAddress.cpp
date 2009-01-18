@@ -201,7 +201,7 @@ IPAddress IPAddress::GetLocalAddress()
 ////////////////////////////////////////////////////////////
 /// Get the computer's public IP address (from the web point of view)
 ////////////////////////////////////////////////////////////
-IPAddress IPAddress::GetPublicAddress()
+IPAddress IPAddress::GetPublicAddress(float Timeout)
 {
     // The trick here is more complicated, because the only way
     // to get our public IP address is to get it from a distant computer.
@@ -214,7 +214,7 @@ IPAddress IPAddress::GetPublicAddress()
     // Connect to the web server and get its index page
     Http Server("www.whatismyip.org");
     Http::Request Request(Http::Request::Get, "/");
-    Http::Response Page = Server.SendRequest(Request);
+    Http::Response Page = Server.SendRequest(Request, Timeout);
 
     // If the request was successful, we can extract
     // the address from the body of the web page

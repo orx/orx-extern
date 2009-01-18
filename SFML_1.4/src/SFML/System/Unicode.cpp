@@ -273,7 +273,17 @@ const std::locale& Unicode::GetDefaultLocale()
     // so we only do it once and then store the locale for reuse.
     // Warning : this code won't be aware of any change of the default locale during runtime
 
-    static std::locale DefaultLocale("");
+    #if !defined(SFML_SYSTEM_MACOS)
+
+        static std::locale DefaultLocale("");
+
+    #else
+
+        // MacOSX seems to be unable to retrieve the current locale,
+        // so let's use the standard "C" one
+        static std::locale DefaultLocale("C");
+
+    #endif
 
     return DefaultLocale;
 }

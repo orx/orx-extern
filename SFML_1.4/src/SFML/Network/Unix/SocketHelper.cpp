@@ -68,6 +68,12 @@ void SocketHelper::SetBlocking(SocketHelper::SocketType Socket, bool Block)
 ////////////////////////////////////////////////////////////
 Socket::Status SocketHelper::GetErrorStatus()
 {
+    // The followings are sometimes equal to EWOULDBLOCK,
+    // so we have to make a special case for them in order
+    // to avoid having double values in the switch case
+    if ((errno == EAGAIN) || (errno == EINPROGRESS))
+        return Socket::NotReady;
+
     switch (errno)
     {
         case EWOULDBLOCK :  return Socket::NotReady;
