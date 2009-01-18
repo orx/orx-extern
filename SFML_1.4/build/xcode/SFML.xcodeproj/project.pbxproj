@@ -48,13 +48,6 @@
 		A01A3AFF0E75181300D0BA9B /* stb_vorbis.c in Sources */ = {isa = PBXBuildFile; fileRef = A01A3AEB0E75181300D0BA9B /* stb_vorbis.c */; };
 		A01A3B000E75181300D0BA9B /* stb_vorbis.h in Headers */ = {isa = PBXBuildFile; fileRef = A01A3AEC0E75181300D0BA9B /* stb_vorbis.h */; };
 		A01C69C90E3E63CE00ED3F04 /* Unicode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A01C69C80E3E63CE00ED3F04 /* Unicode.cpp */; };
-		A0267A0D0E5CDD25008D4C81 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A0267A0B0E5CDD25008D4C81 /* Cocoa.framework */; };
-		A0267A0E0E5CDD25008D4C81 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A0267A0C0E5CDD25008D4C81 /* OpenGL.framework */; };
-		A0267A190E5CDD34008D4C81 /* sfml-window.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A0C93EB40D9A9CA000B9E0C8 /* sfml-window.framework */; };
-		A0267A1C0E5CDD4B008D4C81 /* sfml-system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A093E37F0D8BF87A002236B4 /* sfml-system.framework */; };
-		A0267A260E5CDE99008D4C81 /* sfml-system.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A093E37F0D8BF87A002236B4 /* sfml-system.framework */; };
-		A0267A270E5CDE99008D4C81 /* sfml-window.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A0C93EB40D9A9CA000B9E0C8 /* sfml-window.framework */; };
-		A02E4E320E9E2FAC0009B4E5 /* window-opengl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A0A680480DC345FC00F4CA69 /* window-opengl.cpp */; };
 		A04C59AF0EDDBA9C00935061 /* AppController.h in Headers */ = {isa = PBXBuildFile; fileRef = A04C59A50EDDBA9C00935061 /* AppController.h */; };
 		A04C59B00EDDBA9C00935061 /* AppController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A04C59A60EDDBA9C00935061 /* AppController.mm */; };
 		A04C59B10EDDBA9C00935061 /* Joystick.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A04C59A70EDDBA9C00935061 /* Joystick.cpp */; };
@@ -255,27 +248,6 @@
 			remoteGlobalIDString = A093E37E0D8BF87A002236B4;
 			remoteInfo = "sfml-system";
 		};
-		A0267A010E5CDCDF008D4C81 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A093E36A0D8BF860002236B4 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A093E3740D8BF86E002236B4;
-			remoteInfo = SFML;
-		};
-		A0267A030E5CDCDF008D4C81 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A093E36A0D8BF860002236B4 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A093E37E0D8BF87A002236B4;
-			remoteInfo = "sfml-system";
-		};
-		A0267A050E5CDCDF008D4C81 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A093E36A0D8BF860002236B4 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A0C93EB30D9A9CA000B9E0C8;
-			remoteInfo = "sfml-window";
-		};
 		A07EA05A0DB657A9007C7747 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A093E36A0D8BF860002236B4 /* Project object */;
@@ -333,20 +305,6 @@
 			remoteInfo = "sfml-system";
 		};
 /* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		A0267A290E5CDEB7008D4C81 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				A0267A260E5CDE99008D4C81 /* sfml-system.framework in CopyFiles */,
-				A0267A270E5CDE99008D4C81 /* sfml-window.framework in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A018A2790EA21866005FFAC3 /* Http.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Http.cpp; path = ../../src/SFML/Network/Http.cpp; sourceTree = SOURCE_ROOT; };
@@ -443,7 +401,6 @@
 		A01A3AEC0E75181300D0BA9B /* stb_vorbis.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = stb_vorbis.h; path = ../../src/SFML/Audio/stb_vorbis/stb_vorbis.h; sourceTree = SOURCE_ROOT; };
 		A01C69C80E3E63CE00ED3F04 /* Unicode.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Unicode.cpp; path = ../../src/SFML/System/Unicode.cpp; sourceTree = SOURCE_ROOT; };
 		A01E92D70DCDE74600C54529 /* multi-window-opengl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = "multi-window-opengl.cpp"; path = "test/multi-window-opengl.cpp"; sourceTree = "<group>"; };
-		A02679F90E5CDCCD008D4C81 /* sfml-application.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "sfml-application.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A02679FC0E5CDCCD008D4C81 /* sfml-application-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "sfml-application-Info.plist"; sourceTree = "<group>"; };
 		A0267A0B0E5CDD25008D4C81 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		A0267A0C0E5CDD25008D4C81 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
@@ -623,17 +580,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		A02679F70E5CDCCD008D4C81 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A0267A0D0E5CDD25008D4C81 /* Cocoa.framework in Frameworks */,
-				A0267A0E0E5CDD25008D4C81 /* OpenGL.framework in Frameworks */,
-				A0267A190E5CDD34008D4C81 /* sfml-window.framework in Frameworks */,
-				A0267A1C0E5CDD4B008D4C81 /* sfml-system.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		A093E3730D8BF86E002236B4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -929,7 +875,6 @@
 				A093E39A0D8BF89B002236B4 /* sfml-audio.framework */,
 				A093E3A30D8BF8A2002236B4 /* sfml-graphics.framework */,
 				A0C93EB40D9A9CA000B9E0C8 /* sfml-window.framework */,
-				A02679F90E5CDCCD008D4C81 /* sfml-application.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1344,27 +1289,6 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		A02679F80E5CDCCD008D4C81 /* sfml-application */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A0267A000E5CDCCE008D4C81 /* Build configuration list for PBXNativeTarget "sfml-application" */;
-			buildPhases = (
-				A02679F50E5CDCCD008D4C81 /* Resources */,
-				A02679F60E5CDCCD008D4C81 /* Sources */,
-				A02679F70E5CDCCD008D4C81 /* Frameworks */,
-				A0267A290E5CDEB7008D4C81 /* CopyFiles */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				A0267A020E5CDCDF008D4C81 /* PBXTargetDependency */,
-				A0267A040E5CDCDF008D4C81 /* PBXTargetDependency */,
-				A0267A060E5CDCDF008D4C81 /* PBXTargetDependency */,
-			);
-			name = "sfml-application";
-			productName = "sfml-application";
-			productReference = A02679F90E5CDCCD008D4C81 /* sfml-application.app */;
-			productType = "com.apple.product-type.application";
-		};
 		A093E3740D8BF86E002236B4 /* SFML */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A02679DE0E5CDB03008D4C81 /* Build configuration list for PBXNativeTarget "SFML" */;
@@ -1500,19 +1424,11 @@
 				A093E3870D8BF885002236B4 /* sfml-network */,
 				A093E37E0D8BF87A002236B4 /* sfml-system */,
 				A0C93EB30D9A9CA000B9E0C8 /* sfml-window */,
-				A02679F80E5CDCCD008D4C81 /* sfml-application */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		A02679F50E5CDCCD008D4C81 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		A093E3710D8BF86E002236B4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1574,14 +1490,6 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		A02679F60E5CDCCD008D4C81 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A02E4E320E9E2FAC0009B4E5 /* window-opengl.cpp in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		A093E3720D8BF86E002236B4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1774,21 +1682,6 @@
 			target = A093E37E0D8BF87A002236B4 /* sfml-system */;
 			targetProxy = A017FF8A0E51E06400A4C078 /* PBXContainerItemProxy */;
 		};
-		A0267A020E5CDCDF008D4C81 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A093E3740D8BF86E002236B4 /* SFML */;
-			targetProxy = A0267A010E5CDCDF008D4C81 /* PBXContainerItemProxy */;
-		};
-		A0267A040E5CDCDF008D4C81 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A093E37E0D8BF87A002236B4 /* sfml-system */;
-			targetProxy = A0267A030E5CDCDF008D4C81 /* PBXContainerItemProxy */;
-		};
-		A0267A060E5CDCDF008D4C81 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A0C93EB30D9A9CA000B9E0C8 /* sfml-window */;
-			targetProxy = A0267A050E5CDCDF008D4C81 /* PBXContainerItemProxy */;
-		};
 		A07EA05B0DB657A9007C7747 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = A0C93EB30D9A9CA000B9E0C8 /* sfml-window */;
@@ -1856,7 +1749,7 @@
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = static;
 				STRIP_INSTALLED_PRODUCT = NO;
-				SYMROOT = ../../lib/xcode;
+				SYMROOT = ../../lib/mac;
 			};
 			name = Debug;
 		};
@@ -1883,7 +1776,7 @@
 				);
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = static;
-				SYMROOT = ../../lib/xcode;
+				SYMROOT = ../../lib/mac;
 			};
 			name = Release;
 		};
@@ -2294,47 +2187,6 @@
 			};
 			name = Release;
 		};
-		A02679FD0E5CDCCE008D4C81 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				INFOPLIST_FILE = "sfml-application-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = "";
-				PREBINDING = NO;
-				PRODUCT_NAME = "sfml-application";
-			};
-			name = Debug;
-		};
-		A02679FE0E5CDCCE008D4C81 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
-				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_MODEL_TUNING = G5;
-				INFOPLIST_FILE = "sfml-application-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-					"-framework",
-					AppKit,
-				);
-				PREBINDING = NO;
-				PRODUCT_NAME = "sfml-application";
-				ZERO_LINK = NO;
-			};
-			name = Release;
-		};
 		A0C9DDC80E8BE5D10084CFD8 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2561,23 +2413,6 @@
 			};
 			name = Development;
 		};
-		A0C9DDD00E8BE5D10084CFD8 /* Development */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				INFOPLIST_FILE = "sfml-application-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = "";
-				PREBINDING = NO;
-				PRODUCT_NAME = "sfml-application";
-			};
-			name = Development;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2657,16 +2492,6 @@
 				A0C9DDC90E8BE5D10084CFD8 /* Development */,
 				A02679C50E5CDB03008D4C81 /* Debug */,
 				A02679C60E5CDB03008D4C81 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		A0267A000E5CDCCE008D4C81 /* Build configuration list for PBXNativeTarget "sfml-application" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A0C9DDD00E8BE5D10084CFD8 /* Development */,
-				A02679FD0E5CDCCE008D4C81 /* Debug */,
-				A02679FE0E5CDCCE008D4C81 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
