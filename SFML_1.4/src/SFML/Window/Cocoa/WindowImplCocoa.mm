@@ -1417,7 +1417,7 @@ static NSPoint MouseLocation(SFWindow *window)
 	NSPoint	relativeLocation = {0, 0};
 	
 	if (window) {
-		[window convertScreenToBase:location];
+		relativeLocation = [window convertScreenToBase:location];
 		relativeLocation.y = [[window contentView] frame].size.height - relativeLocation.y;
 	} else {
 		std::cerr << "*** SFML: tried to get mouse location from no window" << std::endl;
