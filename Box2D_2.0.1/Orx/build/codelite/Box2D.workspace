@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeLite_Workspace Name="Box2D" Database=".\Box2D.tags">
+  <Project Name="Box2D" Path="Box2D.project" Active="Yes"/>
+  <BuildMatrix>
+    <WorkspaceConfiguration Name="GP2X Debug" Selected="no">
+      <Project Name="Box2D" ConfigName="GP2X Debug"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="GP2X Release" Selected="no">
+      <Project Name="Box2D" ConfigName="GP2X Release"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Linux Debug" Selected="no">
+      <Project Name="Box2D" ConfigName="Linux Debug"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Linux Release" Selected="no">
+      <Project Name="Box2D" ConfigName="Linux Release"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Win32 Debug" Selected="yes">
+      <Project Name="Box2D" ConfigName="Win32 Debug"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Win32 Release" Selected="no">
+      <Project Name="Box2D" ConfigName="Win32 Release"/>
+    </WorkspaceConfiguration>
+  </BuildMatrix>
+</CodeLite_Workspace>
