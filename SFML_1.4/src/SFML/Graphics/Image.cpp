@@ -521,7 +521,7 @@ FloatRect Image::GetTexCoords(const IntRect& Rect, bool Adjust) const
     float Width  = static_cast<float>(myTextureWidth);
     float Height = static_cast<float>(myTextureHeight);
 
-    if (Adjust && myIsSmooth)
+    if (Adjust)
     {
         return FloatRect((Rect.Left   + 0.5f) / Width,
                          (Rect.Top    + 0.5f) / Height,
@@ -627,8 +627,8 @@ bool Image::CreateTexture()
         GLCheck(glGenTextures(1, &Texture));
         GLCheck(glBindTexture(GL_TEXTURE_2D, Texture));
         GLCheck(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, myTextureWidth, myTextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL));
-        GLCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP));
-        GLCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP));
+        GLCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT));
+        GLCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT));
         GLCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, myIsSmooth ? GL_LINEAR : GL_NEAREST));
         GLCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, myIsSmooth ? GL_LINEAR : GL_NEAREST));
         myTexture = static_cast<unsigned int>(Texture);
