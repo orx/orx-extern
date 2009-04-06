@@ -523,10 +523,10 @@ FloatRect Image::GetTexCoords(const IntRect& Rect, bool Adjust) const
 
     if (Adjust)
     {
-        return FloatRect((Rect.Left   + 0.5f) / Width,
-                         (Rect.Top    + 0.5f) / Height,
-                         (Rect.Right  - 0.5f) / Width,
-                         (Rect.Bottom - 0.5f) / Height);
+        return FloatRect((Rect.Left   + 0.1f) / Width,
+                         (Rect.Top    + 0.1f) / Height,
+                         (Rect.Right  - 0.1f) / Width,
+                         (Rect.Bottom - 0.1f) / Height);
     }
     else
     {
