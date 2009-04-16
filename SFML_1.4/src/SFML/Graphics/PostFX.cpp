@@ -379,13 +379,12 @@ std::string PostFX::PreprocessEffect(std::istream& File)
     }
 
     // Effect code
-    Out += "void main()\n";
     while (std::getline(File, Line))
     {
         // Replace any texture lookup "T(" by "texture2D(T, "
         for (std::set<std::string>::const_iterator i = myTextures.begin(); i != myTextures.end(); ++i)
         {
-            std::string::size_type Pos = Line.find(*i);
+            std::string::size_type Pos = Line.find(*i + "(");
             if (Pos != std::string::npos)
                 Line.replace(Pos, i->size() + 1, "texture2D(" + *i + ", ");
         }
