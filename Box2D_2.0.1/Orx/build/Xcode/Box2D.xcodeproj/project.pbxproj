@@ -57,14 +57,6 @@
 		276ADFAF0CF01ED7003B103D /* b2RevoluteJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276ADF7C0CF01ED7003B103D /* b2RevoluteJoint.cpp */; };
 		276ADFB00CF01ED7003B103D /* b2RevoluteJoint.h in Headers */ = {isa = PBXBuildFile; fileRef = 276ADF7D0CF01ED7003B103D /* b2RevoluteJoint.h */; };
 		276ADFE80CF022BF003B103D /* Box2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 276ADFE70CF022BF003B103D /* Box2D.h */; };
-		276AE1B00CF025D5003B103D /* .dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D2AAC09D05546B4700DB518D /* .dylib */; };
-		276AE1ED0CF02698003B103D /* .dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D2AAC09D05546B4700DB518D /* .dylib */; };
-		276AE2700CF0A434003B103D /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 276AE26E0CF0A434003B103D /* GLUT.framework */; };
-		276AE2710CF0A434003B103D /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 276AE26F0CF0A434003B103D /* OpenGL.framework */; };
-		276AE3E30CF0F15F003B103D /* .dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D2AAC09D05546B4700DB518D /* .dylib */; };
-		276AE4260CF0F1E8003B103D /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 276AE26E0CF0A434003B103D /* GLUT.framework */; };
-		276AE4270CF0F1E8003B103D /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 276AE26F0CF0A434003B103D /* OpenGL.framework */; };
-		276AE4410CF0F422003B103D /* .dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = D2AAC09D05546B4700DB518D /* .dylib */; };
 		3638A4240D8095AC00E28AD1 /* b2WorldCallbacks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3638A4220D8095AC00E28AD1 /* b2WorldCallbacks.cpp */; };
 		3638A4250D8095AC00E28AD1 /* b2WorldCallbacks.h in Headers */ = {isa = PBXBuildFile; fileRef = 3638A4230D8095AC00E28AD1 /* b2WorldCallbacks.h */; };
 		3638A4280D8095D400E28AD1 /* b2TimeOfImpact.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3638A4270D8095D400E28AD1 /* b2TimeOfImpact.cpp */; };
@@ -77,43 +69,6 @@
 		3638A43A0D80964800E28AD1 /* b2Collision.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3638A4390D80964800E28AD1 /* b2Collision.cpp */; };
 		3638A43D0D8096BF00E28AD1 /* b2Math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3638A43C0D8096BF00E28AD1 /* b2Math.cpp */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		276AE1AA0CF02573003B103D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D2AAC09C05546B4700DB518D;
-			remoteInfo = Box2D;
-		};
-		276AE1EB0CF0267E003B103D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D2AAC09C05546B4700DB518D;
-			remoteInfo = Box2D;
-		};
-		276AE3E10CF0F14A003B103D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D2AAC09C05546B4700DB518D;
-			remoteInfo = Box2D;
-		};
-/* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		276AE4400CF0F41A003B103D /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 6;
-			files = (
-				276AE4410CF0F422003B103D /* .dylib in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		276ADF470CF01ED7003B103D /* b2BroadPhase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2BroadPhase.cpp; sourceTree = "<group>"; };
@@ -166,11 +121,6 @@
 		276ADF7C0CF01ED7003B103D /* b2RevoluteJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2RevoluteJoint.cpp; sourceTree = "<group>"; };
 		276ADF7D0CF01ED7003B103D /* b2RevoluteJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2RevoluteJoint.h; sourceTree = "<group>"; };
 		276ADFE70CF022BF003B103D /* Box2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box2D.h; sourceTree = "<group>"; };
-		276AE1A40CF0253B003B103D /* HelloWorld */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = HelloWorld; sourceTree = BUILT_PRODUCTS_DIR; };
-		276AE1E20CF0265F003B103D /* TestBed */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TestBed; sourceTree = BUILT_PRODUCTS_DIR; };
-		276AE26E0CF0A434003B103D /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = /System/Library/Frameworks/GLUT.framework; sourceTree = "<absolute>"; };
-		276AE26F0CF0A434003B103D /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
-		276AE3B50CF0F0E2003B103D /* Box2D Test Bed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Box2D Test Bed.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3638A4220D8095AC00E28AD1 /* b2WorldCallbacks.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2WorldCallbacks.cpp; sourceTree = "<group>"; };
 		3638A4230D8095AC00E28AD1 /* b2WorldCallbacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2WorldCallbacks.h; sourceTree = "<group>"; };
 		3638A4270D8095D400E28AD1 /* b2TimeOfImpact.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2TimeOfImpact.cpp; sourceTree = "<group>"; };
@@ -182,38 +132,10 @@
 		3638A42F0D8095EE00E28AD1 /* b2Shape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2Shape.h; sourceTree = "<group>"; };
 		3638A4390D80964800E28AD1 /* b2Collision.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2Collision.cpp; sourceTree = "<group>"; };
 		3638A43C0D8096BF00E28AD1 /* b2Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2Math.cpp; sourceTree = "<group>"; };
-		D2AAC09D05546B4700DB518D /* .dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = .dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2AAC09D05546B4700DB518D /* libBox2D.a */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libBox2D.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		276AE1A20CF0253B003B103D /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				276AE1B00CF025D5003B103D /* .dylib in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		276AE1E00CF0265F003B103D /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				276AE1ED0CF02698003B103D /* .dylib in Frameworks */,
-				276AE2700CF0A434003B103D /* GLUT.framework in Frameworks */,
-				276AE2710CF0A434003B103D /* OpenGL.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		276AE3B30CF0F0E2003B103D /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				276AE3E30CF0F15F003B103D /* .dylib in Frameworks */,
-				276AE4260CF0F1E8003B103D /* GLUT.framework in Frameworks */,
-				276AE4270CF0F1E8003B103D /* OpenGL.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D2AAC09B05546B4700DB518D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -227,10 +149,7 @@
 		034768DDFF38A45A11DB9C8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D2AAC09D05546B4700DB518D /* .dylib */,
-				276AE1A40CF0253B003B103D /* HelloWorld */,
-				276AE1E20CF0265F003B103D /* TestBed */,
-				276AE3B50CF0F0E2003B103D /* Box2D Test Bed.app */,
+				D2AAC09D05546B4700DB518D /* libBox2D.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -240,19 +159,9 @@
 			children = (
 				276ADFE60CF022BF003B103D /* Include */,
 				276ADF450CF01ED7003B103D /* Source */,
-				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
 				034768DDFF38A45A11DB9C8B /* Products */,
 			);
 			name = Box2D;
-			sourceTree = "<group>";
-		};
-		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
-			isa = PBXGroup;
-			children = (
-				276AE26E0CF0A434003B103D /* GLUT.framework */,
-				276AE26F0CF0A434003B103D /* OpenGL.framework */,
-			);
-			name = "External Frameworks and Libraries";
 			sourceTree = "<group>";
 		};
 		276ADF450CF01ED7003B103D /* Source */ = {
@@ -263,7 +172,7 @@
 				276ADF590CF01ED7003B103D /* Dynamics */,
 			);
 			name = Source;
-			path = ../../Source;
+			path = ../../../Source;
 			sourceTree = "<group>";
 		};
 		276ADF460CF01ED7003B103D /* Collision */ = {
@@ -423,59 +332,6 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		276AE1A30CF0253B003B103D /* HelloWorld */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 276AE1AD0CF02591003B103D /* Build configuration list for PBXNativeTarget "HelloWorld" */;
-			buildPhases = (
-				276AE1A10CF0253B003B103D /* Sources */,
-				276AE1A20CF0253B003B103D /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				276AE1AB0CF02573003B103D /* PBXTargetDependency */,
-			);
-			name = HelloWorld;
-			productName = HelloWorld;
-			productReference = 276AE1A40CF0253B003B103D /* HelloWorld */;
-			productType = "com.apple.product-type.tool";
-		};
-		276AE1E10CF0265F003B103D /* TestBed */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 276AE2030CF026DD003B103D /* Build configuration list for PBXNativeTarget "TestBed" */;
-			buildPhases = (
-				276AE1DF0CF0265F003B103D /* Sources */,
-				276AE1E00CF0265F003B103D /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				276AE1EC0CF0267E003B103D /* PBXTargetDependency */,
-			);
-			name = TestBed;
-			productName = TestBed;
-			productReference = 276AE1E20CF0265F003B103D /* TestBed */;
-			productType = "com.apple.product-type.tool";
-		};
-		276AE3B40CF0F0E2003B103D /* TestBed App */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 276AE3BA0CF0F0E2003B103D /* Build configuration list for PBXNativeTarget "TestBed App" */;
-			buildPhases = (
-				276AE3B10CF0F0E2003B103D /* Resources */,
-				276AE3B20CF0F0E2003B103D /* Sources */,
-				276AE3B30CF0F0E2003B103D /* Frameworks */,
-				276AE4400CF0F41A003B103D /* CopyFiles */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				276AE3E20CF0F14A003B103D /* PBXTargetDependency */,
-			);
-			name = "TestBed App";
-			productName = "TestBed App";
-			productReference = 276AE3B50CF0F0E2003B103D /* Box2D Test Bed.app */;
-			productType = "com.apple.product-type.application";
-		};
 		D2AAC09C05546B4700DB518D /* Box2D */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1DEB916008733D950010E9CD /* Build configuration list for PBXNativeTarget "Box2D" */;
@@ -490,7 +346,7 @@
 			);
 			name = Box2D;
 			productName = libBox2D;
-			productReference = D2AAC09D05546B4700DB518D /* .dylib */;
+			productReference = D2AAC09D05546B4700DB518D /* libBox2D.a */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -507,45 +363,11 @@
 			projectRoot = ../..;
 			targets = (
 				D2AAC09C05546B4700DB518D /* Box2D */,
-				276AE1A30CF0253B003B103D /* HelloWorld */,
-				276AE1E10CF0265F003B103D /* TestBed */,
-				276AE3B40CF0F0E2003B103D /* TestBed App */,
 			);
 		};
 /* End PBXProject section */
 
-/* Begin PBXResourcesBuildPhase section */
-		276AE3B10CF0F0E2003B103D /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
-		276AE1A10CF0253B003B103D /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		276AE1DF0CF0265F003B103D /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		276AE3B20CF0F0E2003B103D /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D2AAC09A05546B4700DB518D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -586,40 +408,34 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		276AE1AB0CF02573003B103D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D2AAC09C05546B4700DB518D /* Box2D */;
-			targetProxy = 276AE1AA0CF02573003B103D /* PBXContainerItemProxy */;
-		};
-		276AE1EC0CF0267E003B103D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D2AAC09C05546B4700DB518D /* Box2D */;
-			targetProxy = 276AE1EB0CF0267E003B103D /* PBXContainerItemProxy */;
-		};
-		276AE3E20CF0F14A003B103D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D2AAC09C05546B4700DB518D /* Box2D */;
-			targetProxy = 276AE3E10CF0F14A003B103D /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
 		1DEB916108733D950010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CONFIGURATION_BUILD_DIR = ../../lib/mac;
 				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_EXTENSION = a;
+				EXECUTABLE_PREFIX = lib;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_CPP_RTTI = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_ENABLE_SYMBOL_SEPARATION = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Box2D_Prefix.pch;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"_GLIBCXX_DEBUG=1",
 					"_GLIBCXX_DEBUG_PEDANTIC=1",
 				);
+				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
+				MACH_O_TYPE = staticlib;
+				OBJROOT = build;
+				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
+				PRODUCT_NAME = Box2Dd;
+				SHARED_PRECOMPS_DIR = "$(CACHE_ROOT)/SharedPrecompiledHeaders";
+				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = static;
+				SYMROOT = ../../lib/mac;
 				ZERO_LINK = YES;
 			};
 			name = Debug;
@@ -627,13 +443,26 @@
 		1DEB916208733D950010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CONFIGURATION_BUILD_DIR = ../../lib/mac;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				EXECUTABLE_EXTENSION = a;
+				EXECUTABLE_PREFIX = lib;
 				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_ENABLE_SYMBOL_SEPARATION = NO;
 				GCC_MODEL_TUNING = G5;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Box2D_Prefix.pch;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
+				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
+				MACH_O_TYPE = staticlib;
+				OBJROOT = build;
+				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
+				PRODUCT_NAME = Box2D;
+				SHARED_PRECOMPS_DIR = "$(CACHE_ROOT)/SharedPrecompiledHeaders";
+				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = static;
 				STRIP_INSTALLED_PRODUCT = YES;
 				STRIP_STYLE = "non-global";
+				SYMROOT = ../../lib/mac;
 			};
 			name = Release;
 		};
@@ -665,113 +494,6 @@
 			};
 			name = Release;
 		};
-		276AE1A60CF0253B003B103D /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				INSTALL_PATH = /usr/local/bin;
-				PREBINDING = NO;
-				PRODUCT_NAME = HelloWorld;
-				ZERO_LINK = YES;
-			};
-			name = Debug;
-		};
-		276AE1A70CF0253B003B103D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_MODEL_TUNING = G5;
-				INSTALL_PATH = /usr/local/bin;
-				PREBINDING = NO;
-				PRODUCT_NAME = HelloWorld;
-				ZERO_LINK = NO;
-			};
-			name = Release;
-		};
-		276AE1E40CF0265F003B103D /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				INSTALL_PATH = /usr/local/bin;
-				PREBINDING = NO;
-				PRODUCT_NAME = TestBed;
-				ZERO_LINK = YES;
-			};
-			name = Debug;
-		};
-		276AE1E50CF0265F003B103D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_MODEL_TUNING = G5;
-				INSTALL_PATH = /usr/local/bin;
-				PREBINDING = NO;
-				PRODUCT_NAME = TestBed;
-				ZERO_LINK = NO;
-			};
-			name = Release;
-		};
-		276AE3B80CF0F0E2003B103D /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = Box2D_Prefix.pch;
-				INFOPLIST_FILE = "TestBed App-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-					"-framework",
-					AppKit,
-				);
-				PREBINDING = NO;
-				PRODUCT_NAME = "TestBed App";
-				WRAPPER_EXTENSION = app;
-				ZERO_LINK = YES;
-			};
-			name = Debug;
-		};
-		276AE3B90CF0F0E2003B103D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_MODEL_TUNING = G5;
-				GCC_PRECOMPILE_PREFIX_HEADER = NO;
-				GCC_PREFIX_HEADER = Box2D_Prefix.pch;
-				INFOPLIST_FILE = "TestBed App-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-					"-framework",
-					AppKit,
-				);
-				PREBINDING = NO;
-				PRODUCT_NAME = "Box2D Test Bed";
-				WRAPPER_EXTENSION = app;
-				ZERO_LINK = NO;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -789,33 +511,6 @@
 			buildConfigurations = (
 				1DEB916508733D950010E9CD /* Debug */,
 				1DEB916608733D950010E9CD /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		276AE1AD0CF02591003B103D /* Build configuration list for PBXNativeTarget "HelloWorld" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				276AE1A60CF0253B003B103D /* Debug */,
-				276AE1A70CF0253B003B103D /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		276AE2030CF026DD003B103D /* Build configuration list for PBXNativeTarget "TestBed" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				276AE1E40CF0265F003B103D /* Debug */,
-				276AE1E50CF0265F003B103D /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		276AE3BA0CF0F0E2003B103D /* Build configuration list for PBXNativeTarget "TestBed App" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				276AE3B80CF0F0E2003B103D /* Debug */,
-				276AE3B90CF0F0E2003B103D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
