@@ -85,7 +85,7 @@
   <Settings Type="Static Library">
     <Configuration Name="GP2X Debug" CompilerType="gp2x g++" DebuggerType="GNU gdb debugger" Type="Static Library">
       <General OutputFile="../../lib/gp2x/libBox2Dd.a" IntermediateDirectory="./Debug" Command="" CommandArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
-      <Compiler Required="yes" Options="-g">
+      <Compiler Required="yes" Options="-g -fPIC">
         <IncludePath Value="../../../Source"/>
       </Compiler>
       <Linker Required="yes" Options=""/>
@@ -110,7 +110,7 @@
     </Configuration>
     <Configuration Name="GP2X Release" CompilerType="gp2x g++" DebuggerType="GNU gdb debugger" Type="Static Library">
       <General OutputFile="../../lib/gp2x/libBox2D.a" IntermediateDirectory="./Release" Command="" CommandArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
-      <Compiler Required="yes" Options="-O2 -Wno-strict-aliasing -s">
+      <Compiler Required="yes" Options="-O2 -Wno-strict-aliasing -s -fPIC">
         <IncludePath Value="../../../Source"/>
       </Compiler>
       <Linker Required="yes" Options=""/>
@@ -135,7 +135,7 @@
     </Configuration>
     <Configuration Name="Linux Debug" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Static Library">
       <General OutputFile="../../lib/linux/libBox2Dd.a" IntermediateDirectory="./Debug" Command="" CommandArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
-      <Compiler Required="yes" Options="-g">
+      <Compiler Required="yes" Options="-g -fPIC">
         <IncludePath Value="../../../Source"/>
       </Compiler>
       <Linker Required="yes" Options=""/>
@@ -160,7 +160,7 @@
     </Configuration>
     <Configuration Name="Linux Release" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Static Library">
       <General OutputFile="../../lib/linux/libBox2D.a" IntermediateDirectory="./Release" Command="" CommandArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
-      <Compiler Required="yes" Options="-O2 -Wno-strict-aliasing -s">
+      <Compiler Required="yes" Options="-O2 -Wno-strict-aliasing -s -fPIC">
         <IncludePath Value="../../../Source"/>
       </Compiler>
       <Linker Required="yes" Options=""/>
