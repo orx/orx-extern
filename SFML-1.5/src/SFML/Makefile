@@ -11,7 +11,7 @@ ifeq ($(STATIC), no)
     BUILDFLAGS = -fPIC
     LINKFLAGS  = -shared
 else
-    BUILDFLAGS = 
+    BUILDFLAGS = -fPIC
     LINKFLAGS  = 
 endif
 
