@@ -20,6 +20,7 @@
 #define B2_BLOCK_ALLOCATOR_H
 
 #include "b2Settings.h"
+#include <cstring>
 
 const int32 b2_chunkSize = 4096;
 const int32 b2_maxBlockSize = 640;

@@ -23,6 +23,7 @@
 #include <cmath>
 #include <cfloat>
 #include <cstdlib>
+#include <cstring>
 
 #include <stdio.h>
 
