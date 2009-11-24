@@ -6,7 +6,6 @@
 	ProjectGUID="{7A2DFC3D-516A-471D-A215-BD40E5E5AD9A}"
 	RootNamespace="Engine"
 	Keyword="Win32Proj"
-	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -164,11 +163,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Source\Collision\b2BroadPhase.h"
+				RelativePath="..\..\..\Source\Collision\b2BroadPhase.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\Source\Collision\b2CollideCircle.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Source\Collision\b2CollideEdge.cpp"
 				>
 			</File>
 			<File
@@ -188,6 +191,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\Source\Collision\b2Distance.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Source\Collision\b2DynamicTree.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Source\Collision\b2DynamicTree.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\Source\Collision\b2PairManager.cpp"
 				>
 			</File>
@@ -199,6 +214,10 @@
 				RelativePath="..\..\..\Source\Collision\b2TimeOfImpact.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\..\Source\Collision\b2TimeOfImpact.h"
+				>
+			</File>
 			<Filter
 				Name="Shapes"
 				>
@@ -208,6 +227,14 @@
 				</File>
 				<File
 					RelativePath="..\..\..\Source\Collision\Shapes\b2CircleShape.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Collision\Shapes\b2EdgeShape.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Collision\Shapes\b2EdgeShape.h"
 					>
 				</File>
 				<File
@@ -284,6 +311,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\Source\Dynamics\b2EdgeChain.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Source\Dynamics\b2EdgeChain.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Source\Dynamics\b2Fixture.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\Source\Dynamics\b2Fixture.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\Source\Dynamics\b2Island.cpp"
 				>
 			</File>
@@ -335,6 +378,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\Source\Dynamics\Contacts\b2EdgeAndCircleContact.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Contacts\b2EdgeAndCircleContact.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\Source\Dynamics\Contacts\b2NullContact.h"
 					>
 				</File>
@@ -344,6 +395,14 @@
 				</File>
 				<File
 					RelativePath="..\..\..\Source\Dynamics\Contacts\b2PolyAndCircleContact.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Contacts\b2PolyAndEdgeContact.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Contacts\b2PolyAndEdgeContact.h"
 					>
 				</File>
 				<File
@@ -367,6 +426,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\Source\Dynamics\Joints\b2FixedJoint.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Joints\b2FixedJoint.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\Source\Dynamics\Joints\b2GearJoint.cpp"
 					>
 				</File>
@@ -380,6 +447,14 @@
 				</File>
 				<File
 					RelativePath="..\..\..\Source\Dynamics\Joints\b2Joint.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Joints\b2LineJoint.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Joints\b2LineJoint.h"
 					>
 				</File>
 				<File
@@ -415,7 +490,63 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="Controllers"
+				>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Controllers\b2BuoyancyController.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Controllers\b2BuoyancyController.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Controllers\b2ConstantAccelController.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Controllers\b2ConstantAccelController.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Controllers\b2ConstantForceController.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Controllers\b2ConstantForceController.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Controllers\b2Controller.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Controllers\b2Controller.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Controllers\b2GravityController.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Controllers\b2GravityController.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Controllers\b2TensorDampingController.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\Source\Dynamics\Controllers\b2TensorDampingController.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
+		<File
+			RelativePath="..\..\Include\Box2D.h"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

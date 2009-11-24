@@ -9,19 +9,41 @@
         <File Name="../../../Source/Dynamics/Contacts/b2Contact.h"/>
         <File Name="../../../Source/Dynamics/Contacts/b2ContactSolver.cpp"/>
         <File Name="../../../Source/Dynamics/Contacts/b2ContactSolver.h"/>
+        <File Name="../../../Source/Dynamics/Contacts/b2EdgeAndCircleContact.cpp"/>
+        <File Name="../../../Source/Dynamics/Contacts/b2EdgeAndCircleContact.h"/>
         <File Name="../../../Source/Dynamics/Contacts/b2NullContact.h"/>
         <File Name="../../../Source/Dynamics/Contacts/b2PolyAndCircleContact.cpp"/>
         <File Name="../../../Source/Dynamics/Contacts/b2PolyAndCircleContact.h"/>
+        <File Name="../../../Source/Dynamics/Contacts/b2PolyAndEdgeContact.cpp"/>
+        <File Name="../../../Source/Dynamics/Contacts/b2PolyAndEdgeContact.h"/>
         <File Name="../../../Source/Dynamics/Contacts/b2PolyContact.cpp"/>
         <File Name="../../../Source/Dynamics/Contacts/b2PolyContact.h"/>
+      </VirtualDirectory>
+      <VirtualDirectory Name="Controllers">
+        <File Name="../../../Source/Dynamics/Controllers/b2BuoyancyController.cpp"/>
+        <File Name="../../../Source/Dynamics/Controllers/b2BuoyancyController.h"/>
+        <File Name="../../../Source/Dynamics/Controllers/b2ConstantAccelController.cpp"/>
+        <File Name="../../../Source/Dynamics/Controllers/b2ConstantAccelController.h"/>
+        <File Name="../../../Source/Dynamics/Controllers/b2ConstantForceController.cpp"/>
+        <File Name="../../../Source/Dynamics/Controllers/b2ConstantForceController.h"/>
+        <File Name="../../../Source/Dynamics/Controllers/b2Controller.cpp"/>
+        <File Name="../../../Source/Dynamics/Controllers/b2Controller.h"/>
+        <File Name="../../../Source/Dynamics/Controllers/b2GravityController.cpp"/>
+        <File Name="../../../Source/Dynamics/Controllers/b2GravityController.h"/>
+        <File Name="../../../Source/Dynamics/Controllers/b2TensorDampingController.cpp"/>
+        <File Name="../../../Source/Dynamics/Controllers/b2TensorDampingController.h"/>
       </VirtualDirectory>
       <VirtualDirectory Name="Joints">
         <File Name="../../../Source/Dynamics/Joints/b2DistanceJoint.cpp"/>
         <File Name="../../../Source/Dynamics/Joints/b2DistanceJoint.h"/>
+        <File Name="../../../Source/Dynamics/Joints/b2FixedJoint.cpp"/>
+        <File Name="../../../Source/Dynamics/Joints/b2FixedJoint.h"/>
         <File Name="../../../Source/Dynamics/Joints/b2GearJoint.cpp"/>
         <File Name="../../../Source/Dynamics/Joints/b2GearJoint.h"/>
         <File Name="../../../Source/Dynamics/Joints/b2Joint.cpp"/>
         <File Name="../../../Source/Dynamics/Joints/b2Joint.h"/>
+        <File Name="../../../Source/Dynamics/Joints/b2LineJoint.cpp"/>
+        <File Name="../../../Source/Dynamics/Joints/b2LineJoint.h"/>
         <File Name="../../../Source/Dynamics/Joints/b2MouseJoint.cpp"/>
         <File Name="../../../Source/Dynamics/Joints/b2MouseJoint.h"/>
         <File Name="../../../Source/Dynamics/Joints/b2PrismaticJoint.cpp"/>
@@ -35,6 +57,10 @@
       <File Name="../../../Source/Dynamics/b2Body.h"/>
       <File Name="../../../Source/Dynamics/b2ContactManager.cpp"/>
       <File Name="../../../Source/Dynamics/b2ContactManager.h"/>
+      <File Name="../../../Source/Dynamics/b2EdgeChain.cpp"/>
+      <File Name="../../../Source/Dynamics/b2EdgeChain.h"/>
+      <File Name="../../../Source/Dynamics/b2Fixture.cpp"/>
+      <File Name="../../../Source/Dynamics/b2Fixture.h"/>
       <File Name="../../../Source/Dynamics/b2Island.cpp"/>
       <File Name="../../../Source/Dynamics/b2Island.h"/>
       <File Name="../../../Source/Dynamics/b2World.cpp"/>
@@ -46,6 +72,8 @@
       <VirtualDirectory Name="Shapes">
         <File Name="../../../Source/Collision/Shapes/b2CircleShape.cpp"/>
         <File Name="../../../Source/Collision/Shapes/b2CircleShape.h"/>
+        <File Name="../../../Source/Collision/Shapes/b2EdgeShape.cpp"/>
+        <File Name="../../../Source/Collision/Shapes/b2EdgeShape.h"/>
         <File Name="../../../Source/Collision/Shapes/b2PolygonShape.cpp"/>
         <File Name="../../../Source/Collision/Shapes/b2PolygonShape.h"/>
         <File Name="../../../Source/Collision/Shapes/b2Shape.cpp"/>
@@ -54,13 +82,18 @@
       <File Name="../../../Source/Collision/b2BroadPhase.cpp"/>
       <File Name="../../../Source/Collision/b2BroadPhase.h"/>
       <File Name="../../../Source/Collision/b2CollideCircle.cpp"/>
+      <File Name="../../../Source/Collision/b2CollideEdge.cpp"/>
       <File Name="../../../Source/Collision/b2CollidePoly.cpp"/>
       <File Name="../../../Source/Collision/b2Collision.cpp"/>
       <File Name="../../../Source/Collision/b2Collision.h"/>
       <File Name="../../../Source/Collision/b2Distance.cpp"/>
+      <File Name="../../../Source/Collision/b2Distance.h"/>
+      <File Name="../../../Source/Collision/b2DynamicTree.cpp"/>
+      <File Name="../../../Source/Collision/b2DynamicTree.h"/>
       <File Name="../../../Source/Collision/b2PairManager.cpp"/>
       <File Name="../../../Source/Collision/b2PairManager.h"/>
       <File Name="../../../Source/Collision/b2TimeOfImpact.cpp"/>
+      <File Name="../../../Source/Collision/b2TimeOfImpact.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="Common">
       <File Name="../../../Source/Common/b2BlockAllocator.cpp"/>
@@ -80,8 +113,6 @@
     <File Name="../../../Include/Box2D.h"/>
   </VirtualDirectory>
   <Dependencies/>
-  <Dependencies Name="GP2X Release"/>
-  <Dependencies Name="GP2X Debug"/>
   <Settings Type="Static Library">
     <Configuration Name="GP2X Debug" CompilerType="gp2x g++" DebuggerType="GNU gdb debugger" Type="Static Library">
       <General OutputFile="../../lib/gp2x/libBox2Dd.a" IntermediateDirectory="./Debug" Command="" CommandArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
@@ -89,23 +120,21 @@
         <IncludePath Value="../../../Source"/>
       </Compiler>
       <Linker Required="yes" Options=""/>
-      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath=""></Debugger>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath=""/>
       <ResourceCompiler Required="no" Options=""/>
       <PreBuild/>
       <PostBuild/>
       <CustomBuild Enabled="no">
-        <CleanCommand></CleanCommand>
-        <BuildCommand></BuildCommand>
-        <SingleFileCommand></SingleFileCommand>
-        <MakefileGenerationCommand></MakefileGenerationCommand>
+        <CleanCommand/>
+        <BuildCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
         <ThirdPartyToolName>None</ThirdPartyToolName>
-        <WorkingDirectory></WorkingDirectory>
+        <WorkingDirectory/>
       </CustomBuild>
       <AdditionalRules>
-        <CustomPostBuild></CustomPostBuild>
-        <CustomPreBuild>
-
-</CustomPreBuild>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
       </AdditionalRules>
     </Configuration>
     <Configuration Name="GP2X Release" CompilerType="gp2x g++" DebuggerType="GNU gdb debugger" Type="Static Library">
@@ -114,23 +143,21 @@
         <IncludePath Value="../../../Source"/>
       </Compiler>
       <Linker Required="yes" Options=""/>
-      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath=""></Debugger>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath=""/>
       <ResourceCompiler Required="no" Options=""/>
       <PreBuild/>
       <PostBuild/>
       <CustomBuild Enabled="no">
-        <CleanCommand></CleanCommand>
-        <BuildCommand></BuildCommand>
-        <SingleFileCommand></SingleFileCommand>
-        <MakefileGenerationCommand></MakefileGenerationCommand>
+        <CleanCommand/>
+        <BuildCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
         <ThirdPartyToolName>None</ThirdPartyToolName>
-        <WorkingDirectory></WorkingDirectory>
+        <WorkingDirectory/>
       </CustomBuild>
       <AdditionalRules>
-        <CustomPostBuild></CustomPostBuild>
-        <CustomPreBuild>
-
-</CustomPreBuild>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
       </AdditionalRules>
     </Configuration>
     <Configuration Name="Linux Debug" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Static Library">
@@ -139,23 +166,21 @@
         <IncludePath Value="../../../Source"/>
       </Compiler>
       <Linker Required="yes" Options=""/>
-      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath=""></Debugger>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath=""/>
       <ResourceCompiler Required="no" Options=""/>
       <PreBuild/>
       <PostBuild/>
       <CustomBuild Enabled="no">
-        <CleanCommand></CleanCommand>
-        <BuildCommand></BuildCommand>
-        <SingleFileCommand></SingleFileCommand>
-        <MakefileGenerationCommand></MakefileGenerationCommand>
+        <CleanCommand/>
+        <BuildCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
         <ThirdPartyToolName>None</ThirdPartyToolName>
-        <WorkingDirectory></WorkingDirectory>
+        <WorkingDirectory/>
       </CustomBuild>
       <AdditionalRules>
-        <CustomPostBuild></CustomPostBuild>
-        <CustomPreBuild>
-
-</CustomPreBuild>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
       </AdditionalRules>
     </Configuration>
     <Configuration Name="Linux Release" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Static Library">
@@ -164,23 +189,21 @@
         <IncludePath Value="../../../Source"/>
       </Compiler>
       <Linker Required="yes" Options=""/>
-      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath=""></Debugger>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath=""/>
       <ResourceCompiler Required="no" Options=""/>
       <PreBuild/>
       <PostBuild/>
       <CustomBuild Enabled="no">
-        <CleanCommand></CleanCommand>
-        <BuildCommand></BuildCommand>
-        <SingleFileCommand></SingleFileCommand>
-        <MakefileGenerationCommand></MakefileGenerationCommand>
+        <CleanCommand/>
+        <BuildCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
         <ThirdPartyToolName>None</ThirdPartyToolName>
-        <WorkingDirectory></WorkingDirectory>
+        <WorkingDirectory/>
       </CustomBuild>
       <AdditionalRules>
-        <CustomPostBuild></CustomPostBuild>
-        <CustomPreBuild>
-
-</CustomPreBuild>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
       </AdditionalRules>
     </Configuration>
     <Configuration Name="Win32 Debug" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Static Library">
@@ -189,23 +212,21 @@
         <IncludePath Value="../../../Source"/>
       </Compiler>
       <Linker Required="yes" Options=""/>
-      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath=""></Debugger>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath=""/>
       <ResourceCompiler Required="no" Options=""/>
       <PreBuild/>
       <PostBuild/>
       <CustomBuild Enabled="no">
-        <CleanCommand></CleanCommand>
-        <BuildCommand></BuildCommand>
-        <SingleFileCommand></SingleFileCommand>
-        <MakefileGenerationCommand></MakefileGenerationCommand>
+        <CleanCommand/>
+        <BuildCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
         <ThirdPartyToolName>None</ThirdPartyToolName>
-        <WorkingDirectory></WorkingDirectory>
+        <WorkingDirectory/>
       </CustomBuild>
       <AdditionalRules>
-        <CustomPostBuild></CustomPostBuild>
-        <CustomPreBuild>
-
-</CustomPreBuild>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
       </AdditionalRules>
     </Configuration>
     <Configuration Name="Win32 Release" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Static Library">
@@ -214,26 +235,26 @@
         <IncludePath Value="../../../Source"/>
       </Compiler>
       <Linker Required="yes" Options=""/>
-      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath=""></Debugger>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath=""/>
       <ResourceCompiler Required="no" Options=""/>
       <PreBuild/>
       <PostBuild/>
       <CustomBuild Enabled="no">
-        <CleanCommand></CleanCommand>
-        <BuildCommand></BuildCommand>
-        <SingleFileCommand></SingleFileCommand>
-        <MakefileGenerationCommand></MakefileGenerationCommand>
+        <CleanCommand/>
+        <BuildCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
         <ThirdPartyToolName>None</ThirdPartyToolName>
-        <WorkingDirectory></WorkingDirectory>
+        <WorkingDirectory/>
       </CustomBuild>
       <AdditionalRules>
-        <CustomPostBuild></CustomPostBuild>
-        <CustomPreBuild>
-
-</CustomPreBuild>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
       </AdditionalRules>
     </Configuration>
   </Settings>
-  <Dependencies Name="Win32 Debug"/>
   <Dependencies Name="Win32 Release"/>
+  <Dependencies Name="Win32 Debug"/>
+  <Dependencies Name="GP2X Release"/>
+  <Dependencies Name="GP2X Debug"/>
 </CodeLite_Project>
