@@ -55,6 +55,7 @@ struct b2BodyDef
 		isSleeping = false;
 		fixedRotation = false;
 		isBullet = false;
+    gravityMultiplier = 1.0f;
 	}
 
 	/// You can use this to initialized the mass properties of the body.
@@ -103,6 +104,8 @@ struct b2BodyDef
 	/// static bodies.
 	/// @warning You should use this flag sparingly since it increases processing time.
 	bool isBullet;
+
+  float gravityMultiplier;
 };
 
 /// A rigid body. These are created via b2World::CreateBody.
@@ -269,7 +272,10 @@ public:
 	/// Is this body treated like a bullet for continuous collision detection?
 	bool IsBullet() const;
 
-	/// Should this body be treated like a bullet for continuous collision detection?
+	/// Gets gravity multiplier?
+	float GetGravityMultiplier() const;
+
+  /// Should this body be treated like a bullet for continuous collision detection?
 	void SetBullet(bool flag);
 
 	/// Is this body prevented from rotating.
@@ -423,6 +429,8 @@ private:
 
 	float32 m_sleepTime;
 
+  float32 m_gravityMultiplier;
+
 	void* m_userData;
 };
 
@@ -558,6 +566,11 @@ inline void b2Body::SetAngularDamping(float32 angularDamping)
 inline bool b2Body::IsBullet() const
 {
 	return (m_flags & e_bulletFlag) == e_bulletFlag;
+}
+
+inline float b2Body::GetGravityMultiplier() const
+{
+	return m_gravityMultiplier;
 }
 
 inline void b2Body::SetBullet(bool flag)
