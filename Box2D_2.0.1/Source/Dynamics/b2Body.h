@@ -272,13 +272,16 @@ public:
 	/// Is this body treated like a bullet for continuous collision detection?
 	bool IsBullet() const;
 
-	/// Gets gravity multiplier?
-	float GetGravityMultiplier() const;
-
   /// Should this body be treated like a bullet for continuous collision detection?
 	void SetBullet(bool flag);
 
-	/// Is this body prevented from rotating.
+	/// Gets gravity multiplier
+	float GetGravityMultiplier() const;
+
+	/// Sets gravity multiplier
+	void SetGravityMultiplier(float gravityMultiplier);
+
+  /// Is this body prevented from rotating.
 	bool IsFixedRotation() const;
 
 	/// Set if this body is prevented from rotating.
@@ -568,11 +571,6 @@ inline bool b2Body::IsBullet() const
 	return (m_flags & e_bulletFlag) == e_bulletFlag;
 }
 
-inline float b2Body::GetGravityMultiplier() const
-{
-	return m_gravityMultiplier;
-}
-
 inline void b2Body::SetBullet(bool flag)
 {
 	if (flag)
@@ -583,6 +581,16 @@ inline void b2Body::SetBullet(bool flag)
 	{
 		m_flags &= ~e_bulletFlag;
 	}
+}
+
+inline float b2Body::GetGravityMultiplier() const
+{
+	return m_gravityMultiplier;
+}
+
+inline void b2Body::SetGravityMultiplier(float gravityMultiplier)
+{
+	m_gravityMultiplier = gravityMultiplier;
 }
 
 inline bool b2Body::IsFixedRotation() const
