@@ -56,6 +56,7 @@ struct b2BodyDef
 		fixedRotation = false;
 		isBullet = false;
     gravityMultiplier = 1.0f;
+    canSlide = true;
 	}
 
 	/// You can use this to initialized the mass properties of the body.
@@ -98,6 +99,8 @@ struct b2BodyDef
 
 	/// Should this body be prevented from rotating? Useful for characters.
 	bool fixedRotation;
+
+  bool canSlide;
 
 	/// Is this a fast moving body that should be prevented from tunneling through
 	/// other moving bodies? Note that all bodies are prevented from tunneling through
@@ -287,6 +290,9 @@ public:
 	/// Set if this body is prevented from rotating.
 	void SetFixedRotation(bool fixed);
 
+  bool CanSlide() const;
+  void SetSlide(bool canSlide);
+
 	/// Is this body static (immovable)?
 	bool IsStatic() const;
 
@@ -375,6 +381,7 @@ private:
 		e_allowSleepFlag	= 0x0010,
 		e_bulletFlag		= 0x0020,
 		e_fixedRotationFlag	= 0x0040,
+    e_canSlide          = 0x8000,
 	};
 
 	// m_type
@@ -618,6 +625,22 @@ inline void b2Body::SetFixedRotation(bool fixed)
 	}
 }
 
+inline bool b2Body::CanSlide() const
+{
+	return (m_flags & e_canSlide) == e_canSlide;
+}
+
+inline void b2Body::SetSlide(bool canSlide)
+{
+	if(canSlide)
+	{
+		m_flags |= e_canSlide;
+	}
+	else
+	{
+		m_flags &= e_canSlide;
+	}
+}
 
 inline bool b2Body::IsStatic() const
 {

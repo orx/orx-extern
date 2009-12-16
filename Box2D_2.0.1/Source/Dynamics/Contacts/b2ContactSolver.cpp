@@ -192,10 +192,27 @@ void b2ContactSolver::InitVelocityConstraints(const b2TimeStep& step)
 				ccp->normalImpulse *= step.dtRatio;
 				ccp->tangentImpulse *= step.dtRatio;
 				b2Vec2 P = ccp->normalImpulse * normal + ccp->tangentImpulse * tangent;
+        b2Vec2 deltaA, deltaB;
+        deltaA = invMassA * P;
+        deltaB = invMassB * P;
 				bodyA->m_angularVelocity -= invIA * b2Cross(ccp->rA, P);
-				bodyA->m_linearVelocity -= invMassA * P;
 				bodyB->m_angularVelocity += invIB * b2Cross(ccp->rB, P);
-				bodyB->m_linearVelocity += invMassB * P;
+        if(!bodyA->CanSlide() && bodyB->IsStatic())
+        {
+				  bodyA->m_linearVelocity.y -= deltaA.y;
+        }
+        else
+        {
+				  bodyA->m_linearVelocity -= deltaA;
+        }
+        if(!bodyB->CanSlide() && bodyA->IsStatic())
+        {
+				  bodyB->m_linearVelocity.y += deltaB.y;
+        }
+        else
+        {
+				  bodyB->m_linearVelocity += deltaB;
+        }
 			}
 		}
 		else
@@ -502,6 +519,14 @@ void b2ContactSolver::SolveVelocityConstraints()
 			}
 		}
 
+    if(!bodyA->CanSlide() && bodyB->IsStatic())
+    {
+      vA.x = bodyA->m_linearVelocity.x;
+    }
+    if(!bodyB->CanSlide() && bodyA->IsStatic())
+    {
+      vB.x = bodyB->m_linearVelocity.x;
+    }
 		bodyA->m_linearVelocity = vA;
 		bodyA->m_angularVelocity = wA;
 		bodyB->m_linearVelocity = vB;
