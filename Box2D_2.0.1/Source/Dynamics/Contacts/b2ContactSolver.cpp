@@ -197,7 +197,7 @@ void b2ContactSolver::InitVelocityConstraints(const b2TimeStep& step)
         deltaB = invMassB * P;
 				bodyA->m_angularVelocity -= invIA * b2Cross(ccp->rA, P);
 				bodyB->m_angularVelocity += invIB * b2Cross(ccp->rB, P);
-        if(!bodyA->CanSlide() && bodyB->IsStatic())
+        if(!bodyA->CanSlide() && bodyB->IsStatic() && (normal.y >= 0.707f))
         {
 				  bodyA->m_linearVelocity.y -= deltaA.y;
         }
@@ -205,7 +205,7 @@ void b2ContactSolver::InitVelocityConstraints(const b2TimeStep& step)
         {
 				  bodyA->m_linearVelocity -= deltaA;
         }
-        if(!bodyB->CanSlide() && bodyA->IsStatic())
+        if(!bodyB->CanSlide() && bodyA->IsStatic() && (normal.y <= -0.707f))
         {
 				  bodyB->m_linearVelocity.y += deltaB.y;
         }
@@ -519,11 +519,11 @@ void b2ContactSolver::SolveVelocityConstraints()
 			}
 		}
 
-    if(!bodyA->CanSlide() && bodyB->IsStatic())
+    if(!bodyA->CanSlide() && bodyB->IsStatic() && (normal.y >= 0.707f))
     {
       vA.x = bodyA->m_linearVelocity.x;
     }
-    if(!bodyB->CanSlide() && bodyA->IsStatic())
+    if(!bodyB->CanSlide() && bodyA->IsStatic() && (normal.y <= -0.707f))
     {
       vB.x = bodyB->m_linearVelocity.x;
     }
