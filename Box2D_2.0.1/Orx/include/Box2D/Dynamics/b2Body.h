@@ -55,7 +55,6 @@ struct b2BodyDef
 		isSleeping = false;
 		fixedRotation = false;
 		isBullet = false;
-    gravityMultiplier = 1.0f;
     canSlide = true;
 	}
 
@@ -108,7 +107,7 @@ struct b2BodyDef
 	/// @warning You should use this flag sparingly since it increases processing time.
 	bool isBullet;
 
-  float gravityMultiplier;
+  b2Vec2 customGravity;
 };
 
 /// A rigid body. These are created via b2World::CreateBody.
@@ -278,11 +277,14 @@ public:
   /// Should this body be treated like a bullet for continuous collision detection?
 	void SetBullet(bool flag);
 
-	/// Gets gravity multiplier
-	float GetGravityMultiplier() const;
+  /// Has custom gravity?
+  bool HasCustomGravity() const;
 
-	/// Sets gravity multiplier
-	void SetGravityMultiplier(float gravityMultiplier);
+	/// Gets custom gravity
+	const b2Vec2 *GetCustomGravity() const;
+
+	/// Sets custom gravity
+	void SetCustomGravity(const b2Vec2 *customGravity);
 
   /// Is this body prevented from rotating.
 	bool IsFixedRotation() const;
@@ -382,6 +384,7 @@ private:
 		e_bulletFlag		= 0x0020,
 		e_fixedRotationFlag	= 0x0040,
     e_canSlide          = 0x8000,
+    e_customGravityFlag = 0x4000
 	};
 
 	// m_type
@@ -439,7 +442,7 @@ private:
 
 	float32 m_sleepTime;
 
-  float32 m_gravityMultiplier;
+  b2Vec2 m_customGravity;
 
 	void* m_userData;
 };
@@ -590,14 +593,28 @@ inline void b2Body::SetBullet(bool flag)
 	}
 }
 
-inline float b2Body::GetGravityMultiplier() const
+inline bool b2Body::HasCustomGravity() const
 {
-	return m_gravityMultiplier;
+	return (m_flags & e_customGravityFlag) == e_customGravityFlag;
 }
 
-inline void b2Body::SetGravityMultiplier(float gravityMultiplier)
+inline const b2Vec2 *b2Body::GetCustomGravity() const
 {
-	m_gravityMultiplier = gravityMultiplier;
+  return HasCustomGravity() ? &m_customGravity : NULL;
+}
+
+inline void b2Body::SetCustomGravity(const b2Vec2 *customGravity)
+{
+  if(customGravity)
+  {
+    m_flags |= e_customGravityFlag;
+
+	  m_customGravity = *customGravity;
+  }
+  else
+  {
+    m_flags &= ~e_customGravityFlag;
+  }
 }
 
 inline bool b2Body::IsFixedRotation() const

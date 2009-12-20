@@ -189,7 +189,7 @@ void b2Island::Solve(const b2TimeStep& step, const b2Vec2& gravity, bool allowSl
 			continue;
 
 		// Integrate velocities.
-    b->m_linearVelocity += step.dt * (b->m_gravityMultiplier * gravity + b->m_invMass * b->m_force);
+    b->m_linearVelocity += step.dt * ((b->HasCustomGravity() ? b->m_customGravity : gravity) + b->m_invMass * b->m_force);
 		b->m_angularVelocity += step.dt * b->m_invI * b->m_torque;
 
 		// Reset forces.
