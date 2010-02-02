@@ -40,7 +40,7 @@ struct b2Simplex
 					const TA* shapeA, const b2XForm& transformA,
 					const TB* shapeB, const b2XForm& transformB)
 	{
-		b2Assert(0 <= cache->count && cache->count <= 3);
+		b2Assert(cache->count <= 3);
 		
 		// Copy data from cache.
 		m_count = cache->count;
