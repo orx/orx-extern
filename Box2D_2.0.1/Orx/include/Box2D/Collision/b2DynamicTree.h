@@ -138,7 +138,7 @@ private:
 template <typename T>
 inline void b2DynamicTree::Query(T* callback, const b2AABB& aabb) const
 {
-	if (m_root == NULL)
+	if (m_root == 0)
 	{
 		return;
 	}
@@ -172,7 +172,7 @@ inline void b2DynamicTree::Query(T* callback, const b2AABB& aabb) const
 template <typename T>
 inline void b2DynamicTree::RayCast(T* callback, const b2RayCastInput& input) const
 {
-	if (m_root == NULL)
+	if (m_root == 0)
 	{
 		return;
 	}
