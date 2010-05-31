@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeLite_Workspace Name="SOIL" Database=".\SOIL.tags">
+  <Project Name="SOIL" Path="SOIL.project" Active="Yes"/>
+  <BuildMatrix>
+    <WorkspaceConfiguration Name="Linux Release" Selected="no">
+      <Project Name="SOIL" ConfigName="Linux Release"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Win32 Release" Selected="yes">
+      <Project Name="SOIL" ConfigName="Win32 Release"/>
+    </WorkspaceConfiguration>
+  </BuildMatrix>
+</CodeLite_Workspace>
