@@ -1086,7 +1086,7 @@ unsigned int
 	}
 	/*	how large of a texture can this OpenGL implementation handle?	*/
 	/*	texture_check_size_enum will be GL_MAX_TEXTURE_SIZE or SOIL_MAX_CUBE_MAP_TEXTURE_SIZE	*/
-	glGetIntegerv( texture_check_size_enum, &max_supported_size );
+	glGetIntegerv( texture_check_size_enum, (GLint *)&max_supported_size );
 	/*	do I need to make it a power of 2?	*/
 	if(
 		(flags & SOIL_FLAG_POWER_OF_TWO) ||	/*	user asked for it	*/
@@ -1167,7 +1167,7 @@ unsigned int
     tex_id = reuse_texture_ID;
     if( tex_id == 0 )
     {
-		glGenTextures( 1, &tex_id );
+		glGenTextures( 1, (GLuint *)&tex_id );
     }
 	check_for_GL_errors( "glGenTextures" );
 	/* Note: sometimes glGenTextures fails (usually no OpenGL context)	*/
@@ -1709,7 +1709,7 @@ unsigned int SOIL_direct_load_DDS_from_memory(
 	tex_ID = reuse_texture_ID;
 	if( tex_ID == 0 )
 	{
-		glGenTextures( 1, &tex_ID );
+		glGenTextures( 1, (GLuint *)&tex_ID );
 	}
 	/*  bind an OpenGL texture ID	*/
 	glBindTexture( opengl_texture_type, tex_ID );
@@ -1780,7 +1780,7 @@ unsigned int SOIL_direct_load_DDS_from_memory(
 			result_string_pointer = "DDS file loaded";
 		} else
 		{
-			glDeleteTextures( 1, & tex_ID );
+			glDeleteTextures( 1, (GLuint *)&tex_ID );
 			tex_ID = 0;
 			cf_target = ogl_target_end + 1;
 			result_string_pointer = "DDS file was too small for expected image data";
