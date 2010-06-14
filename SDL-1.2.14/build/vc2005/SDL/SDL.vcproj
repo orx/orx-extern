@@ -74,7 +74,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="dxguid.lib winmm.lib"
+				AdditionalDependencies="dxguid.lib winmm.lib opengl32.lib"
 				OutputFile="..\..\..\lib\vc2005\SDLd.lib"
 			/>
 			<Tool
@@ -155,7 +155,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="dxguid.lib winmm.lib"
+				AdditionalDependencies="dxguid.lib winmm.lib opengl32.lib"
 				OutputFile="..\..\..\lib\vc2005\SDL.lib"
 			/>
 			<Tool
