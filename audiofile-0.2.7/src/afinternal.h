@@ -34,7 +34,7 @@
 
 #include <sys/types.h>
 
-#ifdef _WIN32 || defined(WIN32)
+#if defined(_WIN32) || defined(WIN32)
 typedef unsigned int bool;
 #define true 1
 #define false 0

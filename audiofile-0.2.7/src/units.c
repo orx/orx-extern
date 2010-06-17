@@ -43,8 +43,8 @@
 
 #include "compression.h"
 
-#include "modules/pcm.h"
-#include "modules/g711.h"
+#include "modules/pcm_m.h"
+#include "modules/g711_m.h"
 #include "modules/ima.h"
 #include "modules/msadpcm.h"
 

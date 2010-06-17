@@ -12,7 +12,7 @@
 
 #define isnan _isnan
 //#define vsnprintf _vsnprintf
-//#define snprintf _snprintf
+#define snprintf _snprintf
 
 typedef long           ssize_t;
 typedef char           int8_t;
