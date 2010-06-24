@@ -41,6 +41,15 @@
 #define _GLFW_WNDCLASSNAME "GLFW27"
 
 
+
+//========================================================================
+// Updates cursor's state
+//========================================================================
+static void UpdateCursor()
+{
+  SetCursor(_glfwWin.cursor);
+}
+
 //========================================================================
 // Enable/disable minimize/restore animations
 //========================================================================
@@ -639,6 +648,18 @@ static LRESULT CALLBACK windowProc( HWND hWnd, UINT uMsg,
 
     switch( uMsg )
     {
+        // Set cursor event
+        case WM_SETCURSOR :
+        {
+            // The mouse has moved, if the cursor is in our window we must refresh the cursor
+            if (LOWORD(lParam) == HTCLIENT)
+            {
+                UpdateCursor();
+            }
+
+            break;
+        }
+
         // Window activate message? (iconification?)
         case WM_ACTIVATE:
         {
@@ -666,13 +687,14 @@ static LRESULT CALLBACK windowProc( HWND hWnd, UINT uMsg,
                     ChangeDisplaySettings( NULL, CDS_FULLSCREEN );
                 }
 
-                // Unlock mouse if locked
-                if( !_glfwWin.oldMouseLockValid )
-                {
-                    _glfwWin.oldMouseLock = _glfwWin.mouseLock;
-                    _glfwWin.oldMouseLockValid = GL_TRUE;
-                    glfwEnable( GLFW_MOUSE_CURSOR );
-                }
+                //! ORX TODO: Support mouse locking separately
+                //// Unlock mouse if locked
+                //if( !_glfwWin.oldMouseLockValid )
+                //{
+                //    _glfwWin.oldMouseLock = _glfwWin.mouseLock;
+                //    _glfwWin.oldMouseLockValid = GL_TRUE;
+                //    glfwEnable( GLFW_MOUSE_CURSOR );
+                //}
             }
             else if( _glfwWin.active || !iconified )
             {
@@ -696,12 +718,13 @@ static LRESULT CALLBACK windowProc( HWND hWnd, UINT uMsg,
                     }
                 }
 
-                // Lock mouse, if necessary
-                if( _glfwWin.oldMouseLockValid && _glfwWin.oldMouseLock )
-                {
-                    glfwDisable( GLFW_MOUSE_CURSOR );
-                }
-                _glfwWin.oldMouseLockValid = GL_FALSE;
+                //! ORX TODO: Support mouse locking separately
+                //// Lock mouse, if necessary
+                //if( _glfwWin.oldMouseLockValid && _glfwWin.oldMouseLock )
+                //{
+                //    glfwDisable( GLFW_MOUSE_CURSOR );
+                //}
+                //_glfwWin.oldMouseLockValid = GL_FALSE;
             }
 
             _glfwWin.iconified = iconified;
@@ -1043,7 +1066,7 @@ static ATOM registerWindowClass( void )
     wc.cbClsExtra    = 0;                             // No extra class data
     wc.cbWndExtra    = 0;                             // No extra window data
     wc.hInstance     = _glfwLibrary.instance;         // Set instance
-    wc.hCursor       = LoadCursor( NULL, IDC_ARROW ); // Load arrow pointer
+    wc.hCursor       = NULL;                          // Load arrow pointer
     wc.hbrBackground = NULL;                          // No background
     wc.lpszMenuName  = NULL;                          // No menu
     wc.lpszClassName = _GLFW_WNDCLASSNAME;            // Set class name
@@ -1507,13 +1530,14 @@ void _glfwPlatformIconifyWindow( void )
         ChangeDisplaySettings( NULL, CDS_FULLSCREEN );
     }
 
-    // Unlock mouse
-    if( !_glfwWin.oldMouseLockValid )
-    {
-        _glfwWin.oldMouseLock = _glfwWin.mouseLock;
-        _glfwWin.oldMouseLockValid = GL_TRUE;
-        glfwEnable( GLFW_MOUSE_CURSOR );
-    }
+    //! ORX TODO: Support mouse locking separately
+    //// Unlock mouse
+    //if( !_glfwWin.oldMouseLockValid )
+    //{
+    //    _glfwWin.oldMouseLock = _glfwWin.mouseLock;
+    //    _glfwWin.oldMouseLockValid = GL_TRUE;
+    //    glfwEnable( GLFW_MOUSE_CURSOR );
+    //}
 }
 
 
@@ -1541,12 +1565,13 @@ void _glfwPlatformRestoreWindow( void )
     // Window is no longer iconified
     _glfwWin.iconified = GL_FALSE;
 
-    // Lock mouse, if necessary
-    if( _glfwWin.oldMouseLockValid && _glfwWin.oldMouseLock )
-    {
-        glfwDisable( GLFW_MOUSE_CURSOR );
-    }
-    _glfwWin.oldMouseLockValid = GL_FALSE;
+    //! ORX TODO: Support mouse locking separately
+    //// Lock mouse, if necessary
+    //if( _glfwWin.oldMouseLockValid && _glfwWin.oldMouseLock )
+    //{
+    //    glfwDisable( GLFW_MOUSE_CURSOR );
+    //}
+    //_glfwWin.oldMouseLockValid = GL_FALSE;
 }
 
 
@@ -1775,7 +1800,11 @@ void _glfwPlatformHideMouseCursor( void )
 {
     //RECT ClipWindowRect;
 
-    ShowCursor( FALSE );
+    // Deletes cursor
+    _glfwWin.cursor = NULL;
+
+    // Updates cursor's state
+    UpdateCursor();
 
     //! ORX TODO: Support mouse locking separately
     //// Clip cursor to the window
@@ -1801,7 +1830,11 @@ void _glfwPlatformShowMouseCursor( void )
     // Release the cursor from the window
     ClipCursor( NULL );
 
-    ShowCursor( TRUE );
+    // Creates new default cursor
+    _glfwWin.cursor = LoadCursor(NULL, IDC_ARROW);
+
+    // Updates cursor's state
+    UpdateCursor();
 }
 
 

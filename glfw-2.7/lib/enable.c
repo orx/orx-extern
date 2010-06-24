@@ -41,9 +41,9 @@
 
 static void enableMouseCursor( void )
 {
-    int centerPosX, centerPosY;
+    //int centerPosX, centerPosY;
 
-    if( !_glfwWin.opened || !_glfwWin.mouseLock )
+    if( !_glfwWin.opened /*|| !_glfwWin.mouseLock*/ )
     {
         return;
     }
@@ -51,24 +51,24 @@ static void enableMouseCursor( void )
     // Show mouse cursor
     _glfwPlatformShowMouseCursor();
 
-    centerPosX = _glfwWin.width / 2;
-    centerPosY = _glfwWin.height / 2;
-
-    if( centerPosX != _glfwInput.MousePosX || centerPosY != _glfwInput.MousePosY )
-    {
-        _glfwPlatformSetMouseCursorPos( centerPosX, centerPosY );
-
-        _glfwInput.MousePosX = centerPosX;
-        _glfwInput.MousePosY = centerPosY;
-
-        if( _glfwWin.mousePosCallback )
-        {
-            _glfwWin.mousePosCallback( _glfwInput.MousePosX,
-                                       _glfwInput.MousePosY );
-        }
-    }
-
     //! ORX TODO: Support mouse locking separately
+    //centerPosX = _glfwWin.width / 2;
+    //centerPosY = _glfwWin.height / 2;
+
+    //if( centerPosX != _glfwInput.MousePosX || centerPosY != _glfwInput.MousePosY )
+    //{
+    //    _glfwPlatformSetMouseCursorPos( centerPosX, centerPosY );
+
+    //    _glfwInput.MousePosX = centerPosX;
+    //    _glfwInput.MousePosY = centerPosY;
+
+    //    if( _glfwWin.mousePosCallback )
+    //    {
+    //        _glfwWin.mousePosCallback( _glfwInput.MousePosX,
+    //                                   _glfwInput.MousePosY );
+    //    }
+    //}
+
     // From now on the mouse is unlocked
     //_glfwWin.mouseLock = GL_FALSE;
 }
@@ -87,11 +87,11 @@ static void disableMouseCursor( void )
     // Hide mouse cursor
     _glfwPlatformHideMouseCursor();
 
-    // Move cursor to the middle of the window
-    _glfwPlatformSetMouseCursorPos( _glfwWin.width >> 1,
-                                    _glfwWin.height >> 1 );
-
     //! ORX TODO: Support mouse locking separately
+    //// Move cursor to the middle of the window
+    //_glfwPlatformSetMouseCursorPos( _glfwWin.width >> 1,
+    //                                _glfwWin.height >> 1 );
+
     // From now on the mouse is locked
     //_glfwWin.mouseLock = GL_TRUE;
 }
