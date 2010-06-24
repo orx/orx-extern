@@ -68,8 +68,9 @@ static void enableMouseCursor( void )
         }
     }
 
+    //! ORX TODO: Support mouse locking separately
     // From now on the mouse is unlocked
-    _glfwWin.mouseLock = GL_FALSE;
+    //_glfwWin.mouseLock = GL_FALSE;
 }
 
 //========================================================================
@@ -90,8 +91,9 @@ static void disableMouseCursor( void )
     _glfwPlatformSetMouseCursorPos( _glfwWin.width >> 1,
                                     _glfwWin.height >> 1 );
 
+    //! ORX TODO: Support mouse locking separately
     // From now on the mouse is locked
-    _glfwWin.mouseLock = GL_TRUE;
+    //_glfwWin.mouseLock = GL_TRUE;
 }
 
 

@@ -1266,7 +1266,8 @@ void _glfwPlatformWaitEvents( void )
 void _glfwPlatformHideMouseCursor( void )
 {
     CGDisplayHideCursor( kCGDirectMainDisplay );
-    CGAssociateMouseAndMouseCursorPosition( false );
+    //! ORX TODO: Support mouse locking separately
+    //CGAssociateMouseAndMouseCursorPosition( false );
 }
 
 //========================================================================

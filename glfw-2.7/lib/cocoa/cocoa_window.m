@@ -841,7 +841,8 @@ void _glfwPlatformWaitEvents( void )
 void _glfwPlatformHideMouseCursor( void )
 {
     [NSCursor hide];
-    CGAssociateMouseAndMouseCursorPosition( false );
+    //! ORX TODO: Support mouse locking separately
+    //CGAssociateMouseAndMouseCursorPosition( false );
 }
 
 //========================================================================

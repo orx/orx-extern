@@ -1773,18 +1773,19 @@ void _glfwPlatformWaitEvents( void )
 
 void _glfwPlatformHideMouseCursor( void )
 {
-    RECT ClipWindowRect;
+    //RECT ClipWindowRect;
 
     ShowCursor( FALSE );
 
-    // Clip cursor to the window
-    if( GetWindowRect( _glfwWin.window, &ClipWindowRect ) )
-    {
-        ClipCursor( &ClipWindowRect );
-    }
+    //! ORX TODO: Support mouse locking separately
+    //// Clip cursor to the window
+    //if( GetWindowRect( _glfwWin.window, &ClipWindowRect ) )
+    //{
+    //    ClipCursor( &ClipWindowRect );
+    //}
 
-    // Capture cursor to user window
-    SetCapture( _glfwWin.window );
+    //// Capture cursor to user window
+    //SetCapture( _glfwWin.window );
 }
 
 

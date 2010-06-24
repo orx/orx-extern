@@ -1918,8 +1918,10 @@ void _glfwPlatformHideMouseCursor( void )
         _glfwWin.pointerHidden = GL_TRUE;
     }
 
+    //! ORX TODO: Support mouse locking separately
     // Grab cursor to user window
-    if( !_glfwWin.pointerGrabbed )
+    //if( !_glfwWin.pointerGrabbed )
+    if( _glfwWin.fullscreen )
     {
         if( XGrabPointer( _glfwLibrary.display, _glfwWin.window, True,
                           ButtonPressMask | ButtonReleaseMask |
