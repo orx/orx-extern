@@ -212,6 +212,8 @@ int _glfwPlatformInit( void )
 
     initThreads();
 
+    _glfwInitJoysticks();
+
     _glfwPlatformSetTime( 0.0 );
 
     _glfwLibrary.DesktopMode =

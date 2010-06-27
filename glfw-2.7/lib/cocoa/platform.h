@@ -42,7 +42,7 @@ typedef void *id;
 #endif
 
 #include <pthread.h>
-
+#include <IOKit/hid/IOHIDManager.h>
 #include "../../include/GL/glfw.h"
 
 
@@ -243,11 +243,35 @@ GLFWGLOBAL struct {
     } \
 }
 
+//------------------------------------------------------------------------
+// Joystick information & state
+//------------------------------------------------------------------------
+GLFWGLOBAL struct {
+    int             Present;
+    int             NumAxes;
+    int             NumButtons;
+    IOHIDElementRef *Axis;
+    IOHIDElementRef *Button;
+    IOHIDDeviceRef device;
+} _glfwJoy[ GLFW_JOYSTICK_LAST + 1 ];
+
+
 // Thread list management
 #define ENTER_THREAD_CRITICAL_SECTION \
 pthread_mutex_lock( &_glfwThrd.CriticalSection );
 #define LEAVE_THREAD_CRITICAL_SECTION \
 pthread_mutex_unlock( &_glfwThrd.CriticalSection );
 
+//========================================================================
+// Prototypes for platform specific internal functions
+//========================================================================
+
+// Joystick input
+void _glfwInitJoysticks( void );
+void _glfwTerminateJoysticks( void );
+
+
+
 
 #endif // _platform_h_
+
