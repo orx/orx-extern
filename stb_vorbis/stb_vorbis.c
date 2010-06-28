@@ -914,7 +914,7 @@ static void crc32_init(void)
    uint32 s;
    for(i=0; i < 256; i++) {
       for (s=i<<24, j=0; j < 8; ++j)
-         s = (s << 1) ^ (s >= (1<<31) ? CRC32_POLY : 0);
+         s = (s << 1) ^ (s >= (uint32)(1<<31) ? CRC32_POLY : 0);
       crc_table[i] = s;
    }
 }
@@ -948,15 +948,15 @@ static int ilog(int32 n)
    static signed char log2_4[16] = { 0,1,2,2,3,3,3,3,4,4,4,4,4,4,4,4 };
 
    // 2 compares if n < 16, 3 compares otherwise (4 if signed or n > 1<<29)
-   if (n < (1U << 14))
-        if (n < (1U <<  4))        return     0 + log2_4[n      ];
-        else if (n < (1U <<  9))      return  5 + log2_4[n >>  5];
+   if (n < (1 << 14))
+        if (n < (1 <<  4))            return  0 + log2_4[n      ];
+        else if (n < (1 <<  9))       return  5 + log2_4[n >>  5];
              else                     return 10 + log2_4[n >> 10];
-   else if (n < (1U << 24))
-             if (n < (1U << 19))      return 15 + log2_4[n >> 15];
+   else if (n < (1 << 24))
+             if (n < (1 << 19))       return 15 + log2_4[n >> 15];
              else                     return 20 + log2_4[n >> 20];
-        else if (n < (1U << 29))      return 25 + log2_4[n >> 25];
-             else if (n < (1U << 31)) return 30 + log2_4[n >> 30];
+        else if (n < (1 << 29))       return 25 + log2_4[n >> 25];
+             else if (n < (1 << 31))  return 30 + log2_4[n >> 30];
                   else                return 0; // signed n returns 0
 }
 
@@ -1374,7 +1374,7 @@ static int start_page_no_capturepattern(vorb *f)
       return error(f, VORBIS_unexpected_eof);
    // assume we _don't_ know any the sample position of any segments
    f->end_seg_with_known_loc = -2;
-   if (loc0 != ~0 || loc1 != ~0) {
+   if (loc0 != ~0U || loc1 != ~0U) {
       // determine which packet is the last one that will complete
       for (i=f->segment_count-1; i >= 0; --i)
          if (f->segments[i] < 255)
@@ -2098,7 +2098,6 @@ static void decode_residue(vorb *f, float *residue_buffers[], int ch, int n, int
          memset(residue_buffers[i], 0, sizeof(float) * n);
 
    if (rtype == 2 && ch != 1) {
-      int len = ch * n;
       for (j=0; j < ch; ++j)
          if (!do_not_decode[j])
             break;
@@ -2352,7 +2351,7 @@ void dct_iv_slow(float *buffer, int n)
    float mcos[16384];
    float x[2048];
    int i,j;
-   int n2 = n >> 1, nmask = (n << 3) - 1;
+   int nmask = (n << 3) - 1;
    memcpy(x, buffer, sizeof(*x) * n);
    for (i=0; i < 8*n; ++i)
       mcos[i] = (float) cos(M_PI / 4 * i / n);
@@ -2604,7 +2603,6 @@ static __forceinline void iter_54(float *z)
 
 static void imdct_step3_inner_s_loop_ld654(int n, float *e, int i_off, float *A, int base_n)
 {
-   int k_off = -8;
    int a_off = base_n >> 3;
    float A2 = A[0+a_off];
    float *z = e + i_off;
@@ -2650,7 +2648,7 @@ static void imdct_step3_inner_s_loop_ld654(int n, float *e, int i_off, float *A,
 static void inverse_mdct(float *buffer, int n, vorb *f, int blocktype)
 {
    int n2 = n >> 1, n4 = n >> 2, n8 = n >> 3, l;
-   int n3_4 = n - n4, ld;
+   int ld;
    // @OPTIMIZE: reduce register pressure by using fewer variables?
    int save_point = temp_alloc_save(f);
    float *buf2 = (float *) temp_alloc(f, n2 * sizeof(*buf2));
@@ -4294,7 +4292,7 @@ static int vorbis_search_for_page_pushdata(vorb *f, uint8 *data, int data_len)
             f->next_seg = -1;       // start a new page
             f->current_loc = f->scan[i].sample_loc; // set the current sample location
                                     // to the amount we'd have decoded had we decoded this page
-            f->current_loc_valid = f->current_loc != ~0;
+            f->current_loc_valid = f->current_loc != ~0U;
             return data_len;
          }
          // delete entry
@@ -5097,7 +5095,7 @@ static void compute_samples(int mask, short *output, int num_c, float **data, in
    }
 }
 
-static int channel_selector[3][2] = { {0}, {PLAYBACK_MONO}, {PLAYBACK_LEFT, PLAYBACK_RIGHT} };
+//static int channel_selector[3][2] = { {0}, {PLAYBACK_MONO}, {PLAYBACK_LEFT, PLAYBACK_RIGHT} };
 static void compute_stereo_samples(short *output, int num_c, float **data, int d_offset, int len)
 {
    #define BUFFER_SIZE  32
