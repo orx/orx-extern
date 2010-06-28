@@ -239,39 +239,47 @@ resampler_t DefaultResampler;
 
 ///////////////////////////////////////////////////////
 // ALC Related helper functions
-#ifdef _WIN32
 static void alc_init(void);
 static void alc_deinit(void);
-
-BOOL APIENTRY DllMain(HANDLE hModule,DWORD ul_reason_for_call,LPVOID lpReserved)
-{
-    (void)lpReserved;
-
-    // Perform actions based on the reason for calling.
-    switch(ul_reason_for_call)
-    {
-        case DLL_PROCESS_ATTACH:
-            DisableThreadLibraryCalls(hModule);
-            alc_init();
-            break;
-
-        case DLL_PROCESS_DETACH:
-            alc_deinit();
-            break;
-    }
-    return TRUE;
-}
-#else
-#ifdef HAVE_GCC_DESTRUCTOR
-static void alc_init(void) __attribute__((constructor));
-static void alc_deinit(void) __attribute__((destructor));
-#endif
-#endif
+static int si_init_counter = 0;
+//#ifdef _WIN32
+//static void alc_init(void);
+//static void alc_deinit(void);
+//
+//BOOL APIENTRY DllMain(HANDLE hModule,DWORD ul_reason_for_call,LPVOID lpReserved)
+//{
+//    (void)lpReserved;
+//
+//    // Perform actions based on the reason for calling.
+//    switch(ul_reason_for_call)
+//    {
+//        case DLL_PROCESS_ATTACH:
+//            DisableThreadLibraryCalls(hModule);
+//            alc_init();
+//            break;
+//
+//        case DLL_PROCESS_DETACH:
+//            alc_deinit();
+//            break;
+//    }
+//    return TRUE;
+//}
+//#else
+//#ifdef HAVE_GCC_DESTRUCTOR
+//static void alc_init(void) __attribute__((constructor));
+//static void alc_deinit(void) __attribute__((destructor));
+//#endif
+//#endif
 
 static void alc_init(void)
 {
     int i;
     const char *devs, *str;
+
+    if(si_init_counter)
+    {
+        return;
+    }
 
     InitializeCriticalSection(&g_csMutex);
     ALTHUNK_INIT();
@@ -376,6 +384,13 @@ static void alc_init(void)
 static void alc_deinit(void)
 {
     int i;
+
+    si_init_counter--;
+
+    if(si_init_counter)
+    {
+        return;
+    }
 
     ReleaseALC();
 
@@ -1681,6 +1696,8 @@ ALC_API ALCdevice* ALC_APIENTRY alcOpenDevice(const ALCchar *deviceName)
     ALCdevice *device;
     ALint i;
 
+    alc_init();
+
     if(deviceName && !deviceName[0])
         deviceName = NULL;
 
@@ -1772,6 +1789,8 @@ ALC_API ALCdevice* ALC_APIENTRY alcOpenDevice(const ALCchar *deviceName)
         device = NULL;
     }
 
+    si_init_counter++;
+
     return device;
 }
 
@@ -1853,6 +1872,8 @@ ALC_API ALCboolean ALC_APIENTRY alcCloseDevice(ALCdevice *pDevice)
     //Release device structure
     memset(pDevice, 0, sizeof(ALCdevice));
     free(pDevice);
+
+    alc_deinit();
 
     return ALC_TRUE;
 }
