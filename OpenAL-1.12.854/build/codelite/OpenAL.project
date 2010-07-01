@@ -27,6 +27,7 @@
     <File Name="../../Alc/bs2b.c"/>
     <File Name="../../Alc/wave.c"/>
     <File Name="../../Alc/winmm.c"/>
+    <File Name="../../Alc/dsound.c"/>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>
