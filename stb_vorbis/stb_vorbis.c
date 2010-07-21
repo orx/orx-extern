@@ -1472,8 +1472,10 @@ static int next_segment(vorb *f)
 static int get8_packet_raw(vorb *f)
 {
    if (!f->bytes_in_seg)
+   {
       if (f->last_seg) return EOP;
       else if (!next_segment(f)) return EOP;
+   }
    assert(f->bytes_in_seg > 0);
    --f->bytes_in_seg;
    ++f->packet_bytes;
@@ -2362,7 +2364,7 @@ void dct_iv_slow(float *buffer, int n)
          //acc += x[j] * cos(M_PI / n * (i + 0.5) * (j + 0.5));
       buffer[i] = acc;
    }
-   free(x);
+   //free(x);
 }
 
 void inverse_mdct_slow(float *buffer, int n, vorb *f, int blocktype)
@@ -4476,10 +4478,12 @@ static uint32 vorbis_find_page(stb_vorbis *f, uint32 *end, uint32 *last)
                if (end)
                   *end = stb_vorbis_get_file_offset(f);
                if (last)
+			   {
                   if (header[5] & 0x04)
                      *last = 1;
                   else
                      *last = 0;
+			   }
                set_file_offset(f, retry_loc-1);
                return 1;
             }
