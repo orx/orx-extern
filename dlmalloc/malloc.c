@@ -1279,6 +1279,8 @@ int mspace_mallopt(int, int);
 
 #ifdef WIN32
 #pragma warning( disable : 4146 ) /* no "unsigned" warnings */
+#else
+#include <time.h>        /* for magic initialization */
 #endif /* WIN32 */
 
 #include <stdio.h>       /* for printing in malloc_stats */
