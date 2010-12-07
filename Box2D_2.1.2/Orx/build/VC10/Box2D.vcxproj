@@ -48,7 +48,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling>
@@ -69,7 +69,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>
       </ExceptionHandling>
@@ -89,24 +89,19 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Collision\b2BroadPhase.cpp" />
     <ClCompile Include="..\..\..\Source\Collision\b2CollideCircle.cpp" />
-    <ClCompile Include="..\..\..\Source\Collision\b2CollideEdge.cpp" />
-    <ClCompile Include="..\..\..\Source\Collision\b2CollidePoly.cpp" />
+    <ClCompile Include="..\..\..\Source\Collision\b2CollidePolygon.cpp" />
     <ClCompile Include="..\..\..\Source\Collision\b2Collision.cpp" />
     <ClCompile Include="..\..\..\Source\Collision\b2Distance.cpp" />
     <ClCompile Include="..\..\..\Source\Collision\b2DynamicTree.cpp" />
-    <ClCompile Include="..\..\..\Source\Collision\b2PairManager.cpp" />
     <ClCompile Include="..\..\..\Source\Collision\b2TimeOfImpact.cpp" />
     <ClCompile Include="..\..\..\Source\Collision\Shapes\b2CircleShape.cpp" />
-    <ClCompile Include="..\..\..\Source\Collision\Shapes\b2EdgeShape.cpp" />
     <ClCompile Include="..\..\..\Source\Collision\Shapes\b2PolygonShape.cpp" />
-    <ClCompile Include="..\..\..\Source\Collision\Shapes\b2Shape.cpp" />
     <ClCompile Include="..\..\..\Source\Common\b2BlockAllocator.cpp" />
     <ClCompile Include="..\..\..\Source\Common\b2Math.cpp" />
     <ClCompile Include="..\..\..\Source\Common\b2Settings.cpp" />
     <ClCompile Include="..\..\..\Source\Common\b2StackAllocator.cpp" />
     <ClCompile Include="..\..\..\Source\Dynamics\b2Body.cpp" />
     <ClCompile Include="..\..\..\Source\Dynamics\b2ContactManager.cpp" />
-    <ClCompile Include="..\..\..\Source\Dynamics\b2EdgeChain.cpp" />
     <ClCompile Include="..\..\..\Source\Dynamics\b2Fixture.cpp" />
     <ClCompile Include="..\..\..\Source\Dynamics\b2Island.cpp" />
     <ClCompile Include="..\..\..\Source\Dynamics\b2World.cpp" />
@@ -114,12 +109,11 @@
     <ClCompile Include="..\..\..\Source\Dynamics\Contacts\b2CircleContact.cpp" />
     <ClCompile Include="..\..\..\Source\Dynamics\Contacts\b2Contact.cpp" />
     <ClCompile Include="..\..\..\Source\Dynamics\Contacts\b2ContactSolver.cpp" />
-    <ClCompile Include="..\..\..\Source\Dynamics\Contacts\b2EdgeAndCircleContact.cpp" />
-    <ClCompile Include="..\..\..\Source\Dynamics\Contacts\b2PolyAndCircleContact.cpp" />
-    <ClCompile Include="..\..\..\Source\Dynamics\Contacts\b2PolyAndEdgeContact.cpp" />
-    <ClCompile Include="..\..\..\Source\Dynamics\Contacts\b2PolyContact.cpp" />
+    <ClCompile Include="..\..\..\Source\Dynamics\Contacts\b2PolygonAndCircleContact.cpp" />
+    <ClCompile Include="..\..\..\Source\Dynamics\Contacts\b2PolygonContact.cpp" />
+    <ClCompile Include="..\..\..\Source\Dynamics\Contacts\b2TOISolver.cpp" />
     <ClCompile Include="..\..\..\Source\Dynamics\Joints\b2DistanceJoint.cpp" />
-    <ClCompile Include="..\..\..\Source\Dynamics\Joints\b2FixedJoint.cpp" />
+    <ClCompile Include="..\..\..\Source\Dynamics\Joints\b2FrictionJoint.cpp" />
     <ClCompile Include="..\..\..\Source\Dynamics\Joints\b2GearJoint.cpp" />
     <ClCompile Include="..\..\..\Source\Dynamics\Joints\b2Joint.cpp" />
     <ClCompile Include="..\..\..\Source\Dynamics\Joints\b2LineJoint.cpp" />
@@ -127,22 +121,15 @@
     <ClCompile Include="..\..\..\Source\Dynamics\Joints\b2PrismaticJoint.cpp" />
     <ClCompile Include="..\..\..\Source\Dynamics\Joints\b2PulleyJoint.cpp" />
     <ClCompile Include="..\..\..\Source\Dynamics\Joints\b2RevoluteJoint.cpp" />
-    <ClCompile Include="..\..\..\Source\Dynamics\Controllers\b2BuoyancyController.cpp" />
-    <ClCompile Include="..\..\..\Source\Dynamics\Controllers\b2ConstantAccelController.cpp" />
-    <ClCompile Include="..\..\..\Source\Dynamics\Controllers\b2ConstantForceController.cpp" />
-    <ClCompile Include="..\..\..\Source\Dynamics\Controllers\b2Controller.cpp" />
-    <ClCompile Include="..\..\..\Source\Dynamics\Controllers\b2GravityController.cpp" />
-    <ClCompile Include="..\..\..\Source\Dynamics\Controllers\b2TensorDampingController.cpp" />
+    <ClCompile Include="..\..\..\Source\Dynamics\Joints\b2WeldJoint.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Source\Collision\b2BroadPhase.h" />
     <ClInclude Include="..\..\..\Source\Collision\b2Collision.h" />
     <ClInclude Include="..\..\..\Source\Collision\b2Distance.h" />
     <ClInclude Include="..\..\..\Source\Collision\b2DynamicTree.h" />
-    <ClInclude Include="..\..\..\Source\Collision\b2PairManager.h" />
     <ClInclude Include="..\..\..\Source\Collision\b2TimeOfImpact.h" />
     <ClInclude Include="..\..\..\Source\Collision\Shapes\b2CircleShape.h" />
-    <ClInclude Include="..\..\..\Source\Collision\Shapes\b2EdgeShape.h" />
     <ClInclude Include="..\..\..\Source\Collision\Shapes\b2PolygonShape.h" />
     <ClInclude Include="..\..\..\Source\Collision\Shapes\b2Shape.h" />
     <ClInclude Include="..\..\..\Source\Common\b2BlockAllocator.h" />
@@ -151,21 +138,19 @@
     <ClInclude Include="..\..\..\Source\Common\b2StackAllocator.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\b2Body.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\b2ContactManager.h" />
-    <ClInclude Include="..\..\..\Source\Dynamics\b2EdgeChain.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\b2Fixture.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\b2Island.h" />
+    <ClInclude Include="..\..\..\Source\Dynamics\b2TimeStep.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\b2World.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\b2WorldCallbacks.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\Contacts\b2CircleContact.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\Contacts\b2Contact.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\Contacts\b2ContactSolver.h" />
-    <ClInclude Include="..\..\..\Source\Dynamics\Contacts\b2EdgeAndCircleContact.h" />
-    <ClInclude Include="..\..\..\Source\Dynamics\Contacts\b2NullContact.h" />
-    <ClInclude Include="..\..\..\Source\Dynamics\Contacts\b2PolyAndCircleContact.h" />
-    <ClInclude Include="..\..\..\Source\Dynamics\Contacts\b2PolyAndEdgeContact.h" />
-    <ClInclude Include="..\..\..\Source\Dynamics\Contacts\b2PolyContact.h" />
+    <ClInclude Include="..\..\..\Source\Dynamics\Contacts\b2PolygonAndCircleContact.h" />
+    <ClInclude Include="..\..\..\Source\Dynamics\Contacts\b2PolygonContact.h" />
+    <ClInclude Include="..\..\..\Source\Dynamics\Contacts\b2TOISolver.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\Joints\b2DistanceJoint.h" />
-    <ClInclude Include="..\..\..\Source\Dynamics\Joints\b2FixedJoint.h" />
+    <ClInclude Include="..\..\..\Source\Dynamics\Joints\b2FrictionJoint.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\Joints\b2GearJoint.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\Joints\b2Joint.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\Joints\b2LineJoint.h" />
@@ -173,12 +158,7 @@
     <ClInclude Include="..\..\..\Source\Dynamics\Joints\b2PrismaticJoint.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\Joints\b2PulleyJoint.h" />
     <ClInclude Include="..\..\..\Source\Dynamics\Joints\b2RevoluteJoint.h" />
-    <ClInclude Include="..\..\..\Source\Dynamics\Controllers\b2BuoyancyController.h" />
-    <ClInclude Include="..\..\..\Source\Dynamics\Controllers\b2ConstantAccelController.h" />
-    <ClInclude Include="..\..\..\Source\Dynamics\Controllers\b2ConstantForceController.h" />
-    <ClInclude Include="..\..\..\Source\Dynamics\Controllers\b2Controller.h" />
-    <ClInclude Include="..\..\..\Source\Dynamics\Controllers\b2GravityController.h" />
-    <ClInclude Include="..\..\..\Source\Dynamics\Controllers\b2TensorDampingController.h" />
+    <ClInclude Include="..\..\..\Source\Dynamics\Joints\b2WeldJoint.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
