@@ -414,6 +414,10 @@ private:
 		e_fixedRotationFlag	= 0x0010,
 		e_activeFlag		= 0x0020,
 		e_toiFlag			= 0x0040,
+    //! Orx addition
+    e_canSlide          = 0x8000,
+    e_customGravityFlag = 0x4000
+    //! End of Orx addition
 	};
 
 	b2Body(const b2BodyDef* bd, b2World* world);
