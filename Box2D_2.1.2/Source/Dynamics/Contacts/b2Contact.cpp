@@ -156,48 +156,58 @@ void b2Contact::Update(b2ContactListener* listener)
 	const b2Transform& xfA = bodyA->GetTransform();
 	const b2Transform& xfB = bodyB->GetTransform();
 
-	// Is this contact a sensor?
-	if (sensor)
-	{
-		const b2Shape* shapeA = m_fixtureA->GetShape();
-		const b2Shape* shapeB = m_fixtureB->GetShape();
-		touching = b2TestOverlap(shapeA, shapeB, xfA, xfB);
+  //! Orx modification
+	//// Is this contact a sensor?
+	//if (sensor)
+	//{
+	//	const b2Shape* shapeA = m_fixtureA->GetShape();
+	//	const b2Shape* shapeB = m_fixtureB->GetShape();
+	//	touching = b2TestOverlap(shapeA, shapeB, xfA, xfB);
 
-		// Sensors don't generate manifolds.
-		m_manifold.pointCount = 0;
-	}
-	else
+	//	// Sensors don't generate manifolds.
+	//	m_manifold.pointCount = 0;
+	//}
+	//else
+  //! End of Orx Modification
 	{
 		Evaluate(&m_manifold, xfA, xfB);
 		touching = m_manifold.pointCount > 0;
 
-		// Match old contact ids to new contact ids and copy the
-		// stored impulses to warm start the solver.
-		for (int32 i = 0; i < m_manifold.pointCount; ++i)
-		{
-			b2ManifoldPoint* mp2 = m_manifold.points + i;
-			mp2->normalImpulse = 0.0f;
-			mp2->tangentImpulse = 0.0f;
-			b2ContactID id2 = mp2->id;
+    //! Orx Modification
+    if(!sensor)
+    {
+	  //! End of Orx Modification
 
-			for (int32 j = 0; j < oldManifold.pointCount; ++j)
-			{
-				b2ManifoldPoint* mp1 = oldManifold.points + j;
+	    // Match old contact ids to new contact ids and copy the
+		  // stored impulses to warm start the solver.
+		  for (int32 i = 0; i < m_manifold.pointCount; ++i)
+		  {
+			  b2ManifoldPoint* mp2 = m_manifold.points + i;
+			  mp2->normalImpulse = 0.0f;
+			  mp2->tangentImpulse = 0.0f;
+			  b2ContactID id2 = mp2->id;
 
-				if (mp1->id.key == id2.key)
-				{
-					mp2->normalImpulse = mp1->normalImpulse;
-					mp2->tangentImpulse = mp1->tangentImpulse;
-					break;
-				}
-			}
-		}
+			  for (int32 j = 0; j < oldManifold.pointCount; ++j)
+			  {
+				  b2ManifoldPoint* mp1 = oldManifold.points + j;
 
-		if (touching != wasTouching)
-		{
-			bodyA->SetAwake(true);
-			bodyB->SetAwake(true);
-		}
+				  if (mp1->id.key == id2.key)
+				  {
+					  mp2->normalImpulse = mp1->normalImpulse;
+					  mp2->tangentImpulse = mp1->tangentImpulse;
+					  break;
+				  }
+			  }
+		  }
+
+		  if (touching != wasTouching)
+		  {
+			  bodyA->SetAwake(true);
+			  bodyB->SetAwake(true);
+		  }
+    //! Orx Modification
+    }
+    //! End of Orx Modification
 	}
 
 	if (touching)
