@@ -14,10 +14,10 @@
     <WorkspaceConfiguration Name="Linux Release" Selected="no">
       <Project Name="Box2D" ConfigName="Linux Release"/>
     </WorkspaceConfiguration>
-    <WorkspaceConfiguration Name="Win32 Debug" Selected="no">
+    <WorkspaceConfiguration Name="Win32 Debug" Selected="yes">
       <Project Name="Box2D" ConfigName="Win32 Debug"/>
     </WorkspaceConfiguration>
-    <WorkspaceConfiguration Name="Win32 Release" Selected="yes">
+    <WorkspaceConfiguration Name="Win32 Release" Selected="no">
       <Project Name="Box2D" ConfigName="Win32 Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
