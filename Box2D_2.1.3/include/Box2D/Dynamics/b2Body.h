@@ -191,7 +191,7 @@ public:
 
 	/// Get the linear velocity of the center of mass.
 	/// @return the linear velocity of the center of mass.
-	b2Vec2 GetLinearVelocity() const;
+	const b2Vec2& GetLinearVelocity() const;
 
 	/// Set the angular velocity.
 	/// @param omega the new angular velocity in radians/second.
@@ -522,7 +522,7 @@ inline void b2Body::SetLinearVelocity(const b2Vec2& v)
 	m_linearVelocity = v;
 }
 
-inline b2Vec2 b2Body::GetLinearVelocity() const
+inline const b2Vec2& b2Body::GetLinearVelocity() const
 {
 	return m_linearVelocity;
 }

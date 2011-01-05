@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="Box2D"
 	ProjectGUID="{7A2DFC3D-516A-471D-A215-BD40E5E5AD9A}"
 	RootNamespace="Engine"
@@ -48,6 +48,7 @@
 				ExceptionHandling="0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
+				FloatingPointModel="2"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="0"
 				ProgramDataBaseFileName="$(OutDir)\box2dd.pdb"
@@ -115,6 +116,7 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				ExceptionHandling="0"
 				RuntimeLibrary="0"
+				FloatingPointModel="2"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="0"
 				ProgramDataBaseFileName="$(OutDir)\box2d.pdb"
