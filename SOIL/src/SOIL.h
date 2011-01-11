@@ -346,14 +346,14 @@ unsigned int
 	Captures the OpenGL window (RGB) and saves it to disk
 	\return 0 if it failed, otherwise returns 1
 **/
-int
-	SOIL_save_screenshot
-	(
-		const char *filename,
-		int image_type,
-		int x, int y,
-		int width, int height
-	);
+//int
+//	SOIL_save_screenshot
+//	(
+//		const char *filename,
+//		int image_type,
+//		int x, int y,
+//		int width, int height
+//	);
 
 /**
 	Loads an image from disk into an array of unsigned chars.
