@@ -17,10 +17,26 @@
 */
 
 #include <Box2D/Common/b2BlockAllocator.h>
-#include <cstdlib>
+
 #include <climits>
 #include <cstring>
-#include <memory>
+
+//! Orx modification
+
+#ifdef ANDROID
+
+  #include <memory.h>
+  #include <stdlib.h>
+
+#else // ANDROID
+
+  #include <memory>
+  #include <cstdlib>
+
+#endif // ANDROID
+
+//! End of Orx modification
+
 using namespace std;
 
 int32 b2BlockAllocator::s_blockSizes[b2_blockSizes] = 

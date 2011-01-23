@@ -17,7 +17,20 @@
 */
 
 #include <Box2D/Common/b2Settings.h>
-#include <cstdlib>
+
+//! Orx modification
+
+#ifdef ANDROID
+
+  #include <stdlib.h>
+
+#else // ANDROID
+
+  #include <cstdlib>
+
+#endif // ANDROID
+
+//! End of Orx modification
 
 b2Version b2_version = {2, 2, 0};
 

@@ -24,7 +24,20 @@
 #include <cmath>
 #include <cfloat>
 #include <cstddef>
-#include <limits>
+
+//! Orx modification
+
+#ifdef ANDROID
+
+  #include <limits.h>
+
+#else // ANDROID
+
+  #include <limits>
+
+#endif // ANDROID
+
+//! End of Orx modification
 
 /// This function is used to ensure that a floating point number is
 /// not a NaN or infinity.
@@ -36,7 +49,20 @@ inline bool b2IsValid(float32 x)
 		return false;
 	}
 
+//! Orx modification
+
+#ifdef ANDROID
+
+	float32 infinity = 3.4*10E+38;
+
+#else // ANDROID
+
 	float32 infinity = std::numeric_limits<float32>::infinity();
+
+#endif // ANDROID
+
+//! End of Orx modification
+
 	return -infinity < x && x < infinity;
 }
 

@@ -21,7 +21,20 @@
 
 #include <Box2D/Common/b2Math.h>
 #include <Box2D/Collision/Shapes/b2Shape.h>
-#include <memory>
+
+//! Orx modification
+
+#ifdef ANDROID
+
+  #include <memory.h>
+
+#else // ANDROID
+
+  #include <memory>
+
+#endif // ANDROID
+
+//! End of Orx modification
 
 class b2Fixture;
 class b2Joint;
@@ -67,9 +80,9 @@ struct b2BodyDef
 		type = b2_staticBody;
 		active = true;
 		inertiaScale = 1.0f;
-    //! Orx addition
+    //! Orx modification
     canSlide = true;
-    //! End of Orx addition
+    //! End of Orx modification
 	}
 
 	/// The body type: static, kinematic, or dynamic.
@@ -109,9 +122,9 @@ struct b2BodyDef
 	/// Should this body be prevented from rotating? Useful for characters.
 	bool fixedRotation;
 
-  //! Orx addition
+  //! Orx modification
   bool canSlide;
-  //! End of Orx addition
+  //! End of Orx modification
 
 	/// Is this a fast moving body that should be prevented from tunneling through
 	/// other moving bodies? Note that all bodies are prevented from tunneling through
@@ -344,7 +357,7 @@ public:
 	/// Does this body have fixed rotation?
 	bool IsFixedRotation() const;
 
-  //! Orx addition
+  //! Orx modification
   /// Can slide?
   bool CanSlide() const;
   
@@ -359,7 +372,7 @@ public:
   
 	/// Sets custom gravity
 	void SetCustomGravity(const b2Vec2 *customGravity);
-  //! End of Orx addition
+  //! End of Orx modification
 
 	/// Get the list of all fixtures attached to this body.
 	b2Fixture* GetFixtureList();
@@ -417,10 +430,10 @@ private:
 		e_fixedRotationFlag	= 0x0010,
 		e_activeFlag		= 0x0020,
 		e_toiFlag			= 0x0040,
-    //! Orx addition
+    //! Orx modification
     e_canSlide          = 0x8000,
     e_customGravityFlag = 0x4000
-    //! End of Orx addition
+    //! End of Orx modification
 	};
 
 	b2Body(const b2BodyDef* bd, b2World* world);
@@ -470,9 +483,9 @@ private:
 
 	float32 m_sleepTime;
 
-  //! Orx addition
+  //! Orx modification
   b2Vec2 m_customGravity;
-  //! End of Orx addition
+  //! End of Orx modification
 
 	void* m_userData;
 };
@@ -681,7 +694,7 @@ inline bool b2Body::IsFixedRotation() const
 	return (m_flags & e_fixedRotationFlag) == e_fixedRotationFlag;
 }
 
-//! Orx addition
+//! Orx modification
 inline bool b2Body::CanSlide() const
 {
 	return (m_flags & e_canSlide) == e_canSlide;
@@ -722,7 +735,7 @@ inline void b2Body::SetCustomGravity(const b2Vec2 *customGravity)
     m_flags &= ~e_customGravityFlag;
   }
 }
-//! End of Orx addition
+//! End of Orx modification
 
 inline void b2Body::SetSleepingAllowed(bool flag)
 {

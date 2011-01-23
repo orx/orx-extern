@@ -22,6 +22,16 @@
 #include <Box2D/Dynamics/Contacts/b2Contact.h>
 #include <Box2D/Dynamics/Joints/b2Joint.h>
 
+//! Orx modification
+
+#ifdef ANDROID
+
+#include <new>
+
+#endif // ANDROID
+
+//! End of Orx modification
+
 b2Body::b2Body(const b2BodyDef* bd, b2World* world)
 {
 	b2Assert(bd->position.IsValid());
@@ -42,12 +52,12 @@ b2Body::b2Body(const b2BodyDef* bd, b2World* world)
 	{
 		m_flags |= e_fixedRotationFlag;
 	}
-  //! Orx addition
+  //! Orx modification
   if(bd->canSlide)
   {
 		m_flags |= e_canSlide;
   }
-  //! End of Orx addition
+  //! End of Orx modification
 	if (bd->allowSleep)
 	{
 		m_flags |= e_autoSleepFlag;

@@ -225,7 +225,7 @@ void b2ContactSolver::WarmStart()
 			bodyA->m_angularVelocity -= invIA * b2Cross(ccp->rA, P);
 			bodyB->m_angularVelocity += invIB * b2Cross(ccp->rB, P);
 
-      //! Orx addition
+      //! Orx modification
       b2Vec2 deltaA, deltaB;
       deltaA = invMassA * P;
       deltaB = invMassB * P;
@@ -246,7 +246,7 @@ void b2ContactSolver::WarmStart()
       {
 			  bodyB->m_linearVelocity += deltaB;
       }
-      //! End of Orx addition
+      //! End of Orx modification
 		}
 	}
 }
@@ -543,7 +543,7 @@ void b2ContactSolver::SolveVelocityConstraints()
 			}
 		}
 
-    //! Orx addition
+    //! Orx modification
     if(!bodyA->CanSlide() && (bodyB->GetType() != b2_dynamicBody) && (normal.y >= 0.707f))
     {
       vA.x = bodyA->m_linearVelocity.x;
@@ -552,7 +552,7 @@ void b2ContactSolver::SolveVelocityConstraints()
     {
       vB.x = bodyB->m_linearVelocity.x;
     }
-    //! End of Orx addition
+    //! End of Orx modification
 
 		bodyA->m_linearVelocity = vA;
 		bodyA->m_angularVelocity = wA;
