@@ -470,6 +470,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Alc\mixer.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Alc\null.c"
 				>
 			</File>

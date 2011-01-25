@@ -202,7 +202,7 @@ static void Mix_##T##_##count##_##sampler(ALsource *Source, ALCdevice *Device,\
     ALfloat (*DryBuffer)[MAXCHANNELS];                                        \
     ALfloat *ClickRemoval, *PendingClicks;                                    \
     ALuint pos, frac;                                                         \
-    ALfloat DrySend[Channels][MAXCHANNELS];                                   \
+    ALfloat DrySend[count][MAXCHANNELS];                                      \
     FILTER *DryFilter;                                                        \
     ALuint BufferIdx;                                                         \
     ALuint increment;                                                         \

@@ -66,6 +66,9 @@
     <ClCompile Include="..\..\Alc\dsound.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Alc\mixer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Alc\wave.c">
       <Filter>Source Files</Filter>
     </ClCompile>

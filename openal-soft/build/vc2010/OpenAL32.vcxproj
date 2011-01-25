@@ -273,6 +273,7 @@
     <ClCompile Include="..\..\Alc\ALu.c" />
     <ClCompile Include="..\..\Alc\bs2b.c" />
     <ClCompile Include="..\..\Alc\dsound.c" />
+    <ClCompile Include="..\..\Alc\mixer.c" />
     <ClCompile Include="..\..\Alc\wave.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
