@@ -13,8 +13,6 @@
 /* Define if we have the Solaris backend */
 /* #undef HAVE_SOLARIS */
 
-#ifdef __GNUC__
-
 /* Define if we have the DSound backend */
 #define HAVE_DSOUND
 
@@ -27,11 +25,16 @@
 /* Define if we have the PulseAudio backend */
 /* #undef HAVE_PULSEAUDIO */
 
+/* Define if we have the Wave Writer backend */
+#define HAVE_WAVE
+
 /* Define if we have dlfcn.h */
 /* #undef HAVE_DLFCN_H */
 
 /* Define if we have the stat function */
 #define HAVE_STAT
+
+#ifdef __GNUC__
 
 /* Define if we have the powf function */
 #define HAVE_POWF
@@ -70,7 +73,7 @@
 #define SIZEOF_VOIDP 4
 
 /* Define if we have GCC's destructor attribute */
-/* #undef HAVE_GCC_DESTRUCTOR */
+#define HAVE_GCC_DESTRUCTOR
 
 /* Define if we have GCC's format attribute */
 #define HAVE_GCC_FORMAT
@@ -94,24 +97,6 @@
 /* #undef HAVE_PTHREAD_SETSCHEDPARAM */
 
 #else /* __GNUC__ */
-
-/* Define if we have the DSound backend */
-#define HAVE_DSOUND
-
-/* Define if we have the Windows Multimedia backend */
-/* #undef HAVE_WINMM */
-
-/* Define if we have the PortAudio backend */
-/* #undef HAVE_PORTAUDIO */
-
-/* Define if we have the PulseAudio backend */
-/* #undef HAVE_PULSEAUDIO */
-
-/* Define if we have dlfcn.h */
-/* #undef HAVE_DLFCN_H */
-
-/* Define if we have the stat function */
-#define HAVE_STAT
 
 /* Define if we have the powf function */
 /* #undef HAVE_POWF */

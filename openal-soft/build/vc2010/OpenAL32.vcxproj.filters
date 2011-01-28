@@ -72,6 +72,9 @@
     <ClCompile Include="..\..\Alc\wave.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Alc\winmm.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Alc\alcModulator.c">
       <Filter>Source Files</Filter>
     </ClCompile>

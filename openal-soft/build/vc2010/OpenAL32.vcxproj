@@ -275,6 +275,7 @@
     <ClCompile Include="..\..\Alc\dsound.c" />
     <ClCompile Include="..\..\Alc\mixer.c" />
     <ClCompile Include="..\..\Alc\wave.c" />
+    <ClCompile Include="..\..\Alc\winmm.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

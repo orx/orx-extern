@@ -192,17 +192,17 @@ DECL_TEMPLATE(ALubyte, cubic8)
 #undef DECL_TEMPLATE
 
 
-#define DECL_TEMPLATE(T, count, sampler)                                      \
-static void Mix_##T##_##count##_##sampler(ALsource *Source, ALCdevice *Device,\
+#define DECL_TEMPLATE(T, chnct, sampler)                                      \
+static void Mix_##T##_##chnct##_##sampler(ALsource *Source, ALCdevice *Device,\
   const T *data, ALuint *DataPosInt, ALuint *DataPosFrac,                     \
   ALuint OutPos, ALuint SamplesToDo, ALuint BufferSize)                       \
 {                                                                             \
-    const ALuint Channels = count;                                            \
-    const ALfloat scaler = 1.0f/Channels;                                     \
+    const ALuint Channels = chnct;                                            \
+    const ALfloat scaler = 1.0f/chnct;                                        \
     ALfloat (*DryBuffer)[MAXCHANNELS];                                        \
     ALfloat *ClickRemoval, *PendingClicks;                                    \
     ALuint pos, frac;                                                         \
-    ALfloat DrySend[count][MAXCHANNELS];                                      \
+    ALfloat DrySend[chnct][MAXCHANNELS];                                      \
     FILTER *DryFilter;                                                        \
     ALuint BufferIdx;                                                         \
     ALuint increment;                                                         \
@@ -659,13 +659,13 @@ ALvoid MixSource(ALsource *Source, ALCdevice *Device, ALuint SamplesToDo)
                         break;
                     }
 
-                    if(Looping)
+                    if(BufferListIter->prev)
+                        BufferListIter = BufferListIter->prev;
+                    else
                     {
                         while(BufferListIter->next)
                             BufferListIter = BufferListIter->next;
                     }
-                    else
-                        BufferListIter = BufferListIter->prev;
 
                     if(BufferListIter->buffer)
                     {

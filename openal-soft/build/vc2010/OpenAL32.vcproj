@@ -474,6 +474,10 @@
 				RelativePath="..\..\Alc\wave.c"
 				>
 			</File>
+			<File
+				RelativePath="..\..\Alc\winmm.c"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
