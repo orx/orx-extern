@@ -230,7 +230,7 @@ void b2ContactSolver::WarmStart()
       deltaA = invMassA * P;
       deltaB = invMassB * P;
 
-      if(!bodyA->CanSlide() && (bodyB->GetType() != b2_dynamicBody))
+      if(!bodyA->CanSlide() && (bodyB->GetType() != b2_dynamicBody) && (normal.y >= 0.0f))
       {
 			  bodyA->m_linearVelocity.y -= deltaA.y;
       }
@@ -238,7 +238,7 @@ void b2ContactSolver::WarmStart()
       {
 			  bodyA->m_linearVelocity -= deltaA;
       }
-      if(!bodyB->CanSlide() && (bodyA->GetType() != b2_dynamicBody))
+      if(!bodyB->CanSlide() && (bodyA->GetType() != b2_dynamicBody) && (normal.y <= 0.0f))
       {
 			  bodyB->m_linearVelocity.y += deltaB.y;
       }
@@ -544,11 +544,11 @@ void b2ContactSolver::SolveVelocityConstraints()
 		}
 
     //! Orx modification
-    if(!bodyA->CanSlide() && (bodyB->GetType() != b2_dynamicBody))
+    if(!bodyA->CanSlide() && (bodyB->GetType() != b2_dynamicBody) && (normal.y >= 0.0f))
     {
       vA.x = bodyA->m_linearVelocity.x;
     }
-    if(!bodyB->CanSlide() && (bodyA->GetType() != b2_dynamicBody))
+    if(!bodyB->CanSlide() && (bodyA->GetType() != b2_dynamicBody) && (normal.y <= 0.0f))
     {
       vB.x = bodyB->m_linearVelocity.x;
     }
