@@ -4,6 +4,7 @@
 APP_ABI := armeabi armeabi-v7a
 APP_PLATFORM := android-9
 
+APP_MODULES := anbox2d
 #the default is release, debug: debug level will be set.
 # no optim code gen
 

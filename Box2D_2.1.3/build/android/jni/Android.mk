@@ -72,11 +72,11 @@ include $(BUILD_STATIC_LIBRARY)
 
 # second lib, which will depend on and include the first one
 #
-include $(CLEAR_VARS)
+#include $(CLEAR_VARS)
 
-LOCAL_MODULE    := libtwolib-second
-LOCAL_SRC_FILES := second.c
+#LOCAL_MODULE    := libtwolib-second
+#LOCAL_SRC_FILES := second.c
 
-LOCAL_STATIC_LIBRARIES := anbox2d
+#LOCAL_STATIC_LIBRARIES := anbox2d
 
-include $(BUILD_SHARED_LIBRARY)
+#include $(BUILD_SHARED_LIBRARY)
