@@ -4,7 +4,7 @@ SRC_FILES :=
 include $(call all-subdir-makefiles) 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE    := anbox2d
+LOCAL_MODULE    := Box2D
 LOCAL_CFLAGS := -DANDROID
 LOCAL_CFLAGS += -DRELEASE
 LOCAL_CFLAGS += -DCHINESE1
