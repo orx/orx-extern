@@ -13,22 +13,22 @@
 	* everybody at gamedev.net
 */
 
-#define SOIL_CHECK_FOR_GL_ERRORS 0
+//#define SOIL_CHECK_FOR_GL_ERRORS 0
 
-#ifdef WIN32
-	#define WIN32_LEAN_AND_MEAN
-	#include <windows.h>
-	#include <wingdi.h>
-	#include <GL/gl.h>
-#elif defined(__APPLE__) || defined(__APPLE_CC__)
-	/*	I can't test this Apple stuff!	*/
-	#include <OpenGL/gl.h>
-	#include <Carbon/Carbon.h>
-	#define APIENTRY
-#else
-	#include <GL/gl.h>
-	#include <GL/glx.h>
-#endif
+//#ifdef WIN32
+//	#define WIN32_LEAN_AND_MEAN
+//	#include <windows.h>
+//	#include <wingdi.h>
+//	#include <GL/gl.h>
+//#elif defined(__APPLE__) || defined(__APPLE_CC__)
+//	/*	I can't test this Apple stuff!	*/
+//	#include <OpenGL/gl.h>
+//	#include <Carbon/Carbon.h>
+//	#define APIENTRY
+//#else
+//	#include <GL/gl.h>
+//	#include <GL/glx.h>
+//#endif
 
 #include "SOIL.h"
 #include "stb_image_aug.h"
@@ -41,69 +41,69 @@
 /*	error reporting	*/
 char *result_string_pointer = "SOIL initialized";
 
-/*	for loading cube maps	*/
-enum{
-	SOIL_CAPABILITY_UNKNOWN = -1,
-	SOIL_CAPABILITY_NONE = 0,
-	SOIL_CAPABILITY_PRESENT = 1
-};
-static int has_cubemap_capability = SOIL_CAPABILITY_UNKNOWN;
-int query_cubemap_capability( void );
-#define SOIL_TEXTURE_WRAP_R					0x8072
-#define SOIL_CLAMP_TO_EDGE					0x812F
-#define SOIL_NORMAL_MAP						0x8511
-#define SOIL_REFLECTION_MAP					0x8512
-#define SOIL_TEXTURE_CUBE_MAP				0x8513
-#define SOIL_TEXTURE_BINDING_CUBE_MAP		0x8514
-#define SOIL_TEXTURE_CUBE_MAP_POSITIVE_X	0x8515
-#define SOIL_TEXTURE_CUBE_MAP_NEGATIVE_X	0x8516
-#define SOIL_TEXTURE_CUBE_MAP_POSITIVE_Y	0x8517
-#define SOIL_TEXTURE_CUBE_MAP_NEGATIVE_Y	0x8518
-#define SOIL_TEXTURE_CUBE_MAP_POSITIVE_Z	0x8519
-#define SOIL_TEXTURE_CUBE_MAP_NEGATIVE_Z	0x851A
-#define SOIL_PROXY_TEXTURE_CUBE_MAP			0x851B
-#define SOIL_MAX_CUBE_MAP_TEXTURE_SIZE		0x851C
-/*	for non-power-of-two texture	*/
-static int has_NPOT_capability = SOIL_CAPABILITY_UNKNOWN;
-int query_NPOT_capability( void );
-/*	for texture rectangles	*/
-static int has_tex_rectangle_capability = SOIL_CAPABILITY_UNKNOWN;
-int query_tex_rectangle_capability( void );
-#define SOIL_TEXTURE_RECTANGLE_ARB				0x84F5
-#define SOIL_MAX_RECTANGLE_TEXTURE_SIZE_ARB		0x84F8
-/*	for using DXT compression	*/
-static int has_DXT_capability = SOIL_CAPABILITY_UNKNOWN;
-int query_DXT_capability( void );
-#define SOIL_RGB_S3TC_DXT1		0x83F0
-#define SOIL_RGBA_S3TC_DXT1		0x83F1
-#define SOIL_RGBA_S3TC_DXT3		0x83F2
-#define SOIL_RGBA_S3TC_DXT5		0x83F3
-typedef void (APIENTRY * P_SOIL_GLCOMPRESSEDTEXIMAGE2DPROC) (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid * data);
-P_SOIL_GLCOMPRESSEDTEXIMAGE2DPROC soilGlCompressedTexImage2D = NULL;
-unsigned int SOIL_direct_load_DDS(
-		const char *filename,
-		unsigned int reuse_texture_ID,
-		int flags,
-		int loading_as_cubemap );
-unsigned int SOIL_direct_load_DDS_from_memory(
-		const unsigned char *const buffer,
-		int buffer_length,
-		unsigned int reuse_texture_ID,
-		int flags,
-		int loading_as_cubemap );
+///*	for loading cube maps	*/
+//enum{
+//	SOIL_CAPABILITY_UNKNOWN = -1,
+//	SOIL_CAPABILITY_NONE = 0,
+//	SOIL_CAPABILITY_PRESENT = 1
+//};
+//static int has_cubemap_capability = SOIL_CAPABILITY_UNKNOWN;
+//int query_cubemap_capability( void );
+//#define SOIL_TEXTURE_WRAP_R					0x8072
+//#define SOIL_CLAMP_TO_EDGE					0x812F
+//#define SOIL_NORMAL_MAP						0x8511
+//#define SOIL_REFLECTION_MAP					0x8512
+//#define SOIL_TEXTURE_CUBE_MAP				0x8513
+//#define SOIL_TEXTURE_BINDING_CUBE_MAP		0x8514
+//#define SOIL_TEXTURE_CUBE_MAP_POSITIVE_X	0x8515
+//#define SOIL_TEXTURE_CUBE_MAP_NEGATIVE_X	0x8516
+//#define SOIL_TEXTURE_CUBE_MAP_POSITIVE_Y	0x8517
+//#define SOIL_TEXTURE_CUBE_MAP_NEGATIVE_Y	0x8518
+//#define SOIL_TEXTURE_CUBE_MAP_POSITIVE_Z	0x8519
+//#define SOIL_TEXTURE_CUBE_MAP_NEGATIVE_Z	0x851A
+//#define SOIL_PROXY_TEXTURE_CUBE_MAP			0x851B
+//#define SOIL_MAX_CUBE_MAP_TEXTURE_SIZE		0x851C
+///*	for non-power-of-two texture	*/
+//static int has_NPOT_capability = SOIL_CAPABILITY_UNKNOWN;
+//int query_NPOT_capability( void );
+///*	for texture rectangles	*/
+//static int has_tex_rectangle_capability = SOIL_CAPABILITY_UNKNOWN;
+//int query_tex_rectangle_capability( void );
+//#define SOIL_TEXTURE_RECTANGLE_ARB				0x84F5
+//#define SOIL_MAX_RECTANGLE_TEXTURE_SIZE_ARB		0x84F8
+///*	for using DXT compression	*/
+//static int has_DXT_capability = SOIL_CAPABILITY_UNKNOWN;
+//int query_DXT_capability( void );
+//#define SOIL_RGB_S3TC_DXT1		0x83F0
+//#define SOIL_RGBA_S3TC_DXT1		0x83F1
+//#define SOIL_RGBA_S3TC_DXT3		0x83F2
+//#define SOIL_RGBA_S3TC_DXT5		0x83F3
+//typedef void (APIENTRY * P_SOIL_GLCOMPRESSEDTEXIMAGE2DPROC) (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid * data);
+//P_SOIL_GLCOMPRESSEDTEXIMAGE2DPROC soilGlCompressedTexImage2D = NULL;
+//unsigned int SOIL_direct_load_DDS(
+//		const char *filename,
+//		unsigned int reuse_texture_ID,
+//		int flags,
+//		int loading_as_cubemap );
+//unsigned int SOIL_direct_load_DDS_from_memory(
+//		const unsigned char *const buffer,
+//		int buffer_length,
+//		unsigned int reuse_texture_ID,
+//		int flags,
+//		int loading_as_cubemap );
 /*	other functions	*/
-unsigned int
-	SOIL_internal_create_OGL_texture
-	(
-		const unsigned char *const data,
-		int width, int height, int channels,
-		unsigned int reuse_texture_ID,
-		unsigned int flags,
-		unsigned int opengl_texture_type,
-		unsigned int opengl_texture_target,
-		unsigned int texture_check_size_enum
-	);
-
+//unsigned int
+//	SOIL_internal_create_OGL_texture
+//	(
+//		const unsigned char *const data,
+//		int width, int height, int channels,
+//		unsigned int reuse_texture_ID,
+//		unsigned int flags,
+//		unsigned int opengl_texture_type,
+//		unsigned int opengl_texture_target,
+//		unsigned int texture_check_size_enum
+//	);
+//
 /*	and the code magic begins here [8^)	*/
 //unsigned int
 //	SOIL_load_OGL_texture
