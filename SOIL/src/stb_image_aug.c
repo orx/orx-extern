@@ -63,6 +63,8 @@
              on 'test' only check type, not whether we support this variant
 */
 
+#define STBI_NO_WRITE
+
 #include "stb_image_aug.h"
 
 #ifndef STBI_NO_HDR

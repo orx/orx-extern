@@ -31,6 +31,9 @@
 //#endif
 
 #include "SOIL.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+#define STBI_NO_WRITE
 #include "stb_image_aug.h"
 #include "image_helper.h"
 #include "image_DXT.h"
@@ -1483,6 +1486,11 @@ int
 	{
 		return 0;
 	}
+	if( image_type == SOIL_SAVE_TYPE_PNG )
+	{
+    save_result = stbi_write_png( filename,
+				width, height, channels, (const unsigned char *const)data, 0 );
+	} else
 	if( image_type == SOIL_SAVE_TYPE_BMP )
 	{
 		save_result = stbi_write_bmp( filename,

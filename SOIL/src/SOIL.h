@@ -111,12 +111,14 @@ extern "C" {
 	(TGA supports uncompressed RGB / RGBA)
 	(BMP supports uncompressed RGB)
 	(DDS supports DXT1 and DXT5)
+	(PNG supports RGB / RGBA)
 **/
 enum
 {
 	SOIL_SAVE_TYPE_TGA = 0,
 	SOIL_SAVE_TYPE_BMP = 1,
-	SOIL_SAVE_TYPE_DDS = 2
+	SOIL_SAVE_TYPE_DDS = 2,
+  SOIL_SAVE_TYPE_PNG = 3
 };
 
 ///**
