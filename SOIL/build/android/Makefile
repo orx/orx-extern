@@ -26,7 +26,7 @@ armeabi/%.o: %.c
 
 armeabi-v7a/%.o: %.c
 	mkdir -p $(dir $@)
-	$(CC) $(INCLUDES) $(CFLAGS) -march=armv7-a -mfloat-abi=softfp -c $< -o $@
+	$(CC) $(INCLUDES) $(CFLAGS) -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -c $< -o $@
 
 $(armeabi_OUT): $(armeabi_OBJ)
 	$(AR) rcs $(armeabi_OUT) $(armeabi_OBJ)
