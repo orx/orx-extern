@@ -566,7 +566,7 @@ GLFW_BIN_CFLAGS="-I../include $GLFW_BIN_CFLAGS"
 
 if [ "x$CFLAGS" = x ]; then
   if [ "x$use_gcc" = xyes ]; then
-    GLFW_CFLAGS="$GLFW_CFLAGS -O2 -Wall"
+    GLFW_CFLAGS="$GLFW_CFLAGS -O2 -Wall -fPIC"
   else
     GLFW_CFLAGS="$GLFW_CFLAGS -O"
   fi
