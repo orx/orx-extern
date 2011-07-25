@@ -20,5 +20,11 @@
     <WorkspaceConfiguration Name="Win32 Release" Selected="no">
       <Project Name="Box2D" ConfigName="Win32 Release"/>
     </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Linux64 Debug" Selected="no">
+      <Project Name="Box2D" ConfigName="Linux64 Debug"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Linux64 Release" Selected="no">
+      <Project Name="Box2D" ConfigName="Linux64 Release"/>
+    </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>
