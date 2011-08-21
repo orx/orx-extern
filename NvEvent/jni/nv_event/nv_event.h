@@ -22,7 +22,9 @@
 #ifndef _NV_EVENT_H
 #define _NV_EVENT_H
 #include <sys/types.h>
-#include <EGL/egl.h>
+
+typedef int32_t EGLint;
+    
 
 /** @file nv_event.h
 Contains a framework for event loop-based applications.  This library replaces
@@ -494,6 +496,7 @@ bool NVEventStatusIsFocused();
 @return true if the app is between surfaceCreated and surfaceDestroyed callbacks and 
  the surface has non-zero pixel area (not 0x0 pixels)
 */
+
 bool NVEventStatusHasRealSurface();
 
 /** Convenience conditional function to determine if the app is in a fully-focused, visible 

@@ -30,7 +30,6 @@
 #include <pthread.h>
 #include <android/log.h>
 #include <GLES2/gl2.h>
-#include <EGL/egl.h>
 
 #include "../nv_time/nv_time.h"
 #include "../nv_thread/nv_thread.h"
@@ -439,7 +438,7 @@ bool NVEventSwapBuffersEGL()
 	RESET_PROFILING();
     return true;
 }
-    
+
 EGLint NVEventGetErrorEGL()
 {
 	return s_GetErrorEGL.CallInt();
@@ -498,6 +497,7 @@ static jboolean NVEventTouchEvent(JNIEnv*  env, jobject  thiz, jint action, jint
 
 static jboolean NVEventMultiTouchEvent(JNIEnv*  env, jobject  thiz, jint action, 
 									   jint count, jint mx1, jint my1, jint mx2, jint my2)
+
 {
 	{
 		NVEvent ev;
