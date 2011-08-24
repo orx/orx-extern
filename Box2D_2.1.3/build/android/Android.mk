@@ -1,0 +1,7 @@
+LOCAL_PATH := $(call my-dir)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := Box2D
+LOCAL_SRC_FILES := $(TARGET_ARCH_ABI)/lib$(LOCAL_MODULE).so
+LOCAL_STATIC_LIBRARIES := libstdc++
+include $(PREBUILT_SHARED_LIBRARY)

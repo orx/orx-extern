@@ -47,14 +47,13 @@ SRC = \
 armeabi_OBJ = $(addprefix armeabi/,$(SRC:.cpp=.o))
 armeabi-v7a_OBJ = $(addprefix armeabi-v7a/,$(SRC:.cpp=.o))
 	
-armeabi_OUT = armeabi/libBox2D.2.1.3.a
-armeabi-v7a_OUT = armeabi-v7a/libBox2D.2.1.3.a
+armeabi_OUT = armeabi/libBox2D.so
+armeabi-v7a_OUT = armeabi-v7a/libBox2D.so
 	
 INCLUDES = -I../../include
 	
 CXX = arm-linux-androideabi-g++
-AR = arm-linux-androideabi-ar
-CPPFLAGS = -fno-exceptions -fno-rtti -O2
+CPPFLAGS = -fno-exceptions -fno-rtti -O2 -fPIC
 
 all: $(armeabi_OUT) $(armeabi-v7a_OUT)
 	
@@ -67,10 +66,10 @@ armeabi-v7a/%.o: %.cpp
 	$(CXX) $(INCLUDES) $(CPPFLAGS) -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -c $< -o $@
 
 $(armeabi_OUT): $(armeabi_OBJ)
-	$(AR) rcs $(armeabi_OUT) $(armeabi_OBJ)
+	$(CXX) -shared -Wl,-soname,$(armeabi_OUT) -o $(armeabi_OUT) $(armeabi_OBJ)
 
 $(armeabi-v7a_OUT): $(armeabi-v7a_OBJ)
-	$(AR) rcs $(armeabi-v7a_OUT) $(armeabi-v7a_OBJ)
+	$(CXX) -shared -Wl,-soname,$(armeabi-v7a_OUT) -o $(armeabi-v7a_OUT) $(armeabi-v7a_OBJ)
 
 clean:
 	rm -f $(armeabi_OBJ) $(armeabi_OUT) $(armeabi-v7a_OBJ) $(armeabi-v7a_OUT)
