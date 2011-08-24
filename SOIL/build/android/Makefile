@@ -9,14 +9,13 @@ SRC = \
 armeabi_OBJ = $(addprefix armeabi/,$(SRC:.c=.o))
 armeabi-v7a_OBJ = $(addprefix armeabi-v7a/,$(SRC:.c=.o))
 	
-armeabi_OUT = armeabi/libSOIL.a
-armeabi-v7a_OUT = armeabi-v7a/libSOIL.a
+armeabi_OUT = armeabi/libSOIL.so
+armeabi-v7a_OUT = armeabi-v7a/libSOIL.so
 	
 INCLUDES = -I../../include
 	
 CC = arm-linux-androideabi-gcc
-AR = arm-linux-androideabi-ar
-CFLAGS = -O2 -DANDROID
+CFLAGS = -O2 -DANDROID -fPIC
 	
 all: $(armeabi_OUT) $(armeabi-v7a_OUT)
 
@@ -29,10 +28,10 @@ armeabi-v7a/%.o: %.c
 	$(CC) $(INCLUDES) $(CFLAGS) -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -c $< -o $@
 
 $(armeabi_OUT): $(armeabi_OBJ)
-	$(AR) rcs $(armeabi_OUT) $(armeabi_OBJ)
+	$(CC) -shared -Wl,-soname,$(armeabi_OUT) -o $(armeabi_OUT) $(armeabi_OBJ) -lm
 
 $(armeabi-v7a_OUT): $(armeabi-v7a_OBJ)
-	$(AR) rcs $(armeabi-v7a_OUT) $(armeabi-v7a_OBJ)
+	$(CC) -shared -Wl,-soname,$(armeabi-v7a_OUT) -o $(armeabi-v7a_OUT) $(armeabi-v7a_OBJ) -lm
 
 clean:
 	rm -f $(armeabi_OBJ) $(armeabi_OUT) $(armeabi-v7a_OBJ) $(armeabi-v7a_OUT)
