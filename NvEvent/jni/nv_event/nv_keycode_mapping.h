@@ -63,6 +63,7 @@ void NVKeyCodeMapping::Init(JNIEnv* env, jobject thiz)
 	AddKeymappingMacro("KEYCODE_SPACE",NV_KEYCODE_SPACE);
 	AddKeymappingMacro("KEYCODE_ENDCALL",NV_KEYCODE_ENDCALL);
 	AddKeymappingMacro("KEYCODE_HOME",NV_KEYCODE_HOME);
+	AddKeymappingMacro("KEYCODE_MENU",NV_KEYCODE_MENU);
 
 	AddKeymappingMacro("KEYCODE_DPAD_LEFT",NV_KEYCODE_DPAD_LEFT);
 	AddKeymappingMacro("KEYCODE_DPAD_UP",NV_KEYCODE_DPAD_UP);
