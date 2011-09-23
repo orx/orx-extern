@@ -4,7 +4,7 @@
 // Email:           tegradev@nvidia.com
 // Web:             http://developer.nvidia.com/category/zone/mobile-development
 //
-// Copyright 2009-2011 NVIDIA® Corporation 
+// Copyright 2009-2011 NVIDIAï¿½ Corporation 
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -147,8 +147,8 @@ public abstract class NvEventQueueActivity
 		protected native boolean postUserEvent(int u0, int u1, int u2, int u3, boolean blocking);
      
 		public native boolean touchEvent(int action, int x, int y, MotionEvent event);
-		public native boolean multiTouchEvent(int action, int count, 
-			int x0, int y0, int x1, int y1, MotionEvent event);
+		public native boolean multiTouchEvent(int action,int nAdditionalPointer,int pointerCount, int[] uidArray, float[] fXArray, float[] fYArray, MotionEvent event);
+
 		public native boolean keyEvent(int action, int keycode, int unicodeChar, KeyEvent event);
 	/**
 	 * END indented block, see in comment at top of block
@@ -365,31 +365,52 @@ public abstract class NvEventQueueActivity
         {
         	if (wantsMultitouch)
         	{
-	        	int count = 0;
-        		int x1 = 0, y1 = 0, x2 = 0, y2 = 0;
-	        	// marshal up the data.
-	        	int numEvents = event.getPointerCount();
-	        	for (int i=0; i<numEvents; i++)
-	        	{
-	        		// only use pointers 0 and 1...
-	        		int index = event.getPointerId(i);
-	        		if (index < 2)
-	        		{
-	        			if (count == 0)
-	        			{
-	        				x1 = (int)event.getX(i);
-	        				y1 = (int)event.getY(i);
-	        				count++;
-	        			}
-	        			else if (count == 1)
-	        			{
-	        				x2 = (int)event.getX(i);
-	        				y2 = (int)event.getY(i);
-		        			count++;
-	        			}
-	        		}
-	        	}
-	            ret = multiTouchEvent(event.getAction(), count, x1, y1, x2, y2, event);
+    			/* Get real action (some actions are combinaison of pointerId & action) */
+    			int nAction = event.getAction() & MotionEvent.ACTION_MASK;
+    			/* Get additionnal pointer */
+    			int nAdditionalPointer = -1;
+    			if (nAction == MotionEvent.ACTION_POINTER_DOWN || nAction == MotionEvent.ACTION_POINTER_UP)
+    			{
+    				nAdditionalPointer = event.getPointerId((event.getAction() & MotionEvent.ACTION_POINTER_ID_MASK) >> MotionEvent.ACTION_POINTER_ID_SHIFT);		
+    			}
+    			/* Collect pointers informations */ 
+    			final int nPointerCount = event.getPointerCount();
+    			final int[] fIdArray = new int[nPointerCount];
+    			final float[] fXArray = new float[nPointerCount];
+    			final float[] fYArray = new float[nPointerCount];
+    			/* Fill array to send*/
+    			for (int i = 0; i < event.getPointerCount(); i++) {
+    				fIdArray[i] = event.getPointerId(i);
+    				fXArray[i] = event.getX(i);
+    				fYArray[i] = event.getY(i);
+    			}
+    			ret = multiTouchEvent(nAction, nAdditionalPointer, nPointerCount, fIdArray, fXArray, fYArray, event);
+    			
+//	        	int count = 0;
+//        		int x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+//	        	// marshal up the data.
+//	        	int numEvents = event.getPointerCount();
+//	        	for (int i=0; i<numEvents; i++)
+//	        	{
+//	        		// only use pointers 0 and 1...
+//	        		int index = event.getPointerId(i);
+//	        		if (index < 2)
+//	        		{
+//	        			if (count == 0)
+//	        			{
+//	        				x1 = (int)event.getX(i);
+//	        				y1 = (int)event.getY(i);
+//	        				count++;
+//	        			}
+//	        			else if (count == 1)
+//	        			{
+//	        				x2 = (int)event.getX(i);
+//	        				y2 = (int)event.getY(i);
+//		        			count++;
+//	        			}
+//	        		}
+//	        	}
+//	            ret = multiTouchEvent(event.getAction(), count, x1, y1, x2, y2, event);
         	}
         	else // old style input.*/
         	{

@@ -114,7 +114,9 @@ static bool s_appThreadExited = false;
 static bool s_javaPostedQuit = false;
 
 static int NVEVENT_ACTION_DOWN = 0;
+static int NVEVENT_ACTION_POINTER_DOWN = 0;
 static int NVEVENT_ACTION_UP = 0;
+static int NVEVENT_ACTION_POINTER_UP = 0;
 static int NVEVENT_ACTION_CANCEL = 0;
 static int NVEVENT_ACTION_POINTER_INDEX_MASK = 0;
 static int NVEVENT_ACTION_POINTER_INDEX_SHIFT = 0;
@@ -270,12 +272,16 @@ static void NVEventInitInputFields(JNIEnv *env)
 {
     jclass Motion_class = env->FindClass("android/view/MotionEvent");
     jfieldID ACTION_DOWN_id = env->GetStaticFieldID(Motion_class, "ACTION_DOWN", "I");
+    jfieldID ACTION_POINTER_DOWN_id = env->GetStaticFieldID(Motion_class, "ACTION_POINTER_DOWN", "I");
     jfieldID ACTION_UP_id = env->GetStaticFieldID(Motion_class, "ACTION_UP", "I");
+    jfieldID ACTION_POINTER_UP_id = env->GetStaticFieldID(Motion_class, "ACTION_POINTER_UP", "I");
     jfieldID ACTION_CANCEL_id = env->GetStaticFieldID(Motion_class, "ACTION_CANCEL", "I");
     jfieldID ACTION_POINTER_INDEX_SHIFT_id = env->GetStaticFieldID(Motion_class, "ACTION_POINTER_ID_SHIFT", "I");
     jfieldID ACTION_POINTER_INDEX_MASK_id = env->GetStaticFieldID(Motion_class, "ACTION_POINTER_ID_MASK", "I");
     NVEVENT_ACTION_DOWN = env->GetStaticIntField(Motion_class, ACTION_DOWN_id);
+    NVEVENT_ACTION_POINTER_DOWN = env->GetStaticIntField(Motion_class, ACTION_POINTER_DOWN_id);
     NVEVENT_ACTION_UP = env->GetStaticIntField(Motion_class, ACTION_UP_id);
+    NVEVENT_ACTION_POINTER_UP = env->GetStaticIntField(Motion_class, ACTION_POINTER_UP_id);
     NVEVENT_ACTION_CANCEL = env->GetStaticIntField(Motion_class, ACTION_CANCEL_id);
     NVEVENT_ACTION_POINTER_INDEX_MASK = env->GetStaticIntField(Motion_class, ACTION_POINTER_INDEX_MASK_id);
     NVEVENT_ACTION_POINTER_INDEX_SHIFT = env->GetStaticIntField(Motion_class, ACTION_POINTER_INDEX_SHIFT_id);
@@ -495,45 +501,91 @@ static jboolean NVEventTouchEvent(JNIEnv*  env, jobject  thiz, jint action, jint
 	return JNI_TRUE;
 }
 
-static jboolean NVEventMultiTouchEvent(JNIEnv*  env, jobject  thiz, jint action, 
-									   jint count, jint mx1, jint my1, jint mx2, jint my2)
-
+static jboolean NVEventMultiTouchEvent(JNIEnv*  env, jobject  thiz, jint iAction, jint iAdditionalPointer, jint iPointerCount, jintArray aiIdList,  jfloatArray afXList, jfloatArray afYList)
 {
 	{
 		NVEvent ev;
-
-		int actionOnly = action & (~NVEVENT_ACTION_POINTER_INDEX_MASK);
-        int maskOnly = (count>=2) ? 0x3 : ((count==0) ? 0x0 : 0x1);
-
-		ev.m_type = NV_EVENT_MULTITOUCH;
 		
-		if (actionOnly == NVEVENT_ACTION_UP)
+		ev.m_type = NV_EVENT_MULTITOUCH;
+		if (iAction == NVEVENT_ACTION_UP) ev.m_data.m_multi.m_action = NV_MULTITOUCH_UP;
+		else if (iAction == NVEVENT_ACTION_POINTER_UP) ev.m_data.m_multi.m_action = NV_MULTITOUCH_POINTER_UP;
+		else if (iAction == NVEVENT_ACTION_DOWN) ev.m_data.m_multi.m_action = NV_MULTITOUCH_DOWN;
+		else if (iAction == NVEVENT_ACTION_POINTER_DOWN) ev.m_data.m_multi.m_action = NV_MULTITOUCH_POINTER_DOWN;
+		else if (iAction == NVEVENT_ACTION_CANCEL) ev.m_data.m_multi.m_action = NV_MULTITOUCH_CANCEL;
+		else ev.m_data.m_multi.m_action = NV_MULTITOUCH_MOVE;
+		
+		jint* aiIdListTmp = env->GetIntArrayElements(aiIdList, NULL);
+		jfloat* afXListTmp = env->GetFloatArrayElements(afXList, NULL);
+		jfloat* afYListTmp = env->GetFloatArrayElements(afYList, NULL);
+
+		ev.m_data.m_multi.m_additionnalPointer = iAdditionalPointer;
+
+		ev.m_data.m_multi.m_nCount = 0;
+		
+		for (int i=0;i<NV_MAX_TOUCH;i++) ev.m_data.m_multi.m_astTouch[i].m_id = -1;
+				
+		for (int i=0;i<iPointerCount;i++)
 		{
-			ev.m_data.m_multi.m_action = NV_MULTITOUCH_UP;
+			int iId = aiIdListTmp[i];
+			if (iId < NV_MAX_TOUCH)
+			{
+				ev.m_data.m_multi.m_nCount++;
+				ev.m_data.m_multi.m_astTouch[i].m_id = iId;
+				ev.m_data.m_multi.m_astTouch[i].m_x = afXListTmp[i] ;
+				ev.m_data.m_multi.m_astTouch[i].m_y = afYListTmp[i] ;
+			}
 		}
-		else if (actionOnly == NVEVENT_ACTION_DOWN)
-		{
-			ev.m_data.m_multi.m_action = NV_MULTITOUCH_DOWN;
-		}
-		else if (actionOnly == NVEVENT_ACTION_CANCEL)
-		{
-			ev.m_data.m_multi.m_action = NV_MULTITOUCH_CANCEL;
-		}
-		else
-		{
-			ev.m_data.m_multi.m_action = NV_MULTITOUCH_MOVE;
-		}
-		ev.m_data.m_multi.m_action = 
-			(NVMultiTouchEventType)(ev.m_data.m_multi.m_action | (maskOnly << NV_MULTITOUCH_POINTER_SHIFT));
-		ev.m_data.m_multi.m_x1 = mx1;
-		ev.m_data.m_multi.m_y1 = my1;
-		ev.m_data.m_multi.m_x2 = mx2;
-		ev.m_data.m_multi.m_y2 = my2;
+
+		env->ReleaseIntArrayElements(aiIdList,aiIdListTmp, 0);
+		env->ReleaseFloatArrayElements(afXList, afXListTmp, 0);
+		env->ReleaseFloatArrayElements(afYList, afYListTmp, 0);
+
 		NVEventInsert(&ev);
 	}
 
 	return JNI_TRUE;
 }
+
+//static jboolean NVEventMultiTouchEvent(JNIEnv*  env, jobject  thiz, jint action, 
+//									   jint count, jint mx1, jint my1, jint mx2, jint my2)
+//
+//{
+//	{
+//		NVEvent ev;
+//
+//
+//		int actionOnly = action & (~NVEVENT_ACTION_POINTER_INDEX_MASK);
+//        int maskOnly = (count>=2) ? 0x3 : ((count==0) ? 0x0 : 0x1);
+//
+//		ev.m_type = NV_EVENT_MULTITOUCH;
+//		
+//		if (actionOnly == NVEVENT_ACTION_UP)
+//		{
+//			ev.m_data.m_multi.m_action = NV_MULTITOUCH_UP;
+//		}
+//		else if (actionOnly == NVEVENT_ACTION_DOWN)
+//		{
+//			ev.m_data.m_multi.m_action = NV_MULTITOUCH_DOWN;
+//		}
+//		else if (actionOnly == NVEVENT_ACTION_CANCEL)
+//		{
+//			ev.m_data.m_multi.m_action = NV_MULTITOUCH_CANCEL;
+//		}
+//		else
+//		{
+//			ev.m_data.m_multi.m_action = NV_MULTITOUCH_MOVE;
+//		}
+//		ev.m_data.m_multi.m_action = 
+//			(NVMultiTouchEventType)(ev.m_data.m_multi.m_action | (maskOnly << NV_MULTITOUCH_POINTER_SHIFT));
+//		ev.m_data.m_multi.m_x1 = mx1;
+//		ev.m_data.m_multi.m_y1 = my1;
+//		ev.m_data.m_multi.m_x2 = mx2;
+//		ev.m_data.m_multi.m_y2 = my2;
+//		NVEventInsert(&ev);
+//	}
+//
+//	return JNI_TRUE;
+//}
 
 static jboolean NVEventKeyEvent(JNIEnv* env, jobject thiz, jint action, jint keycode, jint unichar)
 {
@@ -921,7 +973,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
         },
         {
 			"multiTouchEvent",
-			"(IIIIIILandroid/view/MotionEvent;)Z",
+			"(III[I[F[FLandroid/view/MotionEvent;)Z",
 			(void *) NVEventMultiTouchEvent
 
         },

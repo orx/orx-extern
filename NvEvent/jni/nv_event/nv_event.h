@@ -129,14 +129,18 @@ typedef enum NVTouchEventType
 typedef enum NVMultiTouchEventType
 {
 	/** Indicated pointers are leaving the screen */
-	NV_MULTITOUCH_UP    =   0x00000001,
+	NV_MULTITOUCH_UP    	   =   0x00000001,
 	/** Indicated pointers have just touched the screen */
-	NV_MULTITOUCH_DOWN  =   0x00000002,
+	NV_MULTITOUCH_DOWN  	   =   0x00000002,
 	/** Indicated pointers are moving on the screen */
-	NV_MULTITOUCH_MOVE  =   0x00000003,
+	NV_MULTITOUCH_MOVE         =   0x00000003,
 	/** Indicated pointers have halted the current gesture
 		app should cancel any actions implied by the gesture */
-	NV_MULTITOUCH_CANCEL =  0x00000004,
+	NV_MULTITOUCH_CANCEL       =   0x00000004,
+	/** Indicated additionnal pointers are leaving the screen */
+	NV_MULTITOUCH_POINTER_UP   =   0x00000005,
+	/** Indicated additionnal pointers have just touched the screen */
+	NV_MULTITOUCH_POINTER_DOWN =   0x00000006,
 	/** Mask to be AND'ed with the flag value 
 		to get the active pointer bits */
 	NV_MULTITOUCH_POINTER_MASK =  0x0000ff00,
@@ -256,24 +260,29 @@ typedef struct NVEventTouch
     float   m_y;
 } NVEventTouch;
 
+/** Multi-touch event data : one touch description
+*/
+typedef struct NVEventOneTouch
+{
+    int     m_id;
+	/** The window-relative X position (in pixels) */
+    float   m_x;
+	/** The window-relative Y position (in pixels) */
+    float   m_y;
+} NVEventOneTouch;
+
 /** Multi-touch event data
 */
 typedef struct NVEventMultiTouch
 {
 	/** The action flags */
     NVMultiTouchEventType   m_action;
-	/** The window-relative X position of the first pointer (in pixels) 
-		only valid if bit 0 of the pointer bits is set */
-    float   m_x1;
-	/** The window-relative Y position of the first pointer (in pixels) 
-		only valid if bit 0 of the pointer bits is set */
-    float   m_y1;
-	/** The window-relative X position of the second pointer (in pixels) 
-		only valid if bit 1 of the pointer bits is set */
-    float   m_x2;
-	/** The window-relative Y position of the second pointer (in pixels) 
-		only valid if bit 1 of the pointer bits is set */
-    float   m_y2;
+	/** Additionnal pointer identifier or -1 if not */
+    int m_additionnalPointer;
+        /** Nb touch in the next array */
+    int m_nCount;
+	/** Touch descriptor */
+    NVEventOneTouch m_astTouch[NV_MAX_TOUCH];
 } NVEventMultiTouch;
 
 /** Key down/up event data
