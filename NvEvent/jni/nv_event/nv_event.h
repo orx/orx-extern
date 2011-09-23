@@ -260,6 +260,9 @@ typedef struct NVEventTouch
     float   m_y;
 } NVEventTouch;
 
+/** Multi-touch max touch */
+#define NV_MAX_TOUCH 4
+
 /** Multi-touch event data : one touch description
 */
 typedef struct NVEventOneTouch

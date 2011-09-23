@@ -49,9 +49,6 @@ typedef long NvOffset;
 // Base NULL type.
 #define NV_NULL 0
 
-// Multi-touch max touch
-#define NV_MAX_TOUCH 4
-
 // Error related
 typedef enum {
     NvError_Success = 0,
