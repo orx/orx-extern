@@ -68,9 +68,11 @@ NvAPKFile* NvAPKOpen(char const* path)
 {
 	JNIEnv *env = NVThreadGetCurrentJNIEnv();
     jstring test = (*env)->NewStringUTF(env, path);
-    jobject fileHandle = (*env)->CallObjectMethod(env, s_globalThiz, s_openFile, test);
+    jobject localfileHandle = (*env)->CallObjectMethod(env, s_globalThiz, s_openFile, test);
+    jobject fileHandle = (*env)->NewGlobalRef(env, localfileHandle);
     (*env)->DeleteLocalRef(env, (jobject)test);
-
+    (*env)->DeleteLocalRef(env, (jobject)localfileHandle);
+    
     return (NvAPKFile *) fileHandle;
 }
 
@@ -78,7 +80,7 @@ void NvAPKClose(NvAPKFile* file)
 {
 	JNIEnv *env = NVThreadGetCurrentJNIEnv();
     (*env)->CallVoidMethod(env, s_globalThiz, s_closeFile, (jobject) file);
-    (*env)->DeleteLocalRef(env, (jobject)file);
+    (*env)->DeleteGlobalRef(env, (jobject)file);
 }
 
 int NvAPKGetc(NvAPKFile *stream)
