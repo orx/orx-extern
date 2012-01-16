@@ -280,12 +280,16 @@ typedef struct NVEventMultiTouch
 {
 	/** The action flags */
     NVMultiTouchEventType   m_action;
-	/** Additionnal pointer identifier or -1 if not */
-    int m_additionnalPointer;
-        /** Nb touch in the next array */
-    int m_nCount;
-	/** Touch descriptor */
-    NVEventOneTouch m_astTouch[NV_MAX_TOUCH];
+	/** Pointer identifier */
+	int     				m_id;
+	/** The window-relative X position (in pixels) */
+    float   				m_x;
+	/** The window-relative Y position (in pixels) */
+    float   				m_y;
+	/** The pressure */
+    float   				m_pressure;
+	/** The event time */
+    float   				m_eventtime;	
 } NVEventMultiTouch;
 
 /** Key down/up event data

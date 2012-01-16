@@ -501,50 +501,76 @@ static jboolean NVEventTouchEvent(JNIEnv*  env, jobject  thiz, jint action, jint
 	return JNI_TRUE;
 }
 
-static jboolean NVEventMultiTouchEvent(JNIEnv*  env, jobject  thiz, jint iAction, jint iAdditionalPointer, jint iPointerCount, jintArray aiIdList,  jfloatArray afXList, jfloatArray afYList)
+static jboolean NVEventMultiTouchEvent(JNIEnv*  env, jobject  thiz, jint iAction, jint iId, jfloat fX, jfloat fY, jfloat fPressure, jlong lEventTime)
 {
 	{
 		NVEvent ev;
-		
+		// Store type
 		ev.m_type = NV_EVENT_MULTITOUCH;
+		// Store action
 		if (iAction == NVEVENT_ACTION_UP) ev.m_data.m_multi.m_action = NV_MULTITOUCH_UP;
 		else if (iAction == NVEVENT_ACTION_POINTER_UP) ev.m_data.m_multi.m_action = NV_MULTITOUCH_POINTER_UP;
 		else if (iAction == NVEVENT_ACTION_DOWN) ev.m_data.m_multi.m_action = NV_MULTITOUCH_DOWN;
 		else if (iAction == NVEVENT_ACTION_POINTER_DOWN) ev.m_data.m_multi.m_action = NV_MULTITOUCH_POINTER_DOWN;
 		else if (iAction == NVEVENT_ACTION_CANCEL) ev.m_data.m_multi.m_action = NV_MULTITOUCH_CANCEL;
 		else ev.m_data.m_multi.m_action = NV_MULTITOUCH_MOVE;
-		
-		jint* aiIdListTmp = env->GetIntArrayElements(aiIdList, NULL);
-		jfloat* afXListTmp = env->GetFloatArrayElements(afXList, NULL);
-		jfloat* afYListTmp = env->GetFloatArrayElements(afYList, NULL);
-
-		ev.m_data.m_multi.m_additionnalPointer = iAdditionalPointer;
-
-		ev.m_data.m_multi.m_nCount = 0;
-		
-		for (int i=0;i<NV_MAX_TOUCH;i++) ev.m_data.m_multi.m_astTouch[i].m_id = -1;
-				
-		for (int i=0;i<iPointerCount;i++)
-		{
-			int iId = aiIdListTmp[i];
-			if (iId < NV_MAX_TOUCH)
-			{
-				ev.m_data.m_multi.m_nCount++;
-				ev.m_data.m_multi.m_astTouch[i].m_id = iId;
-				ev.m_data.m_multi.m_astTouch[i].m_x = afXListTmp[i] ;
-				ev.m_data.m_multi.m_astTouch[i].m_y = afYListTmp[i] ;
-			}
-		}
-
-		env->ReleaseIntArrayElements(aiIdList,aiIdListTmp, 0);
-		env->ReleaseFloatArrayElements(afXList, afXListTmp, 0);
-		env->ReleaseFloatArrayElements(afYList, afYListTmp, 0);
-
+		// Store all infos for this touch
+		ev.m_data.m_multi.m_id = iId;
+		ev.m_data.m_multi.m_x = fX;
+		ev.m_data.m_multi.m_y = fY;
+		ev.m_data.m_multi.m_pressure = fPressure;
+		ev.m_data.m_multi.m_eventtime = lEventTime;
+		// Post the event to the queue
 		NVEventInsert(&ev);
 	}
 
 	return JNI_TRUE;
 }
+
+// static jboolean NVEventMultiTouchEvent(JNIEnv*  env, jobject  thiz, jint iAction, jint iAdditionalPointer, jint iPointerCount, jintArray aiIdList,  jfloatArray afXList, jfloatArray afYList)
+// {
+	// {
+		// NVEvent ev;
+		
+		// ev.m_type = NV_EVENT_MULTITOUCH;
+		// if (iAction == NVEVENT_ACTION_UP) ev.m_data.m_multi.m_action = NV_MULTITOUCH_UP;
+		// else if (iAction == NVEVENT_ACTION_POINTER_UP) ev.m_data.m_multi.m_action = NV_MULTITOUCH_POINTER_UP;
+		// else if (iAction == NVEVENT_ACTION_DOWN) ev.m_data.m_multi.m_action = NV_MULTITOUCH_DOWN;
+		// else if (iAction == NVEVENT_ACTION_POINTER_DOWN) ev.m_data.m_multi.m_action = NV_MULTITOUCH_POINTER_DOWN;
+		// else if (iAction == NVEVENT_ACTION_CANCEL) ev.m_data.m_multi.m_action = NV_MULTITOUCH_CANCEL;
+		// else ev.m_data.m_multi.m_action = NV_MULTITOUCH_MOVE;
+		
+		// jint* aiIdListTmp = env->GetIntArrayElements(aiIdList, NULL);
+		// jfloat* afXListTmp = env->GetFloatArrayElements(afXList, NULL);
+		// jfloat* afYListTmp = env->GetFloatArrayElements(afYList, NULL);
+
+		// ev.m_data.m_multi.m_additionnalPointer = iAdditionalPointer;
+
+		// ev.m_data.m_multi.m_nCount = 0;
+		
+		// for (int i=0;i<NV_MAX_TOUCH;i++) ev.m_data.m_multi.m_astTouch[i].m_id = -1;
+				
+		// for (int i=0;i<iPointerCount;i++)
+		// {
+			// int iId = aiIdListTmp[i];
+			// if (iId < NV_MAX_TOUCH)
+			// {
+				// ev.m_data.m_multi.m_nCount++;
+				// ev.m_data.m_multi.m_astTouch[i].m_id = iId;
+				// ev.m_data.m_multi.m_astTouch[i].m_x = afXListTmp[i] ;
+				// ev.m_data.m_multi.m_astTouch[i].m_y = afYListTmp[i] ;
+			// }
+		// }
+
+		// env->ReleaseIntArrayElements(aiIdList,aiIdListTmp, 0);
+		// env->ReleaseFloatArrayElements(afXList, afXListTmp, 0);
+		// env->ReleaseFloatArrayElements(afYList, afYListTmp, 0);
+
+		// NVEventInsert(&ev);
+	// }
+
+	// return JNI_TRUE;
+// }
 
 //static jboolean NVEventMultiTouchEvent(JNIEnv*  env, jobject  thiz, jint action, 
 //									   jint count, jint mx1, jint my1, jint mx2, jint my2)
@@ -973,9 +999,10 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
         },
         {
 			"multiTouchEvent",
-			"(III[I[F[FLandroid/view/MotionEvent;)Z",
+			//"(III[I[F[FLandroid/view/MotionEvent;)Z",
+			//(JNIEnv*  env, jobject  thiz, jint iAction, jint iAdditionalPointer, jint iPointerCount, jintArray aiIdList,  jfloatArray afXList, jfloatArray afYList)			
+			"(IIFFFJLandroid/view/MotionEvent;)Z",
 			(void *) NVEventMultiTouchEvent
-
         },
         {
             "keyEvent",
