@@ -64,7 +64,7 @@ armeabi/%.o: %.cpp
 
 armeabi-v7a/%.o: %.cpp
 	mkdir -p $(dir $@)
-	$(CXX) $(INCLUDES) $(CPPFLAGS) -march=armv7-a -mfloat-abi=softfp -c $< -o $@
+	$(CXX) $(INCLUDES) $(CPPFLAGS) -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -c $< -o $@
 
 $(armeabi_OUT): $(armeabi_OBJ)
 	$(AR) rcs $(armeabi_OUT) $(armeabi_OBJ)
