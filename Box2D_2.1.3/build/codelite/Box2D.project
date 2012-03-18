@@ -2,7 +2,7 @@
 <CodeLite_Project Name="Box2D">
   <Plugins>
     <Plugin Name="qmake">
-      <![CDATA[00080001N0010GP2X Debug0000000000000001N0012GP2X Release0000000000000001N0011Linux Debug0000000000000001N0013Linux Release0000000000000001N0013Linux64 Debug0000000000000001N0015Linux64 Release0000000000000001N0011Win32 Debug0000000000000001N0013Win32 Release000000000000]]>
+      <![CDATA[Release0000000000000001N0011Linux Debug0000000000000001N0013Linux Release0000000000000001N0013Linux64 Debug0000000000000001N0015Linux64 Release0000000000000001N0011Win32 Debug0000000000000001N0013Win32 Release000000000000]]>
     </Plugin>
   </Plugins>
   <VirtualDirectory Name="src">
@@ -124,8 +124,6 @@
   <Dependencies/>
   <Dependencies Name="Win32 Release"/>
   <Dependencies Name="Win32 Debug"/>
-  <Dependencies Name="GP2X Release"/>
-  <Dependencies Name="GP2X Debug"/>
   <Settings Type="Static Library">
     <GlobalSettings>
       <Compiler Options="" C_Options="">
@@ -136,78 +134,6 @@
       </Linker>
       <ResourceCompiler Options=""/>
     </GlobalSettings>
-    <Configuration Name="GP2X Debug" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Static Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
-      <Compiler Options="-g -fPIC -fno-exceptions" C_Options="-g -fPIC -fno-exceptions" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" UseDifferentPCHFlags="no" PCHFlags="">
-        <IncludePath Value="../../include"/>
-      </Compiler>
-      <Linker Options="" Required="yes"/>
-      <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="../../lib/gp2x/libBox2Dd.a" IntermediateDirectory="./Debug" Command="" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
-      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
-        <![CDATA[]]>
-      </Environment>
-      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="">
-        <PostConnectCommands/>
-        <StartupCommands/>
-      </Debugger>
-      <PreBuild/>
-      <PostBuild/>
-      <CustomBuild Enabled="no">
-        <RebuildCommand/>
-        <CleanCommand/>
-        <BuildCommand/>
-        <PreprocessFileCommand/>
-        <SingleFileCommand/>
-        <MakefileGenerationCommand/>
-        <ThirdPartyToolName>None</ThirdPartyToolName>
-        <WorkingDirectory/>
-      </CustomBuild>
-      <AdditionalRules>
-        <CustomPostBuild/>
-        <CustomPreBuild/>
-      </AdditionalRules>
-      <Completion>
-        <ClangCmpFlags/>
-        <ClangPP/>
-        <SearchPaths/>
-      </Completion>
-    </Configuration>
-    <Configuration Name="GP2X Release" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Static Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
-      <Compiler Options="-O2 -Wno-strict-aliasing -s -fPIC -fno-exceptions" C_Options="-O2 -Wno-strict-aliasing -s -fPIC -fno-exceptions" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" UseDifferentPCHFlags="no" PCHFlags="">
-        <IncludePath Value="../../include"/>
-      </Compiler>
-      <Linker Options="" Required="yes"/>
-      <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="../../lib/gp2x/libBox2D.a" IntermediateDirectory="./Release" Command="" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes"/>
-      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
-        <![CDATA[]]>
-      </Environment>
-      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="">
-        <PostConnectCommands/>
-        <StartupCommands/>
-      </Debugger>
-      <PreBuild/>
-      <PostBuild/>
-      <CustomBuild Enabled="no">
-        <RebuildCommand/>
-        <CleanCommand/>
-        <BuildCommand/>
-        <PreprocessFileCommand/>
-        <SingleFileCommand/>
-        <MakefileGenerationCommand/>
-        <ThirdPartyToolName>None</ThirdPartyToolName>
-        <WorkingDirectory/>
-      </CustomBuild>
-      <AdditionalRules>
-        <CustomPostBuild/>
-        <CustomPreBuild/>
-      </AdditionalRules>
-      <Completion>
-        <ClangCmpFlags/>
-        <ClangPP/>
-        <SearchPaths/>
-      </Completion>
-    </Configuration>
     <Configuration Name="Linux Debug" CompilerType="gnu g++" DebuggerType="GNU gdb debugger" Type="Static Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-g -fPIC -m32 -fno-exceptions" C_Options="-g -fPIC -m32 -fno-exceptions" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" UseDifferentPCHFlags="no" PCHFlags="">
         <IncludePath Value="../../include"/>

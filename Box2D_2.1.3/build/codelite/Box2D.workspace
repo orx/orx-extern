@@ -2,12 +2,6 @@
 <CodeLite_Workspace Name="Box2D" Database=".\Box2D.tags">
   <Project Name="Box2D" Path="Box2D.project" Active="Yes"/>
   <BuildMatrix>
-    <WorkspaceConfiguration Name="GP2X Debug" Selected="no">
-      <Project Name="Box2D" ConfigName="GP2X Debug"/>
-    </WorkspaceConfiguration>
-    <WorkspaceConfiguration Name="GP2X Release" Selected="no">
-      <Project Name="Box2D" ConfigName="GP2X Release"/>
-    </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Linux Debug" Selected="no">
       <Project Name="Box2D" ConfigName="Linux Debug"/>
     </WorkspaceConfiguration>

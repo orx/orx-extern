@@ -37,8 +37,6 @@
   <Dependencies/>
   <Dependencies Name="Win32 Release"/>
   <Dependencies Name="Win32 Debug"/>
-  <Dependencies Name="GP2X Release"/>
-  <Dependencies Name="GP2X Debug"/>
   <Settings Type="Static Library">
     <Configuration Name="Win32 Release" CompilerType="gnu gcc" DebuggerType="GNU gdb debugger" Type="Static Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-O2 -Wno-strict-aliasing -s" Required="yes" PreCompiledHeader="">
