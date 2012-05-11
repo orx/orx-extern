@@ -43,6 +43,8 @@
 #include <stdio.h>
 #endif
 
+#define stb_prof(X)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
