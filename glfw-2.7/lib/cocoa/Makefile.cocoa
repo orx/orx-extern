@@ -20,8 +20,9 @@ all: libglfw.a libglfw.dylib
 ##########################################################################
 # Compiler settings
 ##########################################################################
-CC     = gcc
-CFLAGS = -c -I. -I.. -Wall -O2 -fno-common -g
+CC     ?= cc
+CFLAGS ?= -O2 -g
+CFLAGS += -c -I. -I.. -Wall -fno-common
 
 
 ##########################################################################
@@ -49,6 +50,13 @@ install: libglfw.a libglfw.pc
 	$(INSTALL) -c -m 644 ../../include/GL/glfw.h $(PREFIX)/include/GL/glfw.h
 	$(INSTALL) -d $(PREFIX)/lib/pkgconfig
 	$(INSTALL) -c -m 644 libglfw.pc $(PREFIX)/lib/pkgconfig/libglfw.pc
+
+
+##########################################################################
+# Install GLFW header and static and dynamic libraries
+##########################################################################
+dist-install: libglfw.dylib install
+	$(INSTALL) -c -m 644 libglfw.dylib $(PREFIX)/lib/libglfw.dylib
 
 
 ##########################################################################

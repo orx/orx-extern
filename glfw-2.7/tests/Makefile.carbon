@@ -10,15 +10,19 @@ CC     = gcc
 CFLAGS = -I../include -m32
 
 # Linker settings
-LIB    = ../lib/carbon/libglfw.a
-LFLAGS = $(LIB) -framework AGL -framework OpenGL -framework Carbon -m32
+LIB       = ../lib/carbon/libglfw.a
+SOLIB     = ../lib/carbon/libglfw.dylib
+LFLAGS    = $(LIB) -framework AGL -framework OpenGL -framework Carbon -m32
+SO_LFLAGS = $(SOLIB) -framework OpenGL -m32
 
 # Default: Build all tests
 all: Accuracy.app/Contents/MacOS/Accuracy \
-     Defaults.app/Contents/MacOS/Defaults \
-     Events.app/Contents/MacOS/Events \
+     defaults \
+     Dynamic.app/Contents/MacOS/Dynamic \
+     events \
      FSAA.app/Contents/MacOS/FSAA \
      FSInput.app/Contents/MacOS/FSInput \
+     Iconify.app/Contents/MacOS/Iconify \
      joysticks \
      Peter.app/Contents/MacOS/Peter \
      ReOpen.app/Contents/MacOS/ReOpen \
@@ -29,13 +33,16 @@ Accuracy.app/Contents/MacOS/Accuracy: accuracy.c $(LIB)
 	/bin/sh bundle.sh Accuracy
 	$(CC) $(CFLAGS) accuracy.c $(LFLAGS) -o Accuracy.app/Contents/MacOS/Accuracy
 
-Defaults.app/Contents/MacOS/Defaults: defaults.c $(LIB)
-	/bin/sh bundle.sh Defaults
-	$(CC) $(CFLAGS) defaults.c $(LFLAGS) -o Defaults.app/Contents/MacOS/Defaults
+defaults: defaults.c $(LIB)
+	$(CC) $(CFLAGS) defaults.c $(LFLAGS) -o defaults
 
-Events.app/Contents/MacOS/Events: events.c $(LIB)
-	/bin/sh bundle.sh Events
-	$(CC) $(CFLAGS) events.c $(LFLAGS) -o Events.app/Contents/MacOS/Events
+Dynamic.app/Contents/MacOS/Dynamic: dynamic.c $(SOLIB)
+	/bin/sh bundle.sh Dynamic
+	cp $(SOLIB) Dynamic.app/Contents/MacOS/
+	$(CC) $(CFLAGS) dynamic.c $(SO_LFLAGS) -o Dynamic.app/Contents/MacOS/Dynamic
+
+events: events.c $(LIB)
+	$(CC) $(CFLAGS) events.c $(LFLAGS) -o events
 
 FSAA.app/Contents/MacOS/FSAA: fsaa.c $(LIB)
 	/bin/sh bundle.sh FSAA
@@ -44,6 +51,10 @@ FSAA.app/Contents/MacOS/FSAA: fsaa.c $(LIB)
 FSInput.app/Contents/MacOS/FSInput: fsinput.c $(LIB)
 	/bin/sh bundle.sh FSInput
 	$(CC) $(CFLAGS) fsinput.c $(LFLAGS) -o FSInput.app/Contents/MacOS/FSInput
+
+Iconify.app/Contents/MacOS/Iconify: iconify.c $(LIB)
+	/bin/sh bundle.sh Iconify
+	$(CC) $(CFLAGS) iconify.c $(LFLAGS) -o Iconify.app/Contents/MacOS/Iconify
 
 joysticks: joysticks.c $(LIB)
 	$(CC) $(CFLAGS) joysticks.c $(LFLAGS) -o joysticks
@@ -64,6 +75,6 @@ version: version.c $(LIB)
 	$(CC) $(CFLAGS) version.c $(LFLAGS) -o version
 
 clean:
-	rm -rf Accuracy.app Defaults.app Events.app FSAA.app FSInput.app \
-           joysticks Peter.app ReOpen.app Tearing.app version
+	rm -rf Accuracy.app defaults Dynamic.app events FSAA.app FSInput.app \
+           Iconify.app joysticks Peter.app ReOpen.app Tearing.app version
 

@@ -1,5 +1,5 @@
 //========================================================================
-// Fullscreen mode input test
+// Dynamic linking test
 // Copyright (c) Camilla Berglund <elmindreda@elmindreda.org>
 //
 // This software is provided 'as-is', without any express or implied
@@ -23,104 +23,63 @@
 //
 //========================================================================
 //
-// This test came about as the result of bug #2121835
+// This test came about as the result of bug #3060461
 //
 //========================================================================
 
+#define GLFW_DLL
 #include <GL/glfw.h>
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-
-static GLboolean running;
-static int window_width = 640, window_height = 480;
 
 static void GLFWCALL window_size_callback(int width, int height)
 {
-    window_width = width;
-    window_height = height;
-
-    glViewport(0, 0, window_width, window_height);
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(0.f, window_width, 0.f, window_height);
-}
-
-static void GLFWCALL key_callback(int key, int action)
-{
-    if (key == GLFW_KEY_ESC)
-        running = GL_FALSE;
-}
-
-static void GLFWCALL char_callback(int character, int action)
-{
-}
-
-static void GLFWCALL mouse_button_callback(int button, int action)
-{
-}
-
-static void GLFWCALL mouse_position_callback(int x, int y)
-{
-}
-
-static void GLFWCALL mouse_wheel_callback(int position)
-{
+    glViewport(0, 0, width, height);
 }
 
 int main(void)
 {
-    GLFWvidmode mode;
+    int major, minor, rev;
+    glfwGetVersion(&major, &minor, &rev);
+
+    if (major != GLFW_VERSION_MAJOR ||
+        minor != GLFW_VERSION_MINOR ||
+        rev != GLFW_VERSION_REVISION)
+    {
+        fprintf(stderr, "GLFW library version mismatch\n");
+        exit(EXIT_FAILURE);
+    }
 
     if (!glfwInit())
     {
         fprintf(stderr, "Failed to initialize GLFW\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
-    glfwGetDesktopMode(&mode);
-
-    if (!glfwOpenWindow(mode.Width, mode.Height, 0, 0, 0, 0, 0, 0, GLFW_FULLSCREEN))
+    if (!glfwOpenWindow(0, 0, 0, 0, 0, 0, 0, 0, GLFW_WINDOW))
     {
-        glfwTerminate();
-
         fprintf(stderr, "Failed to open GLFW window\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
-    glfwSetWindowTitle("Fullscreen Input Detector");
-    glfwSetKeyCallback(key_callback);
-    glfwSetCharCallback(char_callback);
-    glfwSetMousePosCallback(mouse_position_callback);
-    glfwSetMouseButtonCallback(mouse_button_callback);
-    glfwSetMouseWheelCallback(mouse_wheel_callback);
+    glfwSetWindowTitle("Dynamic Linking Test");
     glfwSetWindowSizeCallback(window_size_callback);
     glfwSwapInterval(1);
+
+    glClearColor(0, 0, 0, 0);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    glfwSetTime(0.0);
-
-    running = GL_TRUE;
-
-    while (running)
+    while (glfwGetWindowParam(GLFW_OPENED))
     {
-        glClearColor((GLclampf) fabs(cos(glfwGetTime() * 4.f)), 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glfwSwapBuffers();
-
-        if (!glfwGetWindowParam(GLFW_OPENED))
-            running = GL_FALSE;
-
-        if (glfwGetTime() > 10.0)
-            running = GL_FALSE;
     }
 
     glfwTerminate();
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 

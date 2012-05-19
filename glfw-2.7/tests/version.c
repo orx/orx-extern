@@ -1,6 +1,6 @@
 //========================================================================
 // Version information dumper
-// Copyright (c) Camilla Berglund <elmindreda@users.sourceforge.net>
+// Copyright (c) Camilla Berglund <elmindreda@elmindreda.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -58,7 +58,7 @@ typedef const GLubyte * (APIENTRY *PFNGLGETSTRINGI) (GLenum, GLuint);
 
 static void usage(void)
 {
-    printf("version [-h] [-m MAJOR] [-n MINOR] [-d] [-f] [-p PROFILE]\n");
+    printf("version [-h] [-m MAJOR] [-n MINOR] [-d] [-l] [-f] [-p PROFILE]\n");
     printf("available profiles: core compat\n");
 }
 
@@ -147,12 +147,12 @@ int main(int argc, char** argv)
                 else
                 {
                     usage();
-                    exit(1);
+                    exit(EXIT_FAILURE);
                 }
                 break;
             default:
                 usage();
-                exit(1);
+                exit(EXIT_FAILURE);
         }
     }
 
@@ -162,14 +162,14 @@ int main(int argc, char** argv)
     if (!glfwInit())
     {
         fprintf(stderr, "Failed to initialize GLFW\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
-    if (major > 1)
+    if (major != 1 || minor != 1)
+    {
         glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, major);
-
-    if (minor > 0)
         glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, minor);
+    }
 
     if (debug)
         glfwOpenWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
@@ -188,7 +188,7 @@ int main(int argc, char** argv)
         glfwTerminate();
 
         fprintf(stderr, "Failed to open GLFW window\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     // Report GLFW version
@@ -248,6 +248,6 @@ int main(int argc, char** argv)
         list_extensions(major, minor);
 
     glfwTerminate();
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 

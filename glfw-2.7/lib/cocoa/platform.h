@@ -1,11 +1,10 @@
 //========================================================================
 // GLFW - An OpenGL framework
-// File:        platform.h
-// Platform:    Mac OS X
+// Platform:    Cocoa/NSOpenGL
 // API Version: 2.7
-// WWW:         http://glfw.sourceforge.net
+// WWW:         http://www.glfw.org/
 //------------------------------------------------------------------------
-// Copyright (c) 2002-2006 Camilla Berglund
+// Copyright (c) 2009-2010 Camilla Berglund <elmindreda@elmindreda.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -38,6 +37,7 @@
 #if defined(__OBJC__)
 #import <Cocoa/Cocoa.h>
 #else
+#include <ApplicationServices/ApplicationServices.h>
 typedef void *id;
 #endif
 
@@ -141,21 +141,25 @@ GLFWGLOBAL struct {
     // Window opening hints
     _GLFWhints      hints;
 
+    // Initial desktop mode
+    GLFWvidmode     desktopMode;
+
 // ========= PLATFORM SPECIFIC PART ======================================
 
     // Timer data
     struct {
-        double t0;
-    } Timer;
+        double base;
+        double resolution;
+    } timer;
 
     // dlopen handle for dynamically-loading extension function pointers
     void *OpenGLFramework;
 
-    int Unbundled;
+    id originalMode;
 
-    id DesktopMode;
+    id autoreleasePool;
 
-    id AutoreleasePool;
+    CGEventSourceRef eventSource;
 
 } _glfwLibrary;
 
@@ -262,6 +266,7 @@ pthread_mutex_lock( &_glfwThrd.CriticalSection );
 #define LEAVE_THREAD_CRITICAL_SECTION \
 pthread_mutex_unlock( &_glfwThrd.CriticalSection );
 
+
 //========================================================================
 // Prototypes for platform specific internal functions
 //========================================================================
@@ -270,8 +275,8 @@ pthread_mutex_unlock( &_glfwThrd.CriticalSection );
 void _glfwInitJoysticks( void );
 void _glfwTerminateJoysticks( void );
 
-
+// Time
+void _glfwInitTimer( void );
 
 
 #endif // _platform_h_
-

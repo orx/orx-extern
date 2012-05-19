@@ -1,6 +1,6 @@
 //========================================================================
 // Event linter (event spewer)
-// Copyright (c) Camilla Berglund <elmindreda@users.sourceforge.net>
+// Copyright (c) Camilla Berglund <elmindreda@elmindreda.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -33,9 +33,12 @@
 
 #include <GL/glfw.h>
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <locale.h>
 
 static GLboolean keyrepeat  = 0;
 static GLboolean systemkeys = 1;
@@ -149,6 +152,18 @@ static const char* get_button_name(int button)
     return NULL;
 }
 
+static const char* get_character_string(int character)
+{
+  static char result[6 + 1];
+
+  int length = wctomb(result, character);
+  if (length == -1)
+    length = 0;
+
+  result[length] = '\0';
+  return result;
+}
+
 static void GLFWCALL window_size_callback(int width, int height)
 {
     printf("%08x at %0.3f: Window size: %i %i\n",
@@ -241,14 +256,13 @@ static void GLFWCALL char_callback(int character, int action)
 {
     printf("%08x at %0.3f: Character 0x%04x", counter++, glfwGetTime(), character);
 
-    if (isgraph(character))
-        printf(" (%c) %s\n", character, get_action_name(action));
-    else
-        printf(" %s\n", get_action_name(action));
+    printf(" (%s) %s\n", get_character_string(character), get_action_name(action));
 }
 
 int main(void)
 {
+    setlocale(LC_ALL, "");
+
     if (!glfwInit())
     {
         fprintf(stderr, "Failed to initialize GLFW\n");

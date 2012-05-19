@@ -1,11 +1,11 @@
 //========================================================================
 // GLFW - An OpenGL framework
-// File:        glfw.pas
 // Platform:    Delphi/FPC + Windows/Linux/Mac OS
 // API version: 2.7
-// WWW:         http://glfw.sourceforge.net
+// WWW:         http://www.glfw.org/
 //------------------------------------------------------------------------
-// Copyright (c) 2002-2005 Camilla Berglund
+// Copyright (c) 2002-2006 Marcus Geelnard
+// Copyright (c) 2006-2010 Camilla Berglund <elmindreda@elmindreda.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -55,7 +55,7 @@ const
   //========================================================================
   GLFW_VERSION_MAJOR    = 2;
   GLFW_VERSION_MINOR    = 7;
-  GLFW_VERSION_REVISION = 0;
+  GLFW_VERSION_REVISION = 6;
 
   //========================================================================
   // Input handling definitions

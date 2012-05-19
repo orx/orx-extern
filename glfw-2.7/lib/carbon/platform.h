@@ -1,11 +1,13 @@
 //========================================================================
 // GLFW - An OpenGL framework
-// File:        platform.h
-// Platform:    Mac OS X
+// Platform:    Carbon/AGL/CGL
 // API Version: 2.7
-// WWW:         http://glfw.sourceforge.net
+// WWW:         http://www.glfw.org/
 //------------------------------------------------------------------------
-// Copyright (c) 2002-2006 Camilla Berglund
+// Copyright (c) 2002-2006 Marcus Geelnard
+// Copyright (c) 2003      Keith Bauer
+// Copyright (c) 2003-2010 Camilla Berglund <elmindreda@elmindreda.org>
+// Copyright (c) 2006-2007 Robin Leffmann
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -125,8 +127,6 @@ typedef const GLubyte * (APIENTRY *PFNGLGETSTRINGIPROC) (GLenum, GLuint);
 //------------------------------------------------------------------------
 typedef intptr_t GLFWintptr;
 
-
-GLFWGLOBAL CFDictionaryRef _glfwDesktopVideoMode;
 
 //------------------------------------------------------------------------
 // Window structure
@@ -277,6 +277,9 @@ GLFWGLOBAL struct {
     // Window opening hints
     _GLFWhints      hints;
 
+    // Initial desktop mode
+    GLFWvidmode     desktopMode;
+
 // ========= PLATFORM SPECIFIC PART ======================================
 
     // Timer data
@@ -328,5 +331,6 @@ pthread_mutex_unlock( &_glfwThrd.CriticalSection );
 //========================================================================
 
 void  _glfwChangeToResourcesDirectory( void );
+void  _glfwSaveDesktopMode( void );
 
 #endif // _platform_h_

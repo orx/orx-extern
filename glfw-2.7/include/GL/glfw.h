@@ -1,10 +1,10 @@
 /************************************************************************
  * GLFW - An OpenGL framework
- * File:        glfw.h
  * API version: 2.7
- * WWW:         http://glfw.sourceforge.net
+ * WWW:         http://www.glfw.org/
  *------------------------------------------------------------------------
- * Copyright (c) 2002-2006 Camilla Berglund
+ * Copyright (c) 2002-2006 Marcus Geelnard
+ * Copyright (c) 2006-2010 Camilla Berglund
  *
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -160,18 +160,23 @@ extern "C" {
  * (which is not a nice solution for portable programs).
  */
 #if defined(__APPLE_CC__)
- #include <OpenGL/gl.h>
+ #if defined(GLFW_INCLUDE_GL3)
+  #include <OpenGL/gl3.h>
+ #else
+  #define GL_GLEXT_LEGACY
+  #include <OpenGL/gl.h>
+ #endif
  #ifndef GLFW_NO_GLU
   #include <OpenGL/glu.h>
  #endif
 #else
- #ifdef GLFW_INCLUDE_GL3
+ #if defined(GLFW_INCLUDE_GL3)
   #include <GL3/gl3.h>
  #else
   #include <GL/gl.h>
-  #ifndef GLFW_NO_GLU
-   #include <GL/glu.h>
-  #endif
+ #endif
+ #ifndef GLFW_NO_GLU
+  #include <GL/glu.h>
  #endif
 #endif
 
@@ -182,7 +187,7 @@ extern "C" {
 
 #define GLFW_VERSION_MAJOR    2
 #define GLFW_VERSION_MINOR    7
-#define GLFW_VERSION_REVISION 0
+#define GLFW_VERSION_REVISION 6
 
 
 /*************************************************************************

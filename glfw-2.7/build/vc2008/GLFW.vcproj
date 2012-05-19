@@ -109,6 +109,7 @@
 				AdditionalIncludeDirectories="&quot;$(ProjectDir)../../lib&quot;;&quot;$(ProjectDir)../../lib/win32&quot;;&quot;$(ProjectDir)../../include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="0"
+				BufferSecurityCheck="false"
 				FloatingPointModel="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"

@@ -61,26 +61,23 @@ if [ "x$CC" = x ]; then
   CC=cc
 fi
 
-# These will contain flags shared between the GLFW library and binaries
+# These will contain flags needed by both the GLFW library and programs
 # They are also used by the compile and link tests below
 # Note that CFLAGS and LFLAGS remain unmodified and are checked again
 # before file generation
 GLFW_CFLAGS="$CFLAGS"
-GLFW_LFLAGS="$LFLAGS"
+GLFW_LFLAGS="$LFLAGS -lGL"
 
-# These will contain all flags needed by the GLFW library
+# These will contain flags needed by the GLFW library
 GLFW_LIB_CFLAGS=
 GLFW_LIB_LFLAGS=
 
-# These will contain all flags needed by binaries
+# These will contain flags needed by programs using GLFW
 GLFW_BIN_CFLAGS=
 GLFW_BIN_LFLAGS=
 
-# This will contain platform-specific flags for the GLFW shared library
+# This will contain flags needed by the GLFW shared library
 SOFLAGS=
-
-# This will contain all the libraries needed by GLFW
-LIBS="-lGL -lX11"
 
 
 ##########################################################################
@@ -145,7 +142,7 @@ fi
 # Compilation commands
 ##########################################################################
 compile='$CC -c $GLFW_CFLAGS conftest.c 1>&5'
-link='$CC -o conftest $GLFW_CFLAGS $GLFW_LFLAGS conftest.c $LIBS 1>&5'
+link='$CC -o conftest $GLFW_CFLAGS conftest.c $GLFW_LFLAGS 1>&5'
 
 
 ##########################################################################
@@ -197,14 +194,14 @@ echo "$has_xrandr" 1>&6
 
 if [ "x$has_xrandr" = xyes ]; then
   GLFW_LIB_CFLAGS="$GLFW_LIB_CFLAGS -D_GLFW_HAS_XRANDR"
-  LIBS="$LIBS -lXrandr"
+  GLFW_LIB_LFLAGS="$GLFW_LIB_LFLAGS -lXrandr"
 fi
 
 
 ##########################################################################
 # Check for X11 VidMode availability
 ##########################################################################
-if [ "x$has_xrandr" != xyes ]; then
+if [ "x$has_xrandr" = xno ]; then
 
   echo -n "Checking for X11 VidMode support... " 1>&6
   echo "$self: Checking for X11 VidMode support" >&5
@@ -234,7 +231,7 @@ EOF
 
   if [ "x$has_xf86vm" = xyes ]; then
     GLFW_LIB_CFLAGS="$GLFW_LIB_CFLAGS -D_GLFW_HAS_XF86VIDMODE"
-    LIBS="$LIBS -lXxf86vm -lXext"
+    GLFW_LIB_LFLAGS="$GLFW_LIB_LFLAGS -lXxf86vm -lXext"
   fi
 
 fi
@@ -254,18 +251,18 @@ EOF
 
 # Save original values
 CFLAGS_OLD="$GLFW_CFLAGS"
-LIBS_OLD="$LIBS"
+LFLAGS_OLD="$GLFW_LFLAGS"
 
 # These will contain the extra flags, if any
 CFLAGS_THREAD=
-LIBS_THREAD=
+LFLAGS_THREAD=
 
 # Try -pthread (most systems)
 if [ "x$has_pthread" = xno ]; then
   CFLAGS_THREAD="-pthread"
-  LIBS_THREAD="-pthread"
+  LFLAGS_THREAD="-pthread"
   GLFW_CFLAGS="$CFLAGS_OLD $CFLAGS_THREAD"
-  LIBS="$LIBS_OLD $LIBS_THREAD"
+  GLFW_LFLAGS="$LFLAGS_OLD $LFLAGS_THREAD"
   if { (eval echo $self: \"$link\") 1>&5; (eval $link) 2>&5; }; then
     rm -rf conftest*
     has_pthread=yes
@@ -278,9 +275,9 @@ fi
 # Try -lpthread 
 if [ "x$has_pthread" = xno ]; then
   CFLAGS_THREAD="-D_REENTRANT"
-  LIBS_THREAD="-lpthread"
+  LFLAGS_THREAD="-lpthread"
   GLFW_CFLAGS="$CFLAGS_OLD $CFLAGS_THREAD" 
-  LIBS="$LIBS_OLD $LIBS_THREAD"
+  GLFW_LFLAGS="$LFLAGS_OLD $LFLAGS_THREAD"
   if { (eval echo $self: \"$link\") 1>&5; (eval $link) 2>&5; }; then
     rm -rf conftest*
     has_pthread=yes
@@ -293,9 +290,9 @@ fi
 # Try -lsocket (e.g. QNX)
 if [ "x$has_pthread" = xno ]; then
   CFLAGS_THREAD=
-  LIBS_THREAD="-lsocket"
-  GLFW_CFLAGS="$CFLAGS_OLD $CFLAGS_THREAD" 
-  LIBS="$LIBS_OLD $LIBS_THREAD"
+  LFLAGS_THREAD="-lsocket"
+  GLFW_CFLAGS="$CFLAGS_OLD $CFLAGS_THREAD"
+  GLFW_LFLAGS="$LFLAGS_OLD $LFLAGS_THREAD"
   if { (eval echo $self: \"$link\") 1>&5; (eval $link) 2>&5; }; then
     rm -rf conftest*
     has_pthread=yes
@@ -307,13 +304,13 @@ fi
 
 # Restore original values
 GLFW_CFLAGS="$CFLAGS_OLD"
-LIBS="$LIBS_OLD"
+GLFW_LFLAGS="$LFLAGS_OLD"
 
 echo "$has_pthread" 1>&6
 
 if [ "x$has_pthread" = xyes ]; then
   GLFW_CFLAGS="$GLFW_CFLAGS $CFLAGS_THREAD"
-  LIBS="$LIBS $LIBS_THREAD"
+  GLFW_LFLAGS="$GLFW_LFLAGS $LFLAGS_THREAD"
   GLFW_LIB_CFLAGS="$GLFW_LIB_CFLAGS -D_GLFW_HAS_PTHREAD"
 fi
 
@@ -327,7 +324,8 @@ if [ "x$has_pthread" = xyes ]; then
   echo "$self: Checking for sched_yield" >&5
   has_sched_yield=no
 
-  LIBS_OLD="$LIBS"
+  LFLAGS_OLD="$GLFW_LFLAGS"
+  LFLAGS_YIELD=
 
   cat > conftest.c <<EOF
 #include <pthread.h>
@@ -335,6 +333,7 @@ int main() {sched_yield(); return 0;}
 EOF
 
   if { (eval echo $self: \"$compile\") 1>&5; (eval $compile) 2>&5; }; then
+    rm -f conftest*
     has_sched_yield=yes
   else
     echo "$self: failed program was:" >&5
@@ -342,24 +341,78 @@ EOF
   fi
 
   if [ "x$has_sched_yield" = xno ]; then
-    LIBS="$LIBS_OLD -lrt"
+    LFLAGS_YIELD="-lrt"
+    GLFW_LFLAGS="$LFLAGS_OLD $LFLAGS_YIELD"
     if { (eval echo $self: \"$link\") 1>&5; (eval $link) 2>&5; }; then
+      rm -f conftest*
       has_sched_yield=yes
     else
       echo "$self: failed program was:" >&5
       cat conftest.c >&5
-      LIBS="$LIBS_OLD"
     fi
   fi
 
-  rm -f conftest*
+  GLFW_LFLAGS="$LFLAGS_OLD"
 
   echo "$has_sched_yield" 1>&6
 
   if [ "x$has_sched_yield" = xyes ]; then
     GLFW_LIB_CFLAGS="$GLFW_LIB_CFLAGS -D_GLFW_HAS_SCHED_YIELD"
+    GLFW_LIB_LFLAGS="$GLFW_LIB_LFLAGS $LFLAGS_YIELD"
   fi
 
+fi
+
+
+##########################################################################
+# Check for clock_gettime support
+##########################################################################
+echo -n "Checking for clock_gettime... " 1>&6
+echo "$self: Checking for clock_gettime" >&5
+has_clock_gettime=no
+
+LFLAGS_OLD="$GLFW_LFLAGS"
+LFLAGS_CLOCK=
+GLFW_LFLAGS="$LFLAGS_CLOCK"
+
+cat > conftest.c <<EOF
+#include <time.h>
+#include <unistd.h>
+int main() {
+#if defined( CLOCK_MONOTONIC )
+clock_gettime(0, 0);
+#else
+#error "clock_gettime support not detected"
+#endif
+return 0;}
+EOF
+
+if { (eval echo $self: \"$link\") 1>&5; (eval $link) 2>&5; }; then
+  rm -f conftest*
+  has_clock_gettime=yes
+else
+  echo "$self: failed program was:" >&5
+  cat conftest.c >&5
+fi
+
+if [ "x$has_clock_gettime" = xno ]; then
+  LFLAGS_CLOCK="-lrt"
+  GLFW_LFLAGS="$LFLAGS_CLOCK"
+  if { (eval echo $self: \"$link\") 1>&5; (eval $link) 2>&5; }; then
+    rm -f conftest*
+    has_clock_gettime=yes
+  else
+    echo "$self: failed program was:" >&5
+    cat conftest.c >&5
+  fi
+fi
+
+GLFW_LFLAGS="$LFLAGS_OLD"
+
+echo "$has_clock_gettime" 1>&6
+
+if [ "x$has_clock_gettime" = xyes ]; then
+  GLFW_LIB_LFLAGS="$GLFW_LIB_LFLAGS $LFLAGS_CLOCK"
 fi
 
 
@@ -451,30 +504,20 @@ fi
 
 
 ##########################################################################
-# Check for dlopen support
+# Check for dlopen support if necessary
 ##########################################################################
-echo -n "Checking for dlopen... " 1>&6
-echo "$self: Checking for dlopen" >&5
-has_dlopen=no
+if [ "x$has_glXGetProcAddress" = xno ]; then
 
-cat > conftest.c <<EOF
+  echo -n "Checking for dlopen... " 1>&6
+  echo "$self: Checking for dlopen" >&5
+  has_dlopen=no
+
+  cat > conftest.c <<EOF
 #include <dlfcn.h>
 int main() {void *l=dlopen("libGL.so",RTLD_LAZY|RTLD_GLOBAL); return 0;}
 EOF
 
-# First try without -ldl
-if { (eval echo $self: \"$link\") 1>&5; (eval $link) 2>&5; }; then
-  rm -rf conftest*
-  has_dlopen=yes
-else
-  echo "$self: failed program was:" >&5
-  cat conftest.c >&5
-fi
-
-# Now try with -ldl if the previous attempt failed
-if [ "x$has_dlopen" = xno ]; then
-  LIBS_OLD="$LIBS"
-  LIBS="$LIBS -ldl"
+  # First try without -ldl
   if { (eval echo $self: \"$link\") 1>&5; (eval $link) 2>&5; }; then
     rm -rf conftest*
     has_dlopen=yes
@@ -482,16 +525,31 @@ if [ "x$has_dlopen" = xno ]; then
     echo "$self: failed program was:" >&5
     cat conftest.c >&5
   fi
+
+  # Now try with -ldl if the previous attempt failed
   if [ "x$has_dlopen" = xno ]; then
-    LIBS="$LIBS_OLD"
+    LFLAGS_OLD="$GLFW_LFLAGS"
+    GLFW_LFLAGS="$GLFW_LFLAGS -ldl"
+    if { (eval echo $self: \"$link\") 1>&5; (eval $link) 2>&5; }; then
+      rm -rf conftest*
+      has_dlopen=yes
+    else
+      echo "$self: failed program was:" >&5
+      cat conftest.c >&5
+    fi
+    GLFW_LFLAGS="$LFLAGS_OLD"
+    if [ "x$has_dlopen" = xyes ]; then
+      GLFW_LIB_LFLAGS="$GLFW_LIB_LFLAGS -ldl"
+    fi
   fi
-fi
-rm -f conftest*
+  rm -f conftest*
 
-echo "$has_dlopen" 1>&6
+  echo "$has_dlopen" 1>&6
 
-if [ "x$has_dlopen" = xyes ]; then
-  GLFW_LIB_CFLAGS="$GLFW_LIB_CFLAGS -D_GLFW_HAS_DLOPEN"
+  if [ "x$has_dlopen" = xyes ]; then
+    GLFW_LIB_CFLAGS="$GLFW_LIB_CFLAGS -D_GLFW_HAS_DLOPEN"
+  fi
+
 fi
 
 
@@ -566,13 +624,16 @@ GLFW_BIN_CFLAGS="-I../include $GLFW_BIN_CFLAGS"
 
 if [ "x$CFLAGS" = x ]; then
   if [ "x$use_gcc" = xyes ]; then
-    GLFW_CFLAGS="$GLFW_CFLAGS -O2 -Wall -fPIC"
+    GLFW_CFLAGS="$GLFW_CFLAGS -O2 -Wall"
   else
     GLFW_CFLAGS="$GLFW_CFLAGS -O"
   fi
 fi
 
-GLFW_BIN_LFLAGS="-lGLU $LIBS -lm"
+GLFW_LFLAGS="$GLFW_LFLAGS -lm"
+
+GLFW_LIB_LFLAGS="$GLFW_LIB_LFLAGS -lX11"
+GLFW_BIN_LFLAGS="-lGLU $GLFW_BIN_LFLAGS"
 
 
 ##########################################################################
@@ -597,7 +658,6 @@ CC           = $CC
 CFLAGS       = $GLFW_LIB_CFLAGS $GLFW_CFLAGS
 SOFLAGS      = $SOFLAGS
 LFLAGS       = $GLFW_LIB_LFLAGS $GLFW_LFLAGS
-LIBS         = $LIBS
 
 EOF
 cat './lib/x11/Makefile.x11.in' >>$MKNAME
@@ -619,8 +679,10 @@ cat > "$MKNAME" <<EOF
 CC     = $CC
 CFLAGS = $GLFW_BIN_CFLAGS $GLFW_CFLAGS
 
-LIB    = ../lib/x11/libglfw.a
-LFLAGS = \$(LIB) $GLFW_BIN_LFLAGS $GLFW_LFLAGS
+LIB      = ../lib/x11/libglfw.a
+SOLIB    = ../lib/x11/libglfw.so
+LFLAGS   = \$(LIB) $GLFW_LIB_LFLAGS $GLFW_BIN_LFLAGS $GLFW_LFLAGS
+SO_LFLAGS = \$(SOLIB) $GLFW_BIN_LFLAGS $GLFW_LFLAGS
 
 EOF
 cat './examples/Makefile.x11.in' >>$MKNAME
@@ -642,8 +704,10 @@ cat > "$MKNAME" <<EOF
 CC     = $CC
 CFLAGS = $GLFW_BIN_CFLAGS $GLFW_CFLAGS
 
-LIB    = ../lib/x11/libglfw.a
-LFLAGS = \$(LIB) $GLFW_BIN_LFLAGS $GLFW_LFLAGS
+LIB      = ../lib/x11/libglfw.a
+SOLIB    = ../lib/x11/libglfw.so
+LFLAGS   = \$(LIB) $GLFW_LIB_LFLAGS $GLFW_BIN_LFLAGS $GLFW_LFLAGS
+SO_LFLAGS = \$(SOLIB) $GLFW_BIN_LFLAGS $GLFW_LFLAGS
 
 EOF
 cat './tests/Makefile.x11.in' >>$MKNAME
@@ -658,17 +722,26 @@ echo "Creating $MKNAME" 1>&6
 
 echo "$self: Creating $MKNAME" >&5
 
+if [ "x$has_xrandr" = xyes ]; then
+    PKG_LIBS="${PKG_LIBS} xrandr"
+fi
+
+if [ "x$has_xf86vm" = xyes ]; then
+    PKG_LIBS="${PKG_LIBS} xxf86vm"
+fi
+
 cat > "$MKNAME" <<EOF
 prefix=@PREFIX@
-exec_prefix=@PREFIX@
-libdir=@PREFIX@/lib
-includedir=@PREFIX@/include
+exec_prefix=\${prefix}
+includedir=\${prefix}/include
+libdir=\${exec_prefix}/lib
 
 Name: GLFW
 Description: A portable framework for OpenGL development
-Version: 2.7
-URL: http://glfw.sourceforge.net/
-Libs: -L\${libdir} -lglfw $GLFW_LFLAGS $LIBS -lm
+Version: 2.7.4
+URL: http://www.glfw.org/
+Requires.private: gl x11 $PKG_LIBS
+Libs: -L\${libdir} -lglfw $LFLAGS_THREAD
 Cflags: -I\${includedir} $CFLAGS_THREAD 
 EOF
 

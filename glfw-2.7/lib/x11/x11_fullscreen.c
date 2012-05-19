@@ -1,11 +1,11 @@
 //========================================================================
 // GLFW - An OpenGL framework
-// File:        x11_fullscreen.c
-// Platform:    X11 (Unix)
+// Platform:    X11/GLX
 // API version: 2.7
-// WWW:         http://glfw.sourceforge.net
+// WWW:         http://www.glfw.org/
 //------------------------------------------------------------------------
-// Copyright (c) 2002-2006 Camilla Berglund
+// Copyright (c) 2002-2006 Marcus Geelnard
+// Copyright (c) 2006-2010 Camilla Berglund <elmindreda@elmindreda.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -295,6 +295,47 @@ void _glfwSetVideoMode( int screen, int *width, int *height, int *rate )
 }
 
 
+//========================================================================
+// Restore the previously saved (original) video mode
+//========================================================================
+
+void _glfwRestoreVideoMode( void )
+{
+    if( _glfwWin.FS.modeChanged )
+    {
+#if defined( _GLFW_HAS_XRANDR )
+        if( _glfwLibrary.XRandR.available )
+        {
+            XRRScreenConfiguration *sc;
+
+            sc = XRRGetScreenInfo( _glfwLibrary.display, _glfwWin.root );
+
+            XRRSetScreenConfig( _glfwLibrary.display,
+                                sc,
+                                _glfwWin.root,
+                                _glfwWin.FS.oldSizeID,
+                                _glfwWin.FS.oldRotation,
+                                CurrentTime );
+
+            XRRFreeScreenConfigInfo( sc );
+        }
+#elif defined( _GLFW_HAS_XF86VIDMODE )
+        if( _glfwLibrary.XF86VidMode.available )
+        {
+            // Unlock mode switch
+            XF86VidModeLockModeSwitch( _glfwLibrary.display, _glfwWin.screen, 0 );
+
+            // Change the video mode back to the old mode
+            XF86VidModeSwitchToMode( _glfwLibrary.display,
+                                    _glfwWin.screen,
+                                    &_glfwWin.FS.oldMode );
+        }
+#endif
+        _glfwWin.FS.modeChanged = GL_FALSE;
+    }
+}
+
+
 
 //************************************************************************
 //****               Platform implementation functions                ****
@@ -319,14 +360,6 @@ int _glfwPlatformGetVideoModes( GLFWvidmode *list, int maxcount )
     int viscount, rgbcount, rescount;
     int *rgbarray;
     struct _glfwResolution *resarray;
-#if defined( _GLFW_HAS_XRANDR )
-    XRRScreenConfiguration *sc;
-    XRRScreenSize *sizelist;
-    int sizecount;
-#elif defined( _GLFW_HAS_XF86VIDMODE )
-    XF86VidModeModeInfo **modelist;
-    int modecount, width, height;
-#endif
 
     // Get display and screen
     dpy = _glfwLibrary.display;
@@ -380,6 +413,10 @@ int _glfwPlatformGetVideoModes( GLFWvidmode *list, int maxcount )
 #if defined( _GLFW_HAS_XRANDR )
     if( _glfwLibrary.XRandR.available )
     {
+        XRRScreenConfiguration *sc;
+        XRRScreenSize *sizelist;
+        int sizecount;
+
         sc = XRRGetScreenInfo( dpy, RootWindow( dpy, screen ) );
         sizelist = XRRConfigSizes( sc, &sizecount );
 
@@ -397,6 +434,9 @@ int _glfwPlatformGetVideoModes( GLFWvidmode *list, int maxcount )
 #elif defined( _GLFW_HAS_XF86VIDMODE )
     if( _glfwLibrary.XF86VidMode.available )
     {
+        XF86VidModeModeInfo **modelist;
+        int modecount, width, height;
+
         XF86VidModeGetAllModeLines( dpy, screen, &modecount, &modelist );
 
         resarray = (struct _glfwResolution*) malloc( sizeof(struct _glfwResolution) * modecount );
@@ -468,11 +508,7 @@ int _glfwPlatformGetVideoModes( GLFWvidmode *list, int maxcount )
 void _glfwPlatformGetDesktopMode( GLFWvidmode *mode )
 {
     Display *dpy;
-    int     bpp, screen;
-#if defined( _GLFW_HAS_XF86VIDMODE )
-    XF86VidModeModeInfo **modelist;
-    int     modecount;
-#endif
+    int bpp, screen;
 
     // Get display and screen
     dpy = _glfwLibrary.display;
@@ -497,6 +533,9 @@ void _glfwPlatformGetDesktopMode( GLFWvidmode *mode )
 #elif defined( _GLFW_HAS_XF86VIDMODE )
     if( _glfwLibrary.XF86VidMode.available )
     {
+        XF86VidModeModeInfo **modelist;
+        int modecount;
+
         if( _glfwWin.FS.modeChanged )
         {
             // The old (desktop) mode is stored in _glfwWin.FS.oldMode
@@ -517,7 +556,7 @@ void _glfwPlatformGetDesktopMode( GLFWvidmode *mode )
             XFree( modelist );
         }
 
-    return;
+        return;
     }
 #endif
 

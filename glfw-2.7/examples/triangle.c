@@ -1,9 +1,7 @@
 //========================================================================
 // This is a small test application for GLFW.
 // The program opens a window (640x480), and renders a spinning colored
-// triangle (it is controlled with both the GLFW timer and the mouse). It
-// also calculates the rendering speed (FPS), which is displayed in the
-// window title bar.
+// triangle (it is controlled with both the GLFW timer and the mouse).
 //========================================================================
 
 #include <stdio.h>
@@ -11,14 +9,10 @@
 #include <GL/glfw.h>
 
 
-//========================================================================
-// main()
-//========================================================================
-
 int main( void )
 {
-    int     width, height, running, x;
-    double  t;
+    int width, height, x;
+    double t;
 
     // Initialise GLFW
     if( !glfwInit() )
@@ -27,7 +21,7 @@ int main( void )
         exit( EXIT_FAILURE );
     }
 
-    // Open OpenGL window
+    // Open a window and create its OpenGL context
     if( !glfwOpenWindow( 640, 480, 0,0,0,0, 0,0, GLFW_WINDOW ) )
     {
         fprintf( stderr, "Failed to open GLFW window\n" );
@@ -38,28 +32,26 @@ int main( void )
 
     glfwSetWindowTitle( "Spinning Triangle" );
 
-    // Enable sticky keys
+    // Ensure we can capture the escape key being pressed below
     glfwEnable( GLFW_STICKY_KEYS );
 
     // Enable vertical sync (on cards that support it)
     glfwSwapInterval( 1 );
 
-    // Main loop
-    running = GL_TRUE;
-    while( running )
+    do
     {
-        // Get time and mouse position
         t = glfwGetTime();
         glfwGetMousePos( &x, NULL );
 
         // Get window size (may be different than the requested size)
         glfwGetWindowSize( &width, &height );
+
+        // Special case: avoid division by zero below
         height = height > 0 ? height : 1;
 
-        // Set viewport
         glViewport( 0, 0, width, height );
 
-        // Clear color buffer
+        // Clear color buffer to black
         glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
         glClear( GL_COLOR_BUFFER_BIT );
 
@@ -90,10 +82,9 @@ int main( void )
         // Swap buffers
         glfwSwapBuffers();
 
-        // Check if the ESC key was pressed or the window was closed
-        running = !glfwGetKey( GLFW_KEY_ESC ) &&
-                  glfwGetWindowParam( GLFW_OPENED );
-    }
+    } // Check if the ESC key was pressed or the window was closed
+    while( glfwGetKey( GLFW_KEY_ESC ) != GLFW_PRESS &&
+           glfwGetWindowParam( GLFW_OPENED ) );
 
     // Close OpenGL window and terminate GLFW
     glfwTerminate();

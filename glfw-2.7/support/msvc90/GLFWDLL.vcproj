@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="GLFWDLL"
 	ProjectGUID="{EE39B12C-97CF-4172-81FD-6ADE6B7F7B7B}"
 	RootNamespace="GLFWDLL"
@@ -19,7 +19,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)DLL"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
@@ -42,14 +42,15 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(ProjectDir)../../lib&quot;;&quot;$(ProjectDir)../../lib/win32&quot;;&quot;$(ProjectDir)../../include&quot;"
-				PreprocessorDefinitions="GLFW_BUILD_DLL"
-				MinimalRebuild="true"
+				PreprocessorDefinitions="GLFW_BUILD_DLL;_GLFW_NO_DLOAD_GDI32;_GLFW_NO_DLOAD_WINMM"
+				MinimalRebuild="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="4"
+				CompileAs="1"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -62,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib"
+				AdditionalDependencies="opengl32.lib winmm.lib"
 				OutputFile="$(OutDir)\GLFW.dll"
 				LinkIncremental="2"
 				ModuleDefinitionFile="$(ProjectDir)\..\..\lib\win32\glfwdll.def"
@@ -98,10 +99,10 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)DLL"
 			ConfigurationType="2"
 			CharacterSet="2"
-			WholeProgramOptimization="1"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -121,12 +122,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="&quot;$(ProjectDir)../../lib&quot;;&quot;$(ProjectDir)../../lib/win32&quot;;&quot;$(ProjectDir)../../include&quot;"
-				PreprocessorDefinitions="GLFW_BUILD_DLL"
+				PreprocessorDefinitions="GLFW_BUILD_DLL;_GLFW_NO_DLOAD_GDI32;_GLFW_NO_DLOAD_WINMM"
+				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="0"
+				CompileAs="1"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -139,11 +141,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib"
+				AdditionalDependencies="opengl32.lib winmm.lib"
 				OutputFile="$(OutDir)\GLFW.dll"
 				LinkIncremental="1"
 				ModuleDefinitionFile="$(ProjectDir)\..\..\lib\win32\glfwdll.def"
-				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"

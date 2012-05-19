@@ -1,11 +1,13 @@
 //========================================================================
 // GLFW - An OpenGL framework
-// File:        macosx_init.c
-// Platform:    Mac OS X
+// Platform:    Carbon/AGL/CGL
 // API Version: 2.7
-// WWW:         http://glfw.sourceforge.net
+// WWW:         http://www.glfw.org/
 //------------------------------------------------------------------------
-// Copyright (c) 2002-2006 Camilla Berglund
+// Copyright (c) 2002-2006 Marcus Geelnard
+// Copyright (c) 2003      Keith Bauer
+// Copyright (c) 2003-2010 Camilla Berglund <elmindreda@elmindreda.org>
+// Copyright (c) 2006-2007 Robin Leffmann
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -41,7 +43,17 @@ void *KCHRPtr;
 
 
 //========================================================================
-// _glfwInitThreads() - Initialize GLFW thread package
+// Terminate GLFW when exiting application
+//========================================================================
+
+static void glfw_atexit( void )
+{
+    glfwTerminate();
+}
+
+
+//========================================================================
+// Initialize GLFW thread package
 //========================================================================
 
 static void _glfwInitThreads( void )
@@ -69,6 +81,11 @@ static void _glfwInitThreads( void )
     _glfwLibrary.Unbundled = 1; \
     return
 
+//========================================================================
+// Changes the current directory to the Resources directory of the bundle
+// we're in, or leaves it alone if we're not inside a bundle
+//========================================================================
+
 void _glfwChangeToResourcesDirectory( void )
 {
     CFBundleRef mainBundle = CFBundleGetMainBundle();
@@ -79,7 +96,7 @@ void _glfwChangeToResourcesDirectory( void )
 
     CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL( mainBundle );
     char resourcesPath[ _GLFW_MAX_PATH_LENGTH ];
-    
+
     CFStringRef lastComponent = CFURLCopyLastPathComponent( resourcesURL );
     if( kCFCompareEqualTo != CFStringCompare(
             CFSTR( "Resources" ),
@@ -88,7 +105,7 @@ void _glfwChangeToResourcesDirectory( void )
     {
         UNBUNDLED;
     }
-    
+
     CFRelease( lastComponent );
 
     if( !CFURLGetFileSystemRepresentation( resourcesURL,
@@ -108,6 +125,14 @@ void _glfwChangeToResourcesDirectory( void )
     }
 }
 
+//************************************************************************
+//****               Platform implementation functions                ****
+//************************************************************************
+
+//========================================================================
+// Initialize various GLFW state
+//========================================================================
+
 int _glfwPlatformInit( void )
 {
     struct timeval tv;
@@ -117,11 +142,11 @@ int _glfwPlatformInit( void )
     _glfwWin.aglContext = NULL;
     _glfwWin.cglContext = NULL;
     _glfwWin.windowUPP = NULL;
-    
+
     _glfwInput.Modifiers = 0;
-    
+
     _glfwLibrary.Unbundled = 0;
-    
+
     _glfwLibrary.Libs.OpenGLFramework =
         CFBundleGetBundleWithIdentifier( CFSTR( "com.apple.opengl" ) );
     if( _glfwLibrary.Libs.OpenGLFramework == NULL )
@@ -130,12 +155,10 @@ int _glfwPlatformInit( void )
         return GL_FALSE;
     }
 
-    _glfwDesktopVideoMode = CGDisplayCurrentMode( kCGDirectMainDisplay );
-    if( _glfwDesktopVideoMode == NULL )
-    {
-        fprintf( stderr, "glfwInit failing because it kind find the desktop display mode\n" );
-        return GL_FALSE;
-    }
+    _glfwPlatformGetDesktopMode( &_glfwLibrary.desktopMode );
+
+    // Install atexit routine
+    atexit( glfw_atexit );
 
     _glfwInitThreads();
 
@@ -158,6 +181,10 @@ int _glfwPlatformInit( void )
 
     return GL_TRUE;
 }
+
+//========================================================================
+// Close window and kill all threads
+//========================================================================
 
 int _glfwPlatformTerminate( void )
 {

@@ -1,10 +1,10 @@
 //========================================================================
 // GLFW - An OpenGL framework
-// File:        glfw.d
 // API version: 2.7
-// WWW:         http://glfw.sourceforge.net
+// WWW:         http://www.glfw.org/
 //------------------------------------------------------------------------
-// Copyright (c) 2002-2005 Camilla Berglund
+// Copyright (c) 2002-2006 Marcus Geelnard
+// Copyright (c) 2006-2010 Camilla Berglund <elmindreda@elmindreda.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -39,7 +39,7 @@ extern(System):
 
 const int GLFW_VERSION_MAJOR      = 2;
 const int GLFW_VERSION_MINOR      = 7;
-const int GLFW_VERSION_REVISION   = 0;
+const int GLFW_VERSION_REVISION   = 6;
 
 
 //========================================================================
@@ -261,15 +261,15 @@ alias void* GLFWmutex;
 alias void* GLFWcond;
 
 // Function pointer types
-typedef void (* GLFWwindowsizefun)(int, int);
-typedef int  (* GLFWwindowclosefun)();
-typedef void (* GLFWwindowrefreshfun)();
-typedef void (* GLFWmousebuttonfun)(int, int);
-typedef void (* GLFWmouseposfun)(int, int);
-typedef void (* GLFWmousewheelfun)(int);
-typedef void (* GLFWkeyfun)(int, int);
-typedef void (* GLFWcharfun)(int, int);
-typedef void (* GLFWthreadfun)(void *);
+alias void (* GLFWwindowsizefun)(int, int);
+alias int  (* GLFWwindowclosefun)();
+alias void (* GLFWwindowrefreshfun)();
+alias void (* GLFWmousebuttonfun)(int, int);
+alias void (* GLFWmouseposfun)(int, int);
+alias void (* GLFWmousewheelfun)(int);
+alias void (* GLFWkeyfun)(int, int);
+alias void (* GLFWcharfun)(int, int);
+alias void (* GLFWthreadfun)(void *);
 
 
 //========================================================================
