@@ -1774,17 +1774,18 @@ void _glfwPlatformPollEvents( void )
         }
     }
 
+    //! ORX TODO: Support mouse locking separately
     // Did we get mouse movement in fully enabled hidden cursor mode?
-    if( _glfwInput.MouseMoved && _glfwWin.pointerHidden )
-    {
-        _glfwPlatformSetMouseCursorPos( _glfwWin.width/2,
-                                        _glfwWin.height/2 );
+    // if( _glfwInput.MouseMoved && _glfwWin.pointerHidden )
+    // {
+    //     _glfwPlatformSetMouseCursorPos( _glfwWin.width/2,
+    //                                     _glfwWin.height/2 );
 
-        // NOTE: This is a temporary fix.  It works as long as you use offsets
-        //       accumulated over the course of a frame, instead of performing
-        //       the necessary actions per callback call.
-        XFlush( _glfwLibrary.display );
-    }
+    //     // NOTE: This is a temporary fix.  It works as long as you use offsets
+    //     //       accumulated over the course of a frame, instead of performing
+    //     //       the necessary actions per callback call.
+    //     XFlush( _glfwLibrary.display );
+    // }
 
     if( closeRequested && _glfwWin.windowCloseCallback )
     {
