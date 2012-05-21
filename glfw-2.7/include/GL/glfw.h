@@ -390,6 +390,8 @@ extern "C" {
 typedef struct {
     int Width, Height;
     int RedBits, BlueBits, GreenBits;
+    //! Orx: Refresh Rate
+    int RefreshRate;
 } GLFWvidmode;
 
 /* Image/texture information */

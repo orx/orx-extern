@@ -232,7 +232,8 @@ void _glfwSetVideoMode( int *w, int *h, int r, int g, int b, int refresh )
 int _glfwPlatformGetVideoModes( GLFWvidmode *list, int maxcount )
 {
     int count, success, mode, i, j;
-    int m1, m2, bpp, r, g, b;
+    //! Orx: Refresh Rate
+    int m1, m2, bpp, r, g, b, refresh1, refresh2;
     DEVMODE dm;
 
     // Loop through all video modes and extract all the UNIQUE modes
@@ -254,6 +255,9 @@ int _glfwPlatformGetVideoModes( GLFWvidmode *list, int maxcount )
             // Mode "code" for this mode
             m1 = (bpp << 25) | (dm.dmPelsWidth * dm.dmPelsHeight);
 
+            //! Orx: Refresh Rate
+            refresh1 = dm.dmDisplayFrequency;
+
             // Insert mode in list (sorted), and avoid duplicates
             for( i = 0; i < count; i ++ )
             {
@@ -261,7 +265,9 @@ int _glfwPlatformGetVideoModes( GLFWvidmode *list, int maxcount )
                 bpp = list[i].RedBits + list[i].GreenBits +
                       list[i].BlueBits;
                 m2 = (bpp << 25) | (list[i].Width * list[i].Height);
-                if( m1 <= m2 )
+                //! Orx: Refresh Rate
+                refresh2 = list[i].RefreshRate;
+                if( (m1 < m2) || ((m1==m2) && (refresh1<=refresh2)) )
                 {
                     break;
                 }
@@ -275,10 +281,13 @@ int _glfwPlatformGetVideoModes( GLFWvidmode *list, int maxcount )
                 list[count].RedBits   = r;
                 list[count].GreenBits = g;
                 list[count].BlueBits  = b;
+                //! Orx: Refresh Rate
+                list[count].RefreshRate = refresh1;
                 count ++;
             }
+            //! Orx: Refresh Rate
             // Insert new entry in the list?
-            else if( m1 < m2 )
+            else if( (m1 < m2) || ((m1==m2) && (refresh1<refresh2)) )
             {
                 for( j = count; j > i; j -- )
                 {
@@ -289,6 +298,8 @@ int _glfwPlatformGetVideoModes( GLFWvidmode *list, int maxcount )
                 list[i].RedBits   = r;
                 list[i].GreenBits = g;
                 list[i].BlueBits  = b;
+                //! Orx: Refresh Rate
+                list[i].RefreshRate = refresh1;
                 count ++;
             }
         }
@@ -315,6 +326,8 @@ void _glfwPlatformGetDesktopMode( GLFWvidmode *mode )
     // Return desktop mode parameters
     mode->Width = dm.dmPelsWidth;
     mode->Height = dm.dmPelsHeight;
+    //! Orx: Refresh Rate
+    mode->RefreshRate = dm.dmDisplayFrequency;
     bpp2rgb( dm.dmBitsPerPel, &mode->RedBits, &mode->GreenBits, &mode->BlueBits );
 }
 

@@ -41,7 +41,8 @@
 
 GLFWAPI int GLFWAPIENTRY glfwGetVideoModes( GLFWvidmode *list, int maxcount )
 {
-    int         count, i, swap, res1, res2, depth1, depth2;
+    //! Orx: Refresh Rate
+    int         count, i, swap, res1, res2, depth1, depth2, rate1, rate2;
     GLFWvidmode vm;
 
     if( !_glfwInitialized || maxcount <= 0 || list == (GLFWvidmode*) 0 )
@@ -58,12 +59,15 @@ GLFWAPI int GLFWAPIENTRY glfwGetVideoModes( GLFWvidmode *list, int maxcount )
         swap = 0;
         for( i = 0; i < count-1; ++ i )
         {
+            //! Orx: Refresh Rate
             res1   = list[i].Width*list[i].Height;
             depth1 = list[i].RedBits+list[i].GreenBits+list[i].BlueBits;
+            rate1  = list[i].RefreshRate;
             res2   = list[i+1].Width*list[i+1].Height;
             depth2 = list[i+1].RedBits+list[i+1].GreenBits+
                      list[i+1].BlueBits;
-            if( (depth2<depth1) || ((depth2==depth1) && (res2<res1)) )
+            rate2  = list[i+1].RefreshRate;
+            if( (depth2<depth1) || ((depth2==depth1) && (res2<res1)) || ((depth2==depth1) && (res2==res1) && (rate2<rate1)) )
             {
                 vm = list[i];
                 list[i] = list[i+1];
