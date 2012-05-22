@@ -56,6 +56,8 @@ static GLFWvidmode vidmodeFromCGDisplayMode( NSDictionary *mode )
     unsigned int width = [[mode objectForKey:(id)kCGDisplayWidth] unsignedIntValue];
     unsigned int height = [[mode objectForKey:(id)kCGDisplayHeight] unsignedIntValue];
     unsigned int bps = [[mode objectForKey:(id)kCGDisplayBitsPerSample] unsignedIntValue];
+    //! Orx: Refresh Rate
+    unsigned int rate = [[mode objectForKey:(id)kCGDisplayRefreshRate] unsignedIntValue];
 
     GLFWvidmode result;
     result.Width = width;
@@ -63,6 +65,7 @@ static GLFWvidmode vidmodeFromCGDisplayMode( NSDictionary *mode )
     result.RedBits = bps;
     result.GreenBits = bps;
     result.BlueBits = bps;
+    result.RefreshRate = rate;
     return result;
 }
 
