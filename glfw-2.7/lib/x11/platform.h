@@ -321,6 +321,8 @@ struct _GLFWwin_struct {
         int      oldWidth;
         int      oldHeight;
         Rotation oldRotation;
+        //! Orx: Refresh Rate
+        int      oldRefreshRate;
 #endif
     } FS;
 };

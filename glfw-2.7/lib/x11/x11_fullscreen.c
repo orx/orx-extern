@@ -210,6 +210,8 @@ void _glfwSetVideoModeMODE( int screen, int mode, int rate )
             _glfwWin.FS.oldSizeID = XRRConfigCurrentConfiguration( sc, &_glfwWin.FS.oldRotation );
             _glfwWin.FS.oldWidth  = DisplayWidth( _glfwLibrary.display, screen );
             _glfwWin.FS.oldHeight = DisplayHeight( _glfwLibrary.display, screen );
+            //! Orx: Refresh Rate
+            _glfwWin.FS.oldRefreshRate = XRRConfigCurrentRate( sc );
 
             _glfwWin.FS.modeChanged = GL_TRUE;
         }
@@ -310,12 +312,14 @@ void _glfwRestoreVideoMode( void )
 
             sc = XRRGetScreenInfo( _glfwLibrary.display, _glfwWin.root );
 
-            XRRSetScreenConfig( _glfwLibrary.display,
-                                sc,
-                                _glfwWin.root,
-                                _glfwWin.FS.oldSizeID,
-                                _glfwWin.FS.oldRotation,
-                                CurrentTime );
+            //! Orx: Refresh Rate
+            XRRSetScreenConfigAndRate( _glfwLibrary.display,
+                                       sc,
+                                       _glfwWin.root,
+                                       _glfwWin.FS.oldSizeID,
+                                       _glfwWin.FS.oldRotation,
+                                       (short)_glfwWin.FS.oldRefreshRate,
+                                       CurrentTime );
 
             XRRFreeScreenConfigInfo( sc );
         }
@@ -345,6 +349,8 @@ struct _glfwResolution
 {
     int width;
     int height;
+    //! Orx: Refresh Rate
+    int rate;
 };
 
 //========================================================================
@@ -415,18 +421,48 @@ int _glfwPlatformGetVideoModes( GLFWvidmode *list, int maxcount )
     {
         XRRScreenConfiguration *sc;
         XRRScreenSize *sizelist;
-        int sizecount;
+        //! Orx: Refresh Rate
+        int sizecount, ratecount = 0;
 
         sc = XRRGetScreenInfo( dpy, RootWindow( dpy, screen ) );
         sizelist = XRRConfigSizes( sc, &sizecount );
 
-        resarray = (struct _glfwResolution*) malloc( sizeof(struct _glfwResolution) * sizecount );
+        for( k = 0; k < sizecount; k++ )
+        {
+            int temp;
+
+            XRRConfigRates(sc, k, &temp);
+
+            ratecount += temp;
+        }
+
+        resarray = (struct _glfwResolution*) malloc( sizeof(struct _glfwResolution) * ((ratecount > 0) ? ratecount : sizecount) );
 
         for( k = 0; k < sizecount; k++ )
         {
-            resarray[ rescount ].width = sizelist[ k ].width;
-            resarray[ rescount ].height = sizelist[ k ].height;
-            rescount++;
+            short *ratelist;
+
+            ratelist = XRRConfigRates(sc, k, &ratecount);
+
+            if(ratecount > 0)
+            {
+                int l;
+
+                for(l = 0; l < ratecount; l++)
+                {
+                    resarray[ rescount ].width = sizelist[ k ].width;
+                    resarray[ rescount ].height = sizelist[ k ].height;
+                    resarray[ rescount ].rate = ratelist[ l ];
+                    rescount++;
+                }
+            }
+            else
+            {
+                resarray[ rescount ].width = sizelist[ k ].width;
+                resarray[ rescount ].height = sizelist[ k ].height;
+                resarray[ rescount ].rate = 0;
+                rescount++;
+            }
         }
 
         XRRFreeScreenConfigInfo( sc );
@@ -459,6 +495,7 @@ int _glfwPlatformGetVideoModes( GLFWvidmode *list, int maxcount )
             {
                 resarray[ rescount ].width = width;
                 resarray[ rescount ].height = height;
+                resarray[ rescount ].rate = 0;
                 rescount++;
             }
         }
@@ -474,6 +511,7 @@ int _glfwPlatformGetVideoModes( GLFWvidmode *list, int maxcount )
 
         resarray[ 0 ].width = DisplayWidth( dpy, screen );
         resarray[ 0 ].height = DisplayHeight( dpy, screen );
+        resarray[ 0 ].rate = 0;
     }
 
     // Build permutations of colors and resolutions
@@ -487,6 +525,7 @@ int _glfwPlatformGetVideoModes( GLFWvidmode *list, int maxcount )
             list[count].RedBits   = (rgbarray[ k ] >> 16) & 255;
             list[count].GreenBits = (rgbarray[ k ] >> 8) & 255;
             list[count].BlueBits  = rgbarray[ k ] & 255;
+            list[count].RefreshRate = resarray[ l ].rate;
             count++;
         }
     }
@@ -527,6 +566,8 @@ void _glfwPlatformGetDesktopMode( GLFWvidmode *mode )
         {
             mode->Width  = _glfwWin.FS.oldWidth;
             mode->Height = _glfwWin.FS.oldHeight;
+            //! Orx: Refresh Rate
+            mode->RefreshRate = _glfwWin.FS.oldRefreshRate;
             return;
         }
     }
@@ -551,6 +592,8 @@ void _glfwPlatformGetDesktopMode( GLFWvidmode *mode )
             // The first mode in the list is the current (desktio) mode
             mode->Width  = modelist[ 0 ]->hdisplay;
             mode->Height = modelist[ 0 ]->vdisplay;
+            //! Orx: Refresh Rate
+            mode->RefreshRate = 0;
 
             // Free list
             XFree( modelist );
