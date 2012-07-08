@@ -20,5 +20,11 @@
     <WorkspaceConfiguration Name="Linux64 Release" Selected="no">
       <Project Name="Box2D" ConfigName="Linux64 Release"/>
     </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Raspberry Pi Debug" Selected="no">
+      <Project Name="Box2D" ConfigName="Raspberry Pi Debug"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Raspberry Pi Release" Selected="no">
+      <Project Name="Box2D" ConfigName="Raspberry Pi Release"/>
+    </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>

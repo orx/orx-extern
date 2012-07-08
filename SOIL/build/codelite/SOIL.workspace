@@ -11,5 +11,8 @@
     <WorkspaceConfiguration Name="Linux64 Release" Selected="no">
       <Project Name="SOIL" ConfigName="Linux64 Release"/>
     </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Raspberry Pi Release" Selected="no">
+      <Project Name="SOIL" ConfigName="Raspberry Pi Release"/>
+    </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>
