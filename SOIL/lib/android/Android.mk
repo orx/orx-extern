@@ -1,0 +1,8 @@
+LOCAL_PATH := $(call my-dir)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := SOIL-prebuilt
+LOCAL_SRC_FILES := $(TARGET_ARCH_ABI)/libSOIL.a
+LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/../../include
+TARGET_PLATFORM = android-8
+include $(PREBUILT_STATIC_LIBRARY)

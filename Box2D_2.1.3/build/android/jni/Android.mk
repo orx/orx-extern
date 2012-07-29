@@ -1,6 +1,9 @@
-VPATH = ../../src
+LOCAL_PATH := $(call my-dir)/../../../src
 
-SRC = \
+include $(CLEAR_VARS)
+
+LOCAL_MODULE = Box2D
+LOCAL_SRC_FILES = \
 	Dynamics/b2ContactManager.cpp \
 	Dynamics/b2Fixture.cpp \
 	Dynamics/b2WorldCallbacks.cpp \
@@ -43,34 +46,11 @@ SRC = \
 	Common/b2Settings.cpp \
 	Common/b2BlockAllocator.cpp \
 	Common/b2Math.cpp
-	
-armeabi_OBJ = $(addprefix armeabi/,$(SRC:.cpp=.o))
-armeabi-v7a_OBJ = $(addprefix armeabi-v7a/,$(SRC:.cpp=.o))
-	
-armeabi_OUT = armeabi/libBox2D.so
-armeabi-v7a_OUT = armeabi-v7a/libBox2D.so
-	
-INCLUDES = -I../../include
-	
-CXX = arm-linux-androideabi-g++
-CPPFLAGS = -fno-exceptions -fno-rtti -O2 -fPIC
 
-all: $(armeabi_OUT) $(armeabi-v7a_OUT)
-	
-armeabi/%.o: %.cpp
-	mkdir -p $(dir $@)
-	$(CXX) $(INCLUDES) $(CPPFLAGS) -c $< -o $@
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/../include
+LOCAL_CFLAGS := -DANDROID
 
-armeabi-v7a/%.o: %.cpp
-	mkdir -p $(dir $@)
-	$(CXX) $(INCLUDES) $(CPPFLAGS) -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -c $< -o $@
+LOCAL_ARM_MODE := arm
+TARGET_PLATFORM = android-8
 
-$(armeabi_OUT): $(armeabi_OBJ)
-	$(CXX) -shared -Wl,-soname,$(armeabi_OUT) -o $(armeabi_OUT) $(armeabi_OBJ)
-
-$(armeabi-v7a_OUT): $(armeabi-v7a_OBJ)
-	$(CXX) -shared -Wl,-soname,$(armeabi-v7a_OUT) -o $(armeabi-v7a_OUT) $(armeabi-v7a_OBJ)
-
-clean:
-	rm -f $(armeabi_OBJ) $(armeabi_OUT) $(armeabi-v7a_OBJ) $(armeabi-v7a_OUT)
-
+include $(BUILD_STATIC_LIBRARY)
