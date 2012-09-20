@@ -19,5 +19,5 @@
 # limitations under the License.
 #
 #----------------------------------------------------------------------------------
-APP_MODULES := nvmath nvshader nvapkfile nvutil nvtime nvevent nvthread nvfile nvhhdds nvlog nvglesutil nvsound
+APP_MODULES := NvEvent
 APP_ABI := armeabi armeabi-v7a

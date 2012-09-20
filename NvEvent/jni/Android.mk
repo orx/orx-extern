@@ -19,114 +19,30 @@
 # limitations under the License.
 #
 #----------------------------------------------------------------------------------
+LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_PATH := nv_math
-LOCAL_MODULE := nvmath
-LOCAL_SRC_FILES := nv_math.cpp nv_matrix.cpp nv_quat.cpp
+LOCAL_MODULE := NvEvent
+LOCAL_SRC_FILES = \
+        nv_math/nv_math.cpp \
+        nv_math/nv_matrix.cpp \
+        nv_math/nv_quat.cpp \
+        nv_shader/nv_shader.cpp \
+	nv_apk_file/nv_apk_file.c \
+        nv_util/nv_util.cpp \
+        nv_time/nv_time.cpp \
+        nv_event/nv_event.cpp \
+        nv_event/nv_event_queue.cpp \
+        nv_file/nv_file.c \
+        nv_thread/nv_thread.c \
+        nv_hhdds/nv_hhdds.cpp \
+        nv_log/nv_log.cpp \
+        nv_glesutil/nv_images.cpp \
+        nv_sound/nv_sound.cpp
+
 LOCAL_ARM_MODE   := arm
-
-include $(BUILD_STATIC_LIBRARY)
-
-
-include $(CLEAR_VARS)
-
-LOCAL_PATH := nv_shader
-LOCAL_MODULE := nvshader
-LOCAL_SRC_FILES := nv_shader.cpp
-LOCAL_ARM_MODE   := arm
-
-include $(BUILD_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-
-LOCAL_PATH := nv_apk_file
-LOCAL_MODULE := nvapkfile
-LOCAL_SRC_FILES := nv_apk_file.c
-LOCAL_ARM_MODE   := arm
-
-include $(BUILD_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-
-LOCAL_PATH := nv_util
-LOCAL_MODULE := nvutil
-LOCAL_SRC_FILES := nv_util.cpp
-LOCAL_ARM_MODE   := arm
-
-include $(BUILD_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-
-LOCAL_PATH := nv_time
-LOCAL_MODULE := nvtime
-LOCAL_SRC_FILES := nv_time.cpp
-LOCAL_ARM_MODE   := arm
-
-include $(BUILD_STATIC_LIBRARY)
-
-
-include $(CLEAR_VARS)
-
-LOCAL_PATH := nv_event
-LOCAL_MODULE := nvevent
-LOCAL_SRC_FILES := nv_event.cpp nv_event_queue.cpp
-LOCAL_ARM_MODE   := arm
-
-include $(BUILD_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-
-LOCAL_PATH := nv_file
-LOCAL_MODULE := nvfile
-LOCAL_SRC_FILES := nv_file.c
-LOCAL_ARM_MODE   := arm
-
-include $(BUILD_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-
-LOCAL_PATH := nv_thread
-LOCAL_MODULE := nvthread
-LOCAL_SRC_FILES := nv_thread.c
-LOCAL_ARM_MODE   := arm
-
-include $(BUILD_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-
-LOCAL_PATH := nv_hhdds
-LOCAL_MODULE := nvhhdds
-LOCAL_SRC_FILES := nv_hhdds.cpp
-LOCAL_ARM_MODE   := arm
-
-include $(BUILD_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-
-LOCAL_PATH := nv_log
-LOCAL_MODULE := nvlog
-LOCAL_SRC_FILES := nv_log.cpp
-LOCAL_ARM_MODE   := arm
-
-include $(BUILD_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-
-LOCAL_PATH := nv_glesutil
-LOCAL_MODULE := nvglesutil
-LOCAL_SRC_FILES := nv_images.cpp
-LOCAL_ARM_MODE   := arm
-
-include $(BUILD_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-
-LOCAL_PATH := nv_sound
-LOCAL_MODULE := nvsound
-LOCAL_SRC_FILES := nv_sound.cpp
-LOCAL_ARM_MODE   := arm
+TARGET_PLATFORM = android-8
 
 include $(BUILD_STATIC_LIBRARY)
 
