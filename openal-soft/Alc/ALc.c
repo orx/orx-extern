@@ -403,10 +403,19 @@ BOOL APIENTRY DllMain(HANDLE hModule,DWORD ul_reason_for_call,LPVOID lpReserved)
 #endif
 #endif
 
+static int siInitialized = 0;
+
 static void alc_init(void)
 {
     int i;
     const char *devs, *str;
+
+    siInitialized++;
+
+    if(siInitialized != 1)
+    {
+      return;
+    }
 
     str = getenv("ALSOFT_LOGFILE");
     if(str && str[0])
@@ -533,6 +542,13 @@ static void alc_init(void)
 static void alc_deinit(void)
 {
     int i;
+
+    siInitialized--;
+
+    if(siInitialized != 0)
+    {
+      return;
+    }
 
     ReleaseALC();
 
@@ -2117,6 +2133,8 @@ ALC_API ALCdevice* ALC_APIENTRY alcOpenDevice(const ALCchar *deviceName)
     ALCdevice *device;
     ALint i;
 
+    alc_init();
+
     if(deviceName && !deviceName[0])
         deviceName = NULL;
 
@@ -2299,6 +2317,8 @@ ALC_API ALCboolean ALC_APIENTRY alcCloseDevice(ALCdevice *pDevice)
     //Release device structure
     memset(pDevice, 0, sizeof(ALCdevice));
     free(pDevice);
+
+    alc_deinit();
 
     return ALC_TRUE;
 }
