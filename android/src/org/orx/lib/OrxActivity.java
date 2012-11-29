@@ -1,7 +1,11 @@
 package org.orx.lib;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.pm.ConfigurationInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -49,6 +53,7 @@ public abstract class OrxActivity extends Activity {
 	// Methods
 	// ===========================================================
 	public void init() {
+		APKFileHelper.getInstance().setContext(this);
 		nativeInit();
 		
     	// FrameLayout

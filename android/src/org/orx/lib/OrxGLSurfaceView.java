@@ -20,21 +20,19 @@ public class OrxGLSurfaceView extends GLSurfaceView {
 	public OrxGLSurfaceView(final Context context) {
 		super(context);
 
-		setEGLContextClientVersion(2);
-
 		initView();
 	}
 
 	public OrxGLSurfaceView(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
 
-		setEGLContextClientVersion(2);
-
 		initView();
 	}
 
 	protected void initView() {
-		this.setFocusableInTouchMode(true);
+		setFocusableInTouchMode(true);
+		setEGLContextClientVersion(2);
+		setEGLConfigChooser(5, 6, 5, 0, 0, 0);
 	}
 
 	// ===========================================================

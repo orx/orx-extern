@@ -11,7 +11,7 @@ static pthread_key_t s_jniEnvKey = 0;
 
 #include <android/log.h>
 
-void NVThreadInit(JavaVM* vm)
+void ThreadInit(JavaVM* vm)
 {
 	s_vm = vm;
 }
