@@ -49,6 +49,7 @@ public abstract class OrxActivity extends Activity {
 	// Methods
 	// ===========================================================
 	public void init() {
+		nativeInit();
 		
     	// FrameLayout
         ViewGroup.LayoutParams framelayout_params =
@@ -72,6 +73,8 @@ public abstract class OrxActivity extends Activity {
     public OrxGLSurfaceView onCreateView() {
     	return new OrxGLSurfaceView(this);
     }
+    
+    private native void nativeInit();
 
 	// ===========================================================
 	// Inner and Anonymous Classes
