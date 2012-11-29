@@ -32,11 +32,11 @@ void APKInit()
 	
   s_openFile = (*env)->GetMethodID(env, fileHelper, "openFileAndroid", "(Ljava/lang/String;)Lorg/orx/lib/APKFileHelper$APKFile;");
   s_closeFile = (*env)->GetMethodID(env, fileHelper, "closeFileAndroid", "(Lorg/orx/lib/APKFileHelper$APKFile;)V");
-  s_lengthId = (*env)->GetFieldID(env, NvAPKFileClass, "length", "I");
+  s_lengthId = (*env)->GetFieldID(env, APKFileClass, "length", "I");
   s_seekFile = (*env)->GetMethodID(env, fileHelper, "seekFileAndroid", "(Lorg/orx/lib/APKFileHelper$APKFile;I)J");
-  s_positionId = (*env)->GetFieldID(env, NvAPKFileClass, "position", "I");
+  s_positionId = (*env)->GetFieldID(env, APKFileClass, "position", "I");
   s_readFile = (*env)->GetMethodID(env, fileHelper, "readFileAndroid", "(Lorg/orx/lib/APKFileHelper$APKFile;I)V");
-  s_dataId = (*env)->GetFieldID(env, NvAPKFileClass, "data", "[B");
+  s_dataId = (*env)->GetFieldID(env, APKFileClass, "data", "[B");
 
   jobject thiz = (*env)->CallStaticObjectMethod(env, fileHelper, getInstance);
   s_globalThiz = (*env)->NewGlobalRef(env, thiz);
