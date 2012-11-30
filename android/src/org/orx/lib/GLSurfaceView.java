@@ -171,13 +171,13 @@ import javax.microedition.khronos.opengles.GL10;
 public class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
     private final static String TAG = "GlSurfaceView";
     private static final int ANDROID_SDK_VERSION = Integer.parseInt(Build.VERSION.SDK);
-    private final static boolean LOG_PAUSE_RESUME = true;
-    private final static boolean LOG_ATTACH_DETACH = true;
-    private final static boolean LOG_THREADS = true;
-    private final static boolean LOG_SURFACE = true;
-    private final static boolean LOG_RENDERER = true;
-    private final static boolean LOG_RENDERER_DRAW_FRAME = true;
-    private final static boolean LOG_EGL = true;
+    private final static boolean LOG_PAUSE_RESUME = false;
+    private final static boolean LOG_ATTACH_DETACH = false;
+    private final static boolean LOG_THREADS = false;
+    private final static boolean LOG_SURFACE = false;
+    private final static boolean LOG_RENDERER = false;
+    private final static boolean LOG_RENDERER_DRAW_FRAME = false;
+    private final static boolean LOG_EGL = false;
     // Work-around for bug 2263168
     private final static boolean DRAW_TWICE_AFTER_SIZE_CHANGED = true;
     /**
