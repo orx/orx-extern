@@ -3,8 +3,6 @@ package org.orx.lib;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import android.opengl.GLSurfaceView;
-
 public class OrxRenderer implements GLSurfaceView.Renderer {
 	// ===========================================================
 	// Fields
@@ -46,6 +44,12 @@ public class OrxRenderer implements GLSurfaceView.Renderer {
 		OrxRenderer.nativeRender();
 	}
 
+
+	@Override
+	public void onExit() {
+		OrxRenderer.nativeExit();
+	}
+
 	// ===========================================================
 	// Methods
 	// ===========================================================
@@ -58,6 +62,7 @@ public class OrxRenderer implements GLSurfaceView.Renderer {
 	private static native boolean nativeKeyUp(final int pKeyCode);
 	private static native void nativeRender();
 	private static native void nativeInit(final int pWidth, final int pHeight);
+	private static native void nativeExit();
 	private static native void nativeOnPause();
 	private static native void nativeOnResume();
 

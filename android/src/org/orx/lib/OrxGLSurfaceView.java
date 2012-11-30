@@ -1,7 +1,6 @@
 package org.orx.lib;
 
 import android.content.Context;
-import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -32,7 +31,8 @@ public class OrxGLSurfaceView extends GLSurfaceView {
 	protected void initView() {
 		setFocusableInTouchMode(true);
 		setEGLContextClientVersion(2);
-		setEGLConfigChooser(5, 6, 5, 0, 0, 0);
+		setEGLConfigChooser(false);
+		setPreserveEGLContextOnPause(true);
 	}
 
 	// ===========================================================
