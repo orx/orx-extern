@@ -69,7 +69,7 @@ public abstract class OrxActivity extends Activity {
         // ...add to FrameLayout
         framelayout.addView(mGLSurfaceView);
 
-        mGLSurfaceView.setOrxRenderer(new OrxRenderer());
+        mGLSurfaceView.setOrxRenderer(new OrxRenderer(this));
 
         // Set framelayout as the content view
 		setContentView(framelayout);

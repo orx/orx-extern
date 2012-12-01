@@ -10,10 +10,15 @@ public class OrxRenderer implements GLSurfaceView.Renderer {
 
 	private int mScreenWidth;
 	private int mScreenHeight;
+	private OrxActivity mActivity;
 
 	// ===========================================================
 	// Constructors
 	// ===========================================================
+	
+	public OrxRenderer(OrxActivity activity) {
+		mActivity = activity;
+	}
 
 	// ===========================================================
 	// Getter & Setter
@@ -41,7 +46,9 @@ public class OrxRenderer implements GLSurfaceView.Renderer {
 	public void onDrawFrame(final GL10 gl) {
 		// should render a frame when onDrawFrame() is called or there is a
 		// "ghost"
-		OrxRenderer.nativeRender();
+		if(OrxRenderer.nativeRender() == true) {
+			mActivity.finish();
+		}
 	}
 
 
@@ -60,7 +67,7 @@ public class OrxRenderer implements GLSurfaceView.Renderer {
 	private static native void nativeTouchesCancel(final int[] pIDs, final float[] pXs, final float[] pYs);
 	private static native boolean nativeKeyDown(final int pKeyCode);
 	private static native boolean nativeKeyUp(final int pKeyCode);
-	private static native void nativeRender();
+	private static native boolean nativeRender();
 	private static native void nativeInit(final int pWidth, final int pHeight);
 	private static native void nativeExit();
 	private static native void nativeOnPause();
