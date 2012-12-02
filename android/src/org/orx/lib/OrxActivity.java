@@ -1,11 +1,7 @@
 package org.orx.lib;
 
 import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.Context;
-import android.content.pm.ConfigurationInfo;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -15,6 +11,9 @@ public abstract class OrxActivity extends Activity {
 	// ===========================================================
 	
 	private OrxGLSurfaceView mGLSurfaceView;
+	
+	private boolean mAccelerometerIsEnabled = false;
+	private OrxAccelerometer mAccelerometer;
 
 	// ===========================================================
 	// Constructors
@@ -40,6 +39,9 @@ public abstract class OrxActivity extends Activity {
 		super.onResume();
 
 		mGLSurfaceView.onResume();
+		
+		if(mAccelerometerIsEnabled)
+			mAccelerometer.enable();
 	}
 
 	@Override
@@ -47,6 +49,9 @@ public abstract class OrxActivity extends Activity {
 		super.onPause();
 
 		mGLSurfaceView.onPause();
+		
+		if(mAccelerometerIsEnabled)
+			mAccelerometer.disable();
 	}
 
 	// ===========================================================
@@ -73,15 +78,18 @@ public abstract class OrxActivity extends Activity {
 
         // Set framelayout as the content view
 		setContentView(framelayout);
+		
+		mAccelerometer = new OrxAccelerometer(this, mGLSurfaceView);
 	}
 	
     public OrxGLSurfaceView onCreateView() {
     	return new OrxGLSurfaceView(this);
     }
     
+    public void enableAccelerometer() {
+    	mAccelerometerIsEnabled = true;
+    	mAccelerometer.enable();
+    }
+    
     private native void nativeInit();
-
-	// ===========================================================
-	// Inner and Anonymous Classes
-	// ===========================================================
 }
