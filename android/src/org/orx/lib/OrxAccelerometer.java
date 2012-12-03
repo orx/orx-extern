@@ -87,7 +87,7 @@ public class OrxAccelerometer implements SensorEventListener {
 			
 			@Override
 			public void run() {
-				OrxAccelerometer.onSensorChanged(x, y, z, pSensorEvent.timestamp);
+				OrxAccelerometer.onSensorChanged(-x, y, z, pSensorEvent.timestamp);
 			}
 		});
 	}

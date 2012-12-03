@@ -61,35 +61,51 @@ public abstract class OrxActivity extends Activity {
 		APKFileHelper.getInstance().setContext(this);
 		nativeInit();
 		
-    	// FrameLayout
-        ViewGroup.LayoutParams framelayout_params =
-            new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
-                                       ViewGroup.LayoutParams.FILL_PARENT);
-        FrameLayout framelayout = new FrameLayout(this);
-        framelayout.setLayoutParams(framelayout_params);
+		if(mGLSurfaceView == null) {
+	    	// FrameLayout
+	        ViewGroup.LayoutParams framelayout_params =
+	            new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
+	                                       ViewGroup.LayoutParams.FILL_PARENT);
+	        FrameLayout framelayout = new FrameLayout(this);
+	        framelayout.setLayoutParams(framelayout_params);
 
-        // Cocos2dxGLSurfaceView
-        mGLSurfaceView = onCreateView();
+	        // OrxxGLSurfaceView
+	        mGLSurfaceView = onCreateView();
 
-        // ...add to FrameLayout
-        framelayout.addView(mGLSurfaceView);
+	        // ...add to FrameLayout
+	        framelayout.addView(mGLSurfaceView);
+			
+	        // Set framelayout as the content view
+			setContentView(framelayout);
+		}
 
         mGLSurfaceView.setOrxRenderer(new OrxRenderer(this));
-
-        // Set framelayout as the content view
-		setContentView(framelayout);
-		
 		mAccelerometer = new OrxAccelerometer(this, mGLSurfaceView);
 	}
 	
-    public OrxGLSurfaceView onCreateView() {
-    	return new OrxGLSurfaceView(this);
+    private OrxGLSurfaceView onCreateView() {
+    	return new OrxGLSurfaceView(this, requireDepthBuffer());
     }
     
-    public void enableAccelerometer() {
+    protected void enableAccelerometer() {
     	mAccelerometerIsEnabled = true;
     	mAccelerometer.enable();
     }
     
+    protected void setOrxGLSurfaceView(OrxGLSurfaceView orxGLSurfaceView) {
+    	if(mGLSurfaceView != null)
+    		throw new IllegalStateException("OrxGLSurfaceView not null!");
+    	
+    	mGLSurfaceView = orxGLSurfaceView;
+    }
+    
     private native void nativeInit();
+    
+    protected void runOnOrxThread(Runnable r) {
+    	mGLSurfaceView.queueEvent(r);
+    }
+    
+    protected boolean requireDepthBuffer() {
+    	return false;
+    }
 }
