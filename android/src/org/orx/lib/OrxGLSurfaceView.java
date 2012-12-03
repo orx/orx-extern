@@ -40,7 +40,7 @@ public class OrxGLSurfaceView extends GLSurfaceView {
 	protected void initView(Context context, AttributeSet attrs) {
 		if(attrs != null) {
 			TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.OrxGLSurfaceView);
-			mRequireDepthBuffer = a.getBoolean(R.attr.requireDepthBuffer, false);
+			mRequireDepthBuffer = a.getBoolean(R.styleable.OrxGLSurfaceView_requireDepthBuffer, false);
 			a.recycle();
 		}
 		
