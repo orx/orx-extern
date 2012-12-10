@@ -2056,10 +2056,7 @@ public class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback
                     mMultipleGLESContextsAllowed = !renderer.startsWith(kMSM7K_RENDERER_PREFIX);
                     notifyAll();
                 }
-                // Regarding adreno limited contexts:
-                // https://developer.qualcomm.com/forum/qdevnet-forums/mobile-gaming-graphics-optimization-adreno/12173
-                mLimitedGLESContexts = !mMultipleGLESContextsAllowed
-                        || renderer.startsWith(kADRENO);
+                mLimitedGLESContexts = !mMultipleGLESContextsAllowed;
                 if (LOG_SURFACE) {
                     Log.w(TAG, "checkGLDriver renderer = \"" + renderer
                             + "\" multipleContextsAllowed = " + mMultipleGLESContextsAllowed
@@ -2101,7 +2098,6 @@ public class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback
         private boolean mLimitedGLESContexts;
         private static final int kGLES_20 = 0x20000;
         private static final String kMSM7K_RENDERER_PREFIX = "Q3Dimension MSM7500 ";
-        private static final String kADRENO = "Adreno";
         private GLThread mEglOwner;
     }
 
