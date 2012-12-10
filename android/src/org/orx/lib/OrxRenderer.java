@@ -51,7 +51,6 @@ public class OrxRenderer implements GLSurfaceView.Renderer {
 		}
 	}
 
-
 	@Override
 	public void onExit() {
 		OrxRenderer.nativeExit();
