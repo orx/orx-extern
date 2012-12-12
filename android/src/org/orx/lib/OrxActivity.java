@@ -1,6 +1,7 @@
 package org.orx.lib;
 
 import android.app.Activity;
+import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -26,6 +27,7 @@ public abstract class OrxActivity extends Activity {
     	init();
 	}
 
+	
 	// ===========================================================
 	// Getter & Setter
 	// ===========================================================
@@ -33,6 +35,14 @@ public abstract class OrxActivity extends Activity {
 	// ===========================================================
 	// Methods for/from SuperClass/Interfaces
 	// ===========================================================
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+
+		getWindow().setFormat(PixelFormat.RGB_565);
+	}
+
 
 	@Override
 	protected void onResume() {
