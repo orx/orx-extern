@@ -24,6 +24,7 @@ public abstract class OrxActivity extends Activity {
 	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		getWindow().setFormat(PixelFormat.RGB_565);
     	init();
 	}
 
@@ -71,7 +72,7 @@ public abstract class OrxActivity extends Activity {
 		APKFileHelper.getInstance().setContext(this);
 		nativeInit();
 		
-		if(mGLSurfaceView == null) {
+		if(getLayoutId() == 0 || getOrxGLSurfaceViewId() == 0) {
 	    	// FrameLayout
 	        ViewGroup.LayoutParams framelayout_params =
 	            new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
@@ -87,10 +88,21 @@ public abstract class OrxActivity extends Activity {
 			
 	        // Set framelayout as the content view
 			setContentView(framelayout);
+		} else {
+			setContentView(getLayoutId());
+			mGLSurfaceView = (OrxGLSurfaceView) findViewById(getOrxGLSurfaceViewId());
 		}
 
         mGLSurfaceView.setOrxRenderer(new OrxRenderer(this));
 		mAccelerometer = new OrxAccelerometer(this, mGLSurfaceView);
+	}
+	
+	protected int getLayoutId() {
+		return 0;
+	}
+	
+	protected int getOrxGLSurfaceViewId() {
+		return 0;
 	}
 	
     private OrxGLSurfaceView onCreateView() {
@@ -100,13 +112,6 @@ public abstract class OrxActivity extends Activity {
     protected void enableAccelerometer() {
     	mAccelerometerIsEnabled = true;
     	mAccelerometer.enable();
-    }
-    
-    protected void setOrxGLSurfaceView(OrxGLSurfaceView orxGLSurfaceView) {
-    	if(mGLSurfaceView != null)
-    		throw new IllegalStateException("OrxGLSurfaceView not null!");
-    	
-    	mGLSurfaceView = orxGLSurfaceView;
     }
     
     private native void nativeInit();
