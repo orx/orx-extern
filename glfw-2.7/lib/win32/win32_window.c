@@ -389,6 +389,11 @@ static GLboolean createContext( HDC dc, const _GLFWwndconfig* wndconfig, int pix
         {
             return GL_FALSE;
         }
+
+        // Copy the debug context hint as there's no way of verifying it
+        // This is the only code path capable of creating a debug context,
+        // so leave it as false (from the earlier memset) otherwise
+        _glfwWin.glDebug = wndconfig->glDebug;
     }
     else
     {
@@ -1024,23 +1029,20 @@ static void getFullWindowSize( int clientWidth, int clientHeight,
 
 //========================================================================
 // Initialize WGL-specific extensions
-// This function is called once before initial context creation, i.e. before
-// any WGL extensions could be present.  This is done in order to have both
-// extension variable clearing and loading in the same place, hopefully
-// decreasing the possibility of forgetting to add one without the other.
 //========================================================================
 
 static void initWGLExtensions( void )
 {
-    // This needs to include every function pointer loaded below
+    // This needs to include every function pointer loaded below, because
+    // context re-creation means we cannot assume the struct has been cleared
     _glfwWin.SwapIntervalEXT = NULL;
     _glfwWin.GetPixelFormatAttribivARB = NULL;
     _glfwWin.GetExtensionsStringARB = NULL;
     _glfwWin.GetExtensionsStringEXT = NULL;
     _glfwWin.CreateContextAttribsARB = NULL;
 
-    // This needs to include every extension used below except for
-    // WGL_ARB_extensions_string and WGL_EXT_extensions_string
+    // This needs to include every extension boolean used below, because context
+    // re-creation means we cannot assume the struct has been cleared
     _glfwWin.has_WGL_EXT_swap_control = GL_FALSE;
     _glfwWin.has_WGL_ARB_pixel_format = GL_FALSE;
     _glfwWin.has_WGL_ARB_multisample = GL_FALSE;
@@ -1349,8 +1351,6 @@ int _glfwPlatformOpenWindow( int width, int height,
                            wndconfig->refreshRate );
     }
 
-    initWGLExtensions();
-
     if( !createWindow( wndconfig, fbconfig ) )
     {
         fprintf( stderr, "Failed to create GLFW window\n" );
@@ -1367,6 +1367,17 @@ int _glfwPlatformOpenWindow( int width, int height,
         if( _glfwWin.has_WGL_ARB_multisample && _glfwWin.has_WGL_ARB_pixel_format )
         {
             // We appear to have both the FSAA extension and the means to ask for it
+            recreateContext = GL_TRUE;
+        }
+    }
+
+    if( wndconfig->glDebug )
+    {
+        // Debug contexts are not a hard constraint, so we don't fail here if
+        // the extension isn't available
+
+        if( _glfwWin.has_WGL_ARB_create_context )
+        {
             recreateContext = GL_TRUE;
         }
     }
@@ -1765,16 +1776,6 @@ void _glfwPlatformPollEvents( void )
     // Flag: mouse was not moved (will be changed by _glfwGetNextEvent if
     // there was a mouse move event)
     _glfwInput.MouseMoved = GL_FALSE;
-    if( _glfwWin.mouseLock )
-    {
-        _glfwInput.OldMouseX = _glfwWin.width/2;
-        _glfwInput.OldMouseY = _glfwWin.height/2;
-    }
-    else
-    {
-        _glfwInput.OldMouseX = _glfwInput.MousePosX;
-        _glfwInput.OldMouseY = _glfwInput.MousePosY;
-    }
 
     // Check for new window messages
     while( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) )
@@ -1872,6 +1873,9 @@ void _glfwPlatformHideMouseCursor( void )
 
     //// Capture cursor to user window
     //SetCapture( _glfwWin.window );
+
+    //// Move cursor to the middle of the window
+    //_glfwPlatformSetMouseCursorPos( _glfwWin.width / 2, _glfwWin.height / 2 );
 }
 
 
@@ -1907,6 +1911,9 @@ void _glfwPlatformSetMouseCursorPos( int x, int y )
     pos.x = x;
     pos.y = y;
     ClientToScreen( _glfwWin.window, &pos );
+
+    _glfwInput.OldMouseX = x;
+    _glfwInput.OldMouseY = y;
 
     SetCursorPos( pos.x, pos.y );
 }

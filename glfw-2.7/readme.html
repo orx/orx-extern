@@ -7,7 +7,7 @@
 
 <body>
 
-<h1>GLFW 2.7.6 source distribution</h1>
+<h1>GLFW 2.7.7 source distribution</h1>
 
 <ol>
  <li><a href="#intro">Introduction</a></li>
@@ -23,7 +23,7 @@
 <a name="intro"></a>
 <h2>1. Introduction</h2>
 
-<p>Welcome to version 2.7.6 of the GLFW library.  GLFW is a free, Open Source,
+<p>Welcome to version 2.7.7 of the GLFW library.  GLFW is a free, Open Source,
 multi-platform library for OpenGL application development that provides a
 powerful API for handling operating system specific tasks such as opening an
 OpenGL window, reading keyboard, mouse, joystick and time input, creating
@@ -32,7 +32,8 @@ threads, and more.</p>
 <p>GLFW 2.7 is expected to be the last major release of the 2.x series, with
 most development now being done on what will become version 3.0.</p>
 
-<p>This release <blink>IS NOT YET DESCRIBED</blink>.</p>
+<p>This release adds fixes for a few minor bugs on each platform, support for
+more swap interval methods on X11 and Visual C++ 2012 project files.</p>
 
 <p>For a full list of changes, see the
 <a href="#changelog">version history</a>.</p>
@@ -454,10 +455,10 @@ to add other libraries as well, such as <code>glu32</code>):</p>
   </tr>
   <tr>
     <td>Microsoft Visual C++</td>
-    <td><code>glfw.lib opengl32.lib user32.lib</code></td>
+    <td><code>glfw.lib opengl32.lib</code></td>
   </tr>
   <tr>
-    <td>MinGW32</td>
+    <td>MinGW and MinGW-w64</td>
     <td><code>-lglfw -lopengl32</code></td>
   </tr>
   <tr>
@@ -505,7 +506,7 @@ such as <code>opengl32</code> and <code>glu32</code>):</p>
     <td><code>glfwdll.lib</code></td>
   </tr>
   <tr>
-    <td>MinGW32</td>
+    <td>MinGW and MinGW-w64</td>
     <td><code>-lglfwdll</code></td>
   </tr>
   <tr>
@@ -564,7 +565,7 @@ command-line for compiling and linking your program is:</p>
 frameworks and libraries to your command-line using the <code>-l</code> and
 <code>-framework</code> switches, i.e.:</p>
 
-<blockquote><code>cc -o myprog myprog.c -lglfw -framework Cocoa -framework OpenGL</code></blockquote>
+<blockquote><code>cc -o myprog myprog.c -lglfw -framework Cocoa -framework OpenGL -framework IOKit</code></blockquote>
 
 <p>Note that you do not add the .framework extension to a framework when adding
 it from the command-line.</p>
@@ -578,9 +579,34 @@ version of GLFW.</p>
 <a name="changelog"></a>
 <h2>5. Version history</h2>
 
+<h3>v2.7.7</h3>
+<ul>
+  <li>[Cocoa] Bugfix: The cursor positioning code used NSPoint in place of CGPoint</li>
+  <li>[Cocoa] Bugfix: The detection of setRestorable: used the wrong selector signature</li>
+  <li>[Cocoa] Bugfix: The test for whether <code>glfwTerminate</code> had been called from the main thread was missing</li>
+  <li>[Win32] Added Visual C++ 2012 project files for the static library, DLL and all test and example programs</li>
+  <li>[Win32] Bugfix: The <code>GLFW_OPENGL_DEBUG_CONTEXT</code> hint did not trigger context re-creation when <code>WGL_ARB_create_context</code> was available</li>
+  <li>[Win32] Bugfix: The <code>GLFW_OPENGL_DEBUG_CONTEXT</code> window parameter was not set after debug context creation</li>
+  <li>[X11] Added support for the <code>GLX_EXT_swap_control</code> and <code>GLX_MESA_swap_control</code> extensions as alternatives to <code>GLX_SGI_swap_control</code></li>
+  <li>[X11] Bugfix: The <code>GLFW_OPENGL_DEBUG_CONTEXT</code> window parameter was not set after debug context creation</li>
+  <li>[X11] Bugfix: The window size hints were not updated when calling <code>glfwSetWindowSize</code> on a non-resizable window</li>
+  <li>[X11] Bugfix: The detected link flags for <code>clock_gettime</code> were not added to the pkg-config file</li>
+</ul>
+
 <h3>v2.7.6</h3>
 <ul>
+  <li>[Cocoa] Added joystick support (backported from 3.0)</li>
+  <li>[Cocoa] Added new joystick test (backported from 3.0)</li>
+  <li>[Cocoa] Bugfix: Fullscreen windows with OpenGL 3.2 core contexts failed to open</li>
+  <li>[Cocoa] Bugfix: The cursor position was incorrectly rounded during conversion</li>
+  <li>[Cocoa] Bugfix: Cursor positioning led to nonsensical results for fullscreen windows</li>
+  <li>[Cocoa] Bugfix: The GLFW window was flagged as restorable</li>
   <li>[Win32] Bugfix: A test was missing for whether all available pixel formats had been disqualified</li>
+  <li>[Win32] Bugfix: Entering locked cursor mode caused cursor movement to be reported to the mouse position callback</li>
+  <li>[Win32] Bugfix: Setting the cursor position caused cursor movement to be reported to the mouse position callback</li>
+  <li>[Win32] Bugfix: A .def file using <code>__stdcall</code> naming conventions was used for the 64-bit DLL on MinGW-w64</li>
+  <li>[Win32] Bugfix: A superfluous link flag prevented tests and examples from being built for 64-bit on MinGW-w64</li>
+  <li>[X11] Bugfix: The VirtualBox OpenGL implementation does not set the window bit for GLX framebuffer configs</li>
 </ul>
 
 <h3>v2.7.5</h3>
@@ -1186,6 +1212,9 @@ their skills.  Special thanks go out to:</p>
   <li>Glenn Lewis, for helping out with support for the D programming
   language</li>
 
+  <li>Shane Liesegang, for providing a bug fix relating to Cocoa window
+  restoration and reporting several Cocoa bugs</li>
+
   <li>Tristam MacDonald, for his bug reports and feedback on the Cocoa port</li>
 
   <li>David Medlock, for doing the initial Lua port</li>
@@ -1206,7 +1235,7 @@ their skills.  Special thanks go out to:</p>
 
   <li>Steve Sexton, for reporting an input bug in the Carbon port</li>
 
-  <li>Dmitri Shuralyov, for support, bug reports and testing</li>
+  <li>Dmitri Shuralyov, for support, bug reports, bug fixes and testing</li>
 
   <li>Daniel Skorupski, for reporting a bug in the Win32 DEF file</li>
 
@@ -1215,12 +1244,22 @@ their skills.  Special thanks go out to:</p>
 
   <li>Julian Squires, for submitting a patch for a bug in the key repeat logic on X11</li>
 
+  <li>Liam Staskawicz, for finding a bug in the termination logic of the OS X port</li>
+
   <li>Johannes Stein, for maintaining the Pascal bindings</li>
+
+  <li>Cort Stratton, for reporting two bugs related to the creation of debug
+  contexts</li>
+
+  <li>Sergey Tikhomirov, for the initial implementation of joystick support on
+  Mac OS X</li>
 
   <li>Samuli Tuomola, for support, bug reports and testing</li>
 
   <li>Frank Wille, for helping with the AmigaOS port and making GLFW
   compile under IRIX 5.3</li>
+
+  <li>Yaniel, for fixing a bug with fullscreen windows using OpenGL 3.0 contexts on Cocoa</li>
 
   <li>Santi Zupancic, for support, bug reports and testing</li>
 

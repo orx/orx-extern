@@ -48,8 +48,8 @@ default:
 	@echo "  $(MAKE) cocoa-install      to install the GLFW header and static library"
 	@echo "  $(MAKE) cocoa-dist-install to also install the GLFW dynamic library"
 	@echo "-----------------------------------------------------------------------------"
-	@echo " There are also Microsoft Visual C++ 2008 and 2010 project files available in"
-	@echo " the support/msvc90 and support/msvc100 directories, respectively."
+	@echo " There are also Microsoft Visual C++ 2008, 2010 and 2012 project files "
+	@echo " available in the support/msvc* and directories."
 	@echo "-----------------------------------------------------------------------------"
 
 
@@ -62,6 +62,26 @@ win32-mingw:
 
 mingw-clean:
 	@cmd /c compile.bat CLEAN
+
+
+###########################################################################
+# Cygwin on Windows
+###########################################################################
+
+CYGWIN=PREFIX=/bin TARGET=i686-pc-mingw32-
+
+cygwin-install: win32-cygwin
+	cd lib/win32 && env $(CYGWIN) $(MAKE) -f Makefile.win32.cross-mgw install
+
+win32-cygwin:
+	cd lib/win32 && env $(CYGWIN) $(MAKE) -f Makefile.win32.cross-mgw
+	cd examples  && env $(CYGWIN) $(MAKE) -f Makefile.win32.cross-mgw
+	cd tests     && env $(CYGWIN) $(MAKE) -f Makefile.win32.cross-mgw
+
+cygwin-clean:
+	cd lib/win32 && env $(CYGWIN) $(MAKE) -f Makefile.win32.cross-mgw clean
+	cd examples  && env $(CYGWIN) $(MAKE) -f Makefile.win32.cross-mgw clean
+	cd tests     && env $(CYGWIN) $(MAKE) -f Makefile.win32.cross-mgw clean
 
 
 ###########################################################################

@@ -145,6 +145,7 @@ int _glfwPlatformInit( void )
     initThreads();
 
     _glfwInitTimer();
+
     _glfwInitJoysticks();
 
     _glfwLibrary.eventSource = CGEventSourceCreate( kCGEventSourceStateHIDSystemState );
@@ -168,7 +169,10 @@ int _glfwPlatformInit( void )
 
 int _glfwPlatformTerminate( void )
 {
-    // TODO: Fail unless this is the main thread
+    if( pthread_self() != _glfwThrd.First.PosixID )
+    {
+        return GL_FALSE;
+    }
 
     glfwCloseWindow();
 
@@ -180,6 +184,8 @@ int _glfwPlatformTerminate( void )
         CFRelease( _glfwLibrary.eventSource );
         _glfwLibrary.eventSource = NULL;
     }
+
+    _glfwTerminateJoysticks();
 
     [_glfwLibrary.autoreleasePool release];
     _glfwLibrary.autoreleasePool = nil;

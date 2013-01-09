@@ -624,7 +624,7 @@ GLFW_BIN_CFLAGS="-I../include $GLFW_BIN_CFLAGS"
 
 if [ "x$CFLAGS" = x ]; then
   if [ "x$use_gcc" = xyes ]; then
-    GLFW_CFLAGS="$GLFW_CFLAGS -O2 -Wall -fPIC"
+    GLFW_CFLAGS="$GLFW_CFLAGS -O2 -Wall"
   else
     GLFW_CFLAGS="$GLFW_CFLAGS -O"
   fi
@@ -741,7 +741,7 @@ Description: A portable framework for OpenGL development
 Version: 2.7.4
 URL: http://www.glfw.org/
 Requires.private: gl x11 $PKG_LIBS
-Libs: -L\${libdir} -lglfw $LFLAGS_THREAD
+Libs: -L\${libdir} -lglfw $LFLAGS_THREAD $LFLAGS_CLOCK
 Cflags: -I\${includedir} $CFLAGS_THREAD 
 EOF
 

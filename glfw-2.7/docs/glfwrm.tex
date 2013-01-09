@@ -15,7 +15,7 @@
 
 % PDF specific document settings
 \hypersetup{pdftitle={GLFW Reference Manual}}
-\hypersetup{pdfauthor={Marcus Geelnard}}
+\hypersetup{pdfauthor={Camilla Berglund}}
 \hypersetup{pdfkeywords={GLFW,OpenGL,reference,manual}}
 
 
@@ -42,7 +42,7 @@
 This document is primarily a function reference manual for the \GLFW\ API.
 For a description of how to use \GLFW\ you should refer to the
 \textit{GLFW Users Guide}.
-\vspace{10cm}
+\vspace{5cm}
 
 \large
 Trademarks
@@ -103,7 +103,6 @@ to remedy this by providing the following functionality:
 \item Support for querying and using \OpenGL\ extensions.
 \item Basic Targa image loading support.
 \end{itemize}
-\vspace{18pt}
 
 All this functionality is implemented as a set of easy-to-use functions,
 which makes it possible to write an \OpenGL\ application framework in just a
@@ -114,12 +113,13 @@ a variety of platforms.
 Currently supported platforms are:
 \begin{itemize}
 \item Microsoft Windows\textsuperscript{\textregistered} (32-bit only).
-\item Unix\textsuperscript{\textregistered} or Unix­-like systems running the
-X Window System\texttrademark, e.g. Linux\textsuperscript{\textregistered},
-IRIX\textsuperscript{\textregistered}, FreeBSD\textsuperscript{\textregistered},
-Solaris\texttrademark, QNX\textsuperscript{\textregistered} and
-Mac OS\textsuperscript{\textregistered} X.
-\item Mac OS\textsuperscript{\textregistered} X, using Cocoa\footnote{Support for joysticks missing at the time of writing.}
+\item Unix\textsuperscript{\textregistered} or Unix­-like systems running
+resonably a modern version of the X Window
+System\texttrademark\footnote{X11.app on Mac OS X is not supported due to its
+incomplete implementation of GLXFBConfigs} e.g.
+Linux\textsuperscript{\textregistered},
+FreeBSD\textsuperscript{\textregistered} and Solaris\texttrademark (32- and
+64-bit).
 \end{itemize}
 
 
@@ -222,11 +222,11 @@ etc.).
 %-------------------------------------------------------------------------
 \section{Threads}
 \GLFW\ has functions for creating threads, which means that it is possible
-to make multi-threaded applications with \GLFW . The thread that calls
-\textbf{glfwInit} becomes the main thread, and it is recommended that all
-\GLFW\ and \OpenGL\ functions are called from the main thread. Additional
-threads should primarily be used for CPU heavy tasks or for managing
-other resources such as file or sound I/O.
+to make multi-threaded applications with \GLFW . It is recommended that all
+\OpenGL\ functions and all \GLFW\ functions except those relating to threading
+and time are called only from the main thread, i.e. the one from which
+\textbf{main} is called. Additional threads should primarily be used for CPU
+heavy tasks or for managing other resources such as file or sound I/O.
 
 It should be noted that the current implementation of \GLFW\ is not thread
 safe, so you should never call \GLFW\ functions from different threads.
@@ -272,8 +272,11 @@ called before this function has succeeded.
 This function may take several seconds to complete on some systems, while
 on other systems it may take only a fraction of a second to complete.
 
-On Mac OS X, this function will change the current directory to the
-\textbf{Contents/Resources} subdirectory of the application's bundle, if
+This function registers a function calling \textbf{glfwTerminate} with the
+atexit facility of the C library.
+
+On Mac OS X, this function will change the current directory of the application
+to the \textbf{Contents/Resources} subdirectory of the application's bundle, if
 present.  For more information on bundles, see the Bundle Programming Guide
 provided by Apple.
 \end{refnotes}
@@ -419,8 +422,14 @@ On Microsoft Windows, if the executable has an icon resource named
 icon is present, the \textbf{IDI\_WINLOGO} icon will be used instead.
 
 On Mac OS X the \GLFW\ window has no icon, but programs using \GLFW\ will use
-the application bundle's icon.  For more information on bundles, see the Bundle
-Programming Guide provided by Apple.
+the application bundle's icon.  Also, the first time a window is opened the menu
+bar is populated with common commands like Hide, Quit and About.  The (minimal)
+about dialog uses information from the application's bundle.  For more
+information on bundles, see the Bundle Programming Guide provided by Apple.
+
+For information on how the availability of different platform-specific
+extensions affect the behavior of this function, see appendix
+\ref{chap:compatibility}.
 \end{refnotes}
 
 
@@ -438,8 +447,8 @@ GLFW\_AUX\_BUFFERS       & 0                & Number of auxiliary buffers.\\ \hl
 GLFW\_STEREO             & GL\_FALSE        & Specify if stereo rendering should be supported (can be GL\_TRUE or GL\_FALSE).\\ \hline
 GLFW\_WINDOW\_NO\_RESIZE & GL\_FALSE        & Specify whether the window can be resized by the user (not used for fullscreen windows).\\ \hline
 GLFW\_FSAA\_SAMPLES      & 0                & Number of samples to use for the multisampling buffer. Zero disables multisampling.\\ \hline
-GLFW\_OPENGL\_VERSION\_MAJOR & 1	        & Major number of the desired \OpenGL\ version.\\ \hline
-GLFW\_OPENGL\_VERSION\_MINOR & 1	        & Minor number of the desired \OpenGL\ version.\\ \hline
+GLFW\_OPENGL\_VERSION\_MAJOR & 1	        & Major number of the desired minimum \OpenGL\ version.\\ \hline
+GLFW\_OPENGL\_VERSION\_MINOR & 1	        & Minor number of the desired minimum \OpenGL\ version.\\ \hline
 GLFW\_OPENGL\_FORWARD\_COMPAT & GL\_FALSE   & Specify whether the \OpenGL\ context should be forward-compatible (i.e. disallow legacy functionality).
                                               This should only be used when requesting \OpenGL\ version 3.0 or above.\\ \hline
 GLFW\_OPENGL\_DEBUG\_CONTEXT & GL\_FALSE    & Specify whether a debug context should be created.\\ \hline
@@ -476,14 +485,16 @@ none
 
 \begin{refdescription}
 This function sets additional properties for a window that is to be opened.
-For a hint to be registered, the function must be called before calling
-\textbf{glfwOpenWindow}. When the \textbf{glfwOpenWindow} function is
-called, any hints that were registered with the \textbf{glfwOpenWindowHint}
-function are used for setting the corresponding window properties, and
-then all hints are reset to their default values.
+For a hint to take effect, it must be set \emph{before} calling
+\textbf{glfwOpenWindow}.  When \textbf{glfwOpenWindow} is called, regardless of
+whether it succeeds, all window hints are reset to their default values.
 \end{refdescription}
 
 \begin{refnotes}
+All window hints are reset to their default values by each successful call to
+\textbf{glfwInit} and by each call to \textbf{glfwOpenWindow}, whether
+successful or not.
+
 In order to determine the actual properties of an opened window, use
 \textbf{glfwGetWindowParam} (after the window has been opened).
 
@@ -517,6 +528,9 @@ context is of a version lower than the one that was requested.
 At the time of release, the exact meaning of what a "debug context" is (as
 created using the GLFW\_OPENGL\_DEBUG\_CONTEXT hint) has yet to be defined by
 the Khronos ARB WG.
+
+For information on how the availability of different extensions affect the
+behavior of this function, see appendix \ref{chap:compatibility}.
 
 For full details on the workings of the \OpenGL\ version, forward-compatibility
 and debug hints, see the specifications for \textbf{WGL\_ARB\_create\_context}
@@ -583,8 +597,7 @@ none
 \end{refreturn}
 
 \begin{refdescription}
-This function selects which function to be called upon a window close
-event.
+This function sets the callback for window close events.
 
 A window has to be opened for this function to have any effect.
 \end{refdescription}
@@ -669,6 +682,8 @@ number of color bits will not be changed).
 \end{refdescription}
 
 \begin{refnotes}
+This function has no effect if the window is iconified.
+
 The \OpenGL\ context is guaranteed to be preserved after calling
 \textbf{glfwSetWindowSize}, even if the video mode is changed.
 
@@ -703,9 +718,13 @@ none
 \begin{refdescription}
 This function changes the position of an opened window. It does not have
 any effect on a fullscreen window.
+\end{refdescription}
+
+\begin{refnotes}
+This function has no effect if the window is iconified.
 
 The behaviour of this function on multi-monitor systems is ill-defined.
-\end{refdescription}
+\end{refnotes}
 
 
 %-------------------------------------------------------------------------
@@ -776,8 +795,7 @@ none
 \end{refreturn}
 
 \begin{refdescription}
-This function selects which function to be called upon a window size
-change event.
+This function sets the callback for window size change events.
 
 A window has to be opened for this function to have any effect.
 \end{refdescription}
@@ -1006,10 +1024,10 @@ none
 \end{refreturn}
 
 \begin{refdescription}
-This function selects which function to be called upon a window refresh
-event, which occurs when any part of the window client area has been
-damaged, and needs to be repainted (for instance, if a part of the window
-that was previously occluded by another window has become visible).
+This function sets the callback for window refresh events, which occurs when
+any part of the window client area has been damaged, and needs to be repainted
+(for instance, if a part of the window that was previously occluded by another
+window has become visible).
 
 A window has to be opened for this function to have any effect.
 \end{refdescription}
@@ -1523,6 +1541,10 @@ A window has to be opened for this function to have any effect.
 \end{refdescription}
 
 \begin{refnotes}
+Keyboard key events are not intended for text input and many languages
+will not be able to be input using it.  Use Unicode character events for
+text input instead.
+
 Keyboard events are recorded continuously, but only reported when
 \textbf{glfwPollEvents}, \textbf{glfwWaitEvents} or \textbf{glfwSwapBuffers}
 (with GLFW\_AUTO\_POLL\_EVENTS enabled) is called.
@@ -1573,7 +1595,7 @@ Character events are recorded continuously, but only reported when
 \textbf{glfwPollEvents}, \textbf{glfwWaitEvents} or \textbf{glfwSwapBuffers}
 (with GLFW\_AUTO\_POLL\_EVENTS enabled) is called.
 
-Control characters, such as tab and carriage return, are not reported to
+Control characters such as tab and carriage return are not reported to
 the character callback function, since they are not part of the Unicode
 character set. Use the key callback function for such events (see
 \textbf{glfwSetKeyCallback}).
@@ -1618,8 +1640,7 @@ none
 \end{refreturn}
 
 \begin{refdescription}
-This function selects which function to be called upon a mouse button
-event.
+This function sets the callback for mouse button events.
 
 A window has to be opened for this function to have any effect.
 \end{refdescription}
@@ -1665,7 +1686,7 @@ none
 \end{refreturn}
 
 \begin{refdescription}
-This function selects which function to be called upon a mouse motion event.
+This function sets the callback for mouse motion events.
 
 A window has to be opened for this function to have any effect.
 \end{refdescription}
@@ -1674,6 +1695,9 @@ A window has to be opened for this function to have any effect.
 Mouse motion events are recorded continuously, but only reported when
 \textbf{glfwPollEvents}, \textbf{glfwWaitEvents} or \textbf{glfwSwapBuffers}
 (with GLFW\_AUTO\_POLL\_EVENTS enabled) is called.
+
+When a callback function is set, it will be called with the current mouse
+coordinates before this function returns.
 \end{refnotes}
 
 
@@ -1707,7 +1731,7 @@ none
 \end{refreturn}
 
 \begin{refdescription}
-This function selects which function to be called upon a mouse wheel event.
+This function sets the callback for mouse wheel events.
 
 A window has to be opened for this function to have any effect.
 \end{refdescription}
@@ -1716,6 +1740,9 @@ A window has to be opened for this function to have any effect.
 Mouse wheel events are recorded continuously, but only reported when
 \textbf{glfwPollEvents}, \textbf{glfwWaitEvents} or \textbf{glfwSwapBuffers}
 (with GLFW\_AUTO\_POLL\_EVENTS enabled) is called.
+
+When a callback function is set, it will be called with the current wheel
+position before this function returns.
 \end{refnotes}
 
 
@@ -1766,7 +1793,7 @@ This function is used for acquiring various properties of a joystick.
 \begin{refnotes}
 The joystick information is updated every time the function is called.
 
-No window has to be opened for joystick information to be valid.
+No window has to be opened for joystick information to be available.
 \end{refnotes}
 
 
@@ -1818,7 +1845,7 @@ joystick state to be updated.
 Use \textbf{glfwGetJoystickParam} to retrieve joystick capabilities, such
 as joystick availability and number of supported axes.
 
-No window has to be opened for joystick input to be valid.
+No window has to be opened for joystick input to be available.
 \end{refnotes}
 
 
@@ -1869,7 +1896,7 @@ joystick state to be updated.
 Use \textbf{glfwGetJoystickParam} to retrieve joystick capabilities, such
 as joystick availability and number of supported buttons.
 
-No window has to be opened for joystick input to be valid.
+No window has to be opened for joystick input to be available.
 \end{refnotes}
 
 
@@ -1903,8 +1930,7 @@ the number of seconds that have passed since \textbf{glfwInit} was called.
 
 \begin{refnotes}
 The resolution of the timer depends on which system the program is running
-on. The worst case resolution is somewhere in the order of $10~ms$, while
-for most systems the resolution should be better than $1~\mu s$.
+on.
 \end{refnotes}
 
 
@@ -2061,10 +2087,6 @@ to GL\_ALPHA if the flag GLFW\_ALPHA\_MAP\_BIT flag is set, otherwise
 
 Paletted images are translated into true color or true color + alpha pixel
 formats.
-
-Please note that \OpenGL~1.0 does not support single component alpha maps,
-so do not use images with Format = GL\_ALPHA directly as textures under
-\OpenGL~1.0.
 \end{refnotes}
 
 
@@ -2097,38 +2119,10 @@ Otherwise GL\_FALSE is returned.
 \end{refreturn}
 
 \begin{refdescription}
-This function reads an image from the memory buffer specified by the parameter
-\textit{data} and returns the image information and data in a GLFWimage
-structure, which has the following definition:
-
-\begin{lstlisting}
-typedef struct {
-    int Width, Height;    // Image dimensions
-    int Format;           // OpenGL pixel format
-    int BytesPerPixel;    // Number of bytes per pixel
-    unsigned char *Data;  // Pointer to pixel data
-} GLFWimage;
-\end{lstlisting}
-
-\textit{Width} and \textit{Height} give the dimensions of the image.
-\textit{Format} specifies an \OpenGL\ pixel format, which can be
-GL\_LUMINANCE or GL\_ALPHA (for gray scale images), GL\_RGB or GL\_RGBA.
-\textit{BytesPerPixel} specifies the number of bytes per pixel.
-\textit{Data} is a pointer to the actual pixel data.
-
-By default the read image is rescaled to the nearest larger $2^m\times2^n$
-resolution using bilinear interpolation, if necessary, which is useful if
-the image is to be used as an \OpenGL\ texture. This behavior can be
-disabled by setting the GLFW\_NO\_RESCALE\_BIT flag.
-
-Unless the flag GLFW\_ORIGIN\_UL\_BIT is set, the first pixel in
-\textit{img->Data} is the lower left corner of the image. If the flag
-GLFW\_ORIGIN\_UL\_BIT is set, however, the first pixel is the upper left
-corner.
-
-For single component images (i.e. gray scale), \textit{Format} is set
-to GL\_ALPHA if the flag GLFW\_ALPHA\_MAP\_BIT flag is set, otherwise
-\textit{Format} is set to GL\_LUMINANCE.
+This function reads an image file from the memory buffer specified by the
+parameter \textit{data} and returns the image information and data in a
+GLFWimage structure.  For more information on the \GLFW\ image struct, see
+\textbf{glfwReadImage}.
 \end{refdescription}
 
 \begin{refnotes}
@@ -2138,10 +2132,6 @@ format (.TGA). Supported pixel formats are: 8-bit gray scale, 8-bit paletted
 
 Paletted images are translated into true color or true color + alpha pixel
 formats.
-
-Please note that \OpenGL~1.0 does not support single component alpha maps,
-so do not use images with Format = GL\_ALPHA directly as textures under
-\OpenGL~1.0.
 \end{refnotes}
 
 
@@ -2167,8 +2157,8 @@ none
 \begin{refdescription}
 This function frees any memory occupied by a loaded image, and clears all
 the fields of the GLFWimage struct. Any image that has been loaded by the
-\textbf{glfwReadImage} function should be deallocated using this function,
-once the image is not needed anymore.
+\textbf{glfwReadImage} function should be deallocated using this function
+once the image is no longer needed.
 \end{refdescription}
 
 
@@ -2392,9 +2382,9 @@ component texture. The red, green and blue components are set to 1.0.
 \section{OpenGL Extension Support}
 One of the great features of \OpenGL\ is its support for extensions, which
 allow independent vendors to supply non-standard functionality in their
-\OpenGL\ implementations. Using extensions is different under different
-systems, which is why \GLFW\ has provided an operating system independent
-interface to querying and using \OpenGL\ extensions.
+\OpenGL\ implementations.  As the mechanism for querying extensions varies
+among systems, \GLFW\ provides an operating system independent interface for
+querying \OpenGL\ version, extensions and entry points.
 
 
 %-------------------------------------------------------------------------
@@ -2430,7 +2420,7 @@ An \OpenGL\ context must be created before this function can be called
 
 In addition to checking for \OpenGL\ extensions, \GLFW\ also checks for
 extensions in the operating system ``glue API'', such as WGL extensions
-under Windows and glX extensions under the X Window System.
+under Microsoft Windows and GLX extensions under the X Window System.
 \end{refnotes}
 
 
@@ -2451,8 +2441,8 @@ void * glfwGetProcAddress( const char *procname )
 \end{refparameters}
 
 \begin{refreturn}
-The function returns the pointer to the specified \OpenGL\ function if it
-is supported, otherwise NULL is returned.
+The function returns the address of the specified \OpenGL\ function, if it
+is available.  Otherwise NULL is returned.
 \end{refreturn}
 
 \begin{refdescription}
@@ -2498,10 +2488,10 @@ for the currently used \OpenGL\ implementation.
 
 \begin{refdescription}
 This function returns the \OpenGL\ implementation version. This is a
-convenient function that parses the version number information from the
-string returned by calling \texttt{glGetString(~GL\_VERSION~)}. The
-\OpenGL\ version information can be used to determine what functionality
-is supported by the used \OpenGL\ implementation.
+convenient function that parses the version number information at the beginning
+of the string returned by calling \texttt{glGetString(~GL\_VERSION~)}. The
+\OpenGL\ version information can be used to determine what functionality is
+supported by the used \OpenGL\ implementation.
 \end{refdescription}
 
 \begin{refnotes}
@@ -2517,7 +2507,7 @@ An \OpenGL\ context must be created before this function can be called
 A thread is a separate execution path within a process. All threads within
 a process share the same address space and resources. Threads execute in
 parallel, either virtually by means of time-sharing on a single processor,
-or truly in parallel on several processors. Even on a multi-processor
+or truly in parallel on multiple processors. Even on a multi-processor
 system, time-sharing is employed in order to maximize processor
 utilization and to ensure fair scheduling. \GLFW\ provides an operating
 system independent interface to thread management.
@@ -2988,11 +2978,12 @@ each feature.
 \bigskip\begin{mysamepage}\hypertarget{lnk:autopollevents}{}
 \textbf{GLFW\_AUTO\_POLL\_EVENTS}\\
 When GLFW\_AUTO\_POLL\_EVENTS is enabled, \textbf{glfwPollEvents} is
-automatically called each time that \textbf{glfwSwapBuffers} is called.
+automatically called each time that \textbf{glfwSwapBuffers} is called,
+immediately after the buffer swap itself.
 
 When GLFW\_AUTO\_POLL\_EVENTS is disabled, calling
 \textbf{glfwSwapBuffers} will not result in a call to
-\textbf{glfwPollEvents}. This can be useful if \textbf{glfwSwapBuffers}
+\textbf{glfwPollEvents}. This can be useful if for example \textbf{glfwSwapBuffers}
 needs to be called from within a callback function, since calling
 \textbf{glfwPollEvents} from a callback function is not allowed.
 \end{mysamepage}
@@ -3019,7 +3010,7 @@ the window.
 
 When GLFW\_MOUSE\_CURSOR is disabled, the mouse cursor is invisible, and
 mouse coordinates are not limited to the drawing area of the window. It is
-as if the mouse coordinates are recieved directly from the mouse, without
+as if the mouse coordinates are received directly from the mouse, without
 being restricted or manipulated by the windowing system.
 \end{mysamepage}
 
@@ -3066,8 +3057,8 @@ also clears the sticky information for all mouse buttons.
 \bigskip\begin{mysamepage}\hypertarget{lnk:systemkeys}{}
 \textbf{GLFW\_SYSTEM\_KEYS}\\
 When GLFW\_SYSTEM\_KEYS is enabled, pressing standard system key
-combinations, such as \texttt{ALT+TAB} under Windows, will give the normal
-behavior. Note that when \texttt{ALT+TAB} is issued under Windows in this
+combinations, such as \texttt{Alt+Tab} under Windows, will give the normal
+behavior. Note that when \texttt{Alt+Tab} is issued under Windows in this
 mode so that the \GLFW\ application is deselected when \GLFW\ is operating
 in fullscreen mode, the \GLFW\ application window will be minimized and
 the video mode will be set to the original desktop mode. When the \GLFW\
@@ -3103,9 +3094,152 @@ This function determines the number of active processors in the system.
 
 \begin{refnotes}
 Systems with several logical processors per physical processor, also
-known as SMT (Symmetric Multi Threading) processors, will report the
+known as SMT (Symmetric Multi-Threading) processors, will report the
 number of logical processors.
 \end{refnotes}
+
+
+%-------------------------------------------------------------------------
+% GLFW Standards Conformance
+%-------------------------------------------------------------------------
+\appendix
+\chapter{GLFW Compatibility}
+\label{chap:compatibility}
+\thispagestyle{fancy}
+
+This chapter describes the various API extensions used by this version of
+\GLFW .  It lists what are essentially implementation details, but which are
+nonetheless vital knowledge for developers wishing to deploy their applications
+on machines with varied specifications.
+
+Note that the information in this appendix is not a part of the API
+specification but merely list some of the preconditions for certain parts of
+the API to function on a given machine.  As such, any part of it may change in
+future versions without this being considered a breaking API change.
+
+%-------------------------------------------------------------------------
+\section{ICCCM and EWMH Conformance}
+
+As \GLFW\ uses \textbf{Xlib}, directly, without any intervening toolkit
+library, it has sole responsibility for interacting well with the many and
+varied window managers in use on Unix-like systems.  In order for applications
+and window managers to work well together, a number of standards and
+conventions have been developed that regulate behavior outside the scope of the
+X11 API; most importantly the \textbf{Inter-Client Communication Conventions
+Manual} (ICCCM) and \textbf{Extended Window Manager Hints} (EWMH) standards.
+
+\GLFW\ uses the ICCCM \textbf{WM\_DELETE\_WINDOW} protocol to intercept the user
+attempting to close the \GLFW\ window.  If the running window manager does not
+support this protocol, the close callback will never be called.
+
+\GLFW\ uses the EWMH \textbf{\_NET\_WM\_PING} protocol, allowing the window
+manager notify the user when the application has stopped responding, i.e. when
+it has ceased to process events.  If the running window manager does not
+support this protocol, the user will not be notified if the application locks
+up.
+
+\GLFW\ uses the EWMH \textbf{\_NET\_WM\_STATE} protocol to tell the window
+manager to make the \GLFW\ window fullscreen.  If the running window manager
+does not support this protocol, fullscreen windows may not work properly.
+\GLFW\ has a fallback code path in case this protocol is unavailable, but every
+window manager behaves slightly differently in this regard.
+
+%-------------------------------------------------------------------------
+\section{GLX Extensions}
+
+The \textbf{GLX} API is used to create \OpenGL\ contexts on Unix-like systems
+using the X Window System.
+
+\GLFW\ uses the \textbf{GLXFBConfig} API to enumerate and select framebuffer
+pixel formats.  This requires either \textbf{GLX} 1.3 or greater, or the
+\textbf{GLX\_SGIX\_fbconfig} extension.  Where both are available, the SGIX
+extension is preferred.  If neither is available, \GLFW\ will be unable to open
+windows.
+
+% This paragraph repeated almost verbatim below
+\GLFW\ uses the \textbf{GLX\_SGI\_swap\_control} extension to provide vertical
+retrace synchronization (or ``vsync'').  Where this extension is unavailable,
+calling \textbf{glfwSwapInterval} will have no effect.
+
+% This paragraph repeated almost verbatim below
+\GLFW\ uses the \textbf{GLX\_ARB\_multisample} extension to create contexts
+with multisampling anti-aliasing.  Where this extension is unavailable, the
+GLFW\_FSAA\_SAMPLES hint will have no effect.
+
+% This paragraph repeated almost verbatim below
+\GLFW\ uses the \textbf{GLX\_ARB\_create\_context} extension when available,
+even when creating \OpenGL\ contexts of version 2.1 and below.  Where this
+extension is unavailable, the GLFW\_OPENGL\_VERSION\_MAJOR and
+GLFW\_OPENGL\_VERSION\_MINOR hints will only be partially supported, the
+GLFW\_OPENGL\_DEBUG\_CONTEXT hint will have no effect, and setting the
+GLFW\_OPENGL\_PROFILE or GLFW\_FORWARD\_COMPAT hints to a non-zero value will
+cause \textbf{glfwOpenWindow} to fail.
+
+% This paragraph repeated almost verbatim below
+\GLFW\ uses the \textbf{GLX\_ARB\_create\_context\_profile} extension to
+provide support for context profiles.  Where this extension is unavailable,
+setting the GLFW\_OPENGL\_PROFILE hint to anything but zero will cause
+\textbf{glfwOpenWindow} to fail.
+
+%-------------------------------------------------------------------------
+\section{WGL Extensions}
+
+The \textbf{WGL} API is used to create \OpenGL\ contexts on Microsoft Windows
+and other implementations of the Win32 API, such as Wine.
+
+\GLFW\ uses either the \textbf{WGL\_EXT\_extension\_string} or the
+\textbf{WGL\_ARB\_extension\_string} extension to check for the presence of all
+other \textbf{WGL} extensions listed below.  If both are available, the EXT one
+is preferred.  If neither is available, no other extensions are used and many
+\GLFW\ features related to context creation will have no effect or cause errors
+when used.
+
+% This paragraph repeated almost verbatim above
+\GLFW\ uses the \textbf{WGL\_EXT\_swap\_control} extension to provide vertical
+retrace synchronization (or ``vsync'').  Where this extension is unavailable,
+calling \textbf{glfwSwapInterval} will have no effect.
+
+% This paragraph repeated almost verbatim above
+\GLFW\ uses the \textbf{WGL\_ARB\_pixel\_format} and
+\textbf{WGL\_ARB\_multisample} extensions to create contexts with multisampling
+anti-aliasing.  Where these extensions are unavailable, the GLFW\_FSAA\_SAMPLES
+hint will have no effect.
+
+% This paragraph repeated almost verbatim above
+\GLFW\ uses the \textbf{WGL\_ARB\_create\_context} extension when available,
+even when creating \OpenGL\ contexts of version 2.1 and below.  Where this
+extension is unavailable, the GLFW\_OPENGL\_VERSION\_MAJOR and
+GLFW\_OPENGL\_VERSION\_MINOR hints will only be partially supported, the
+GLFW\_OPENGL\_DEBUG\_CONTEXT hint will have no effect, and setting the
+GLFW\_OPENGL\_PROFILE or GLFW\_FORWARD\_COMPAT hints to a non-zero value will
+cause \textbf{glfwOpenWindow} to fail.
+
+% This paragraph repeated almost verbatim above
+\GLFW\ uses the \textbf{WGL\_ARB\_create\_context\_profile} extension to
+provide support for context profiles.  Where this extension is unavailable,
+setting the GLFW\_OPENGL\_PROFILE hint to anything but zero will cause
+\textbf{glfwOpenWindow} to fail.
+
+%-------------------------------------------------------------------------
+\section{OpenGL 3.0+ on Mac OS X}
+
+Support for OpenGL 3.0 and above was introduced with Mac OS X 10.7, and even
+then only forward-compatible OpenGL 3.2 core profile contexts are supported.
+There is also still no mechanism for requesting debug contexts.  Versions of
+Mac OS X earlier than 10.7 support at most OpenGL version 2.1.
+
+Because of this, on Mac OS X 10.7, the GLFW\_OPENGL\_VERSION\_MAJOR and
+GLFW\_OPENGL\_VERSION\_MINOR hints will fail if given a version above 3.2, the
+GLFW\_FORWARD\_COMPAT is required for creating OpenGL 3.2 contexts, the
+GLFW\_OPENGL\_DEBUG\_CONTEXT hint is ignored and setting the
+GLFW\_OPENGL\_PROFILE hint to anything except zero or
+GLFW\_OPENGL\_CORE\_PROFILE will cause \textbf{glfwOpenWindow} to fail.                      
+
+Also, on Mac OS X 10.6 and below, the GLFW\_OPENGL\_VERSION\_MAJOR and
+GLFW\_OPENGL\_VERSION\_MINOR hints will fail if given a version above 2.1, the
+GLFW\_OPENGL\_DEBUG\_CONTEXT hint will have no effect, and setting the
+GLFW\_OPENGL\_PROFILE or GLFW\_FORWARD\_COMPAT hints to a non-zero value will
+cause \textbf{glfwOpenWindow} to fail.
 
 
 \end{document}
