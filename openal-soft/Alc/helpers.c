@@ -65,6 +65,10 @@ DEFINE_DEVPROPKEY(DEVPKEY_Device_FriendlyName, 0xa45c254e, 0xdf1c, 0x4efd, 0x80,
 #include <ieeefp.h>
 #endif
 
+#if defined(ANDROID) && defined(HAVE_NEON)
+#include "cpu-features.h"
+#endif
+
 #include "alMain.h"
 
 ALuint CPUCapFlags = 0;
@@ -123,8 +127,18 @@ void FillCPUCaps(ALuint capfilter)
     }
 #endif
 #ifdef HAVE_NEON
+#ifdef ANDROID
+    {
+        uint64_t features;
+
+        features = android_getCpuFeatures();
+        if(features & ANDROID_CPU_ARM_FEATURE_NEON)
+            caps |= CPU_CAP_NEON;
+    }
+#else
     /* Assume Neon support if compiled with it */
     caps |= CPU_CAP_NEON;
+#endif
 #endif
 
     TRACE("Got caps:%s%s%s\n", ((caps&CPU_CAP_SSE)?((capfilter&CPU_CAP_SSE)?" SSE":" (SSE)"):""),
