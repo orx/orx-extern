@@ -1,14 +1,14 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenAL32", "OpenAL32.vcxproj", "{DCED84D3-29C0-40F0-AC94-265DDE955E55}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenAL32", "OpenAL32.vcxproj", "{B2EA20AE-F4B4-4DDD-9AE6-FE3DB405526C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DCED84D3-29C0-40F0-AC94-265DDE955E55}.Release|Win32.ActiveCfg = Release|Win32
-		{DCED84D3-29C0-40F0-AC94-265DDE955E55}.Release|Win32.Build.0 = Release|Win32
+		{B2EA20AE-F4B4-4DDD-9AE6-FE3DB405526C}.Release|Win32.ActiveCfg = Release|Win32
+		{B2EA20AE-F4B4-4DDD-9AE6-FE3DB405526C}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
