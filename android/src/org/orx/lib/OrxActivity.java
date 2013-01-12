@@ -69,7 +69,6 @@ public abstract class OrxActivity extends Activity {
 	// Methods
 	// ===========================================================
 	public void init() {
-		APKFileHelper.getInstance().setContext(this);
 		nativeInit();
 		
 		if(getLayoutId() == 0 || getOrxGLSurfaceViewId() == 0) {
