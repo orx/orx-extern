@@ -71,8 +71,6 @@ public abstract class OrxActivity extends Activity {
 	// Methods
 	// ===========================================================
 	public void init() {
-		Log.e("OrxActivity", "init()");
-
 		nativeInit();
 
     	mRequireDepthBuffer = requireDepthBuffer();
