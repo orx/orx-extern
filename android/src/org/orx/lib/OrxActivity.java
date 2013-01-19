@@ -3,6 +3,7 @@ package org.orx.lib;
 import android.app.Activity;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -14,6 +15,7 @@ public abstract class OrxActivity extends Activity {
 	private OrxGLSurfaceView mGLSurfaceView;
 	
 	private boolean mAccelerometerIsEnabled = false;
+	private boolean mRequireDepthBuffer = false;
 	private OrxAccelerometer mAccelerometer;
 
 	// ===========================================================
@@ -69,8 +71,12 @@ public abstract class OrxActivity extends Activity {
 	// Methods
 	// ===========================================================
 	public void init() {
+		Log.e("OrxActivity", "init()");
+
 		nativeInit();
-		
+
+    	mRequireDepthBuffer = requireDepthBuffer();
+    	
 		if(getLayoutId() == 0 || getOrxGLSurfaceViewId() == 0) {
 	    	// FrameLayout
 	        ViewGroup.LayoutParams framelayout_params =
@@ -105,7 +111,7 @@ public abstract class OrxActivity extends Activity {
 	}
 	
     private OrxGLSurfaceView onCreateView() {
-    	return new OrxGLSurfaceView(this, requireDepthBuffer());
+    	return new OrxGLSurfaceView(this, mRequireDepthBuffer);
     }
     
     protected void enableAccelerometer() {
@@ -119,7 +125,5 @@ public abstract class OrxActivity extends Activity {
     	mGLSurfaceView.queueEvent(r);
     }
     
-    protected boolean requireDepthBuffer() {
-    	return false;
-    }
+    private native boolean requireDepthBuffer();
 }
