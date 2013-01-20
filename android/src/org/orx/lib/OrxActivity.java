@@ -13,7 +13,7 @@ public abstract class OrxActivity extends Activity {
 	
 	private OrxGLSurfaceView mGLSurfaceView;
 	
-	private boolean mAccelerometerIsEnabled = false;
+	private int mAccelerometerRate = -1;
 	private boolean mRequireDepthBuffer = false;
 	private OrxAccelerometer mAccelerometer;
 
@@ -52,8 +52,8 @@ public abstract class OrxActivity extends Activity {
 
 		mGLSurfaceView.onResume();
 		
-		if(mAccelerometerIsEnabled)
-			mAccelerometer.enable();
+		if(mAccelerometerRate != -1)
+			mAccelerometer.enable(mAccelerometerRate);
 	}
 
 	@Override
@@ -62,7 +62,7 @@ public abstract class OrxActivity extends Activity {
 
 		mGLSurfaceView.onPause();
 		
-		if(mAccelerometerIsEnabled)
+		if(mAccelerometerRate != -1)
 			mAccelerometer.disable();
 	}
 
@@ -111,9 +111,9 @@ public abstract class OrxActivity extends Activity {
     	return new OrxGLSurfaceView(this, mRequireDepthBuffer);
     }
     
-    protected void enableAccelerometer() {
-    	mAccelerometerIsEnabled = true;
-    	mAccelerometer.enable();
+    public void enableAccelerometer(int rate) {
+    	mAccelerometerRate = rate;
+    	mAccelerometer.enable(mAccelerometerRate);
     }
     
     private native void nativeInit();

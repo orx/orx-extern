@@ -21,7 +21,7 @@ public class OrxAccelerometer implements SensorEventListener {
 	private final SensorManager mSensorManager;
 	private final Sensor mAccelerometer;
 	private final int mNaturalOrientation;
-
+	
 	// ===========================================================
 	// Constructors
 	// ===========================================================
@@ -39,9 +39,8 @@ public class OrxAccelerometer implements SensorEventListener {
 		mNaturalOrientation = display.getOrientation();
 	}
 
-	public void enable() {
-		mSensorManager.registerListener(this, mAccelerometer,
-				SensorManager.SENSOR_DELAY_GAME);
+	public void enable(int rate) {
+		mSensorManager.registerListener(this, mAccelerometer, rate);
 	}
 
 
