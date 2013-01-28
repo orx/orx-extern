@@ -1,7 +1,6 @@
 package org.orx.lib;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -12,7 +11,6 @@ public class OrxGLSurfaceView extends GLSurfaceView {
 	// ===========================================================
 
 	private OrxRenderer mOrxRenderer;
-	private boolean mRequireDepthBuffer = false;
 
 	// ===========================================================
 	// Constructors
@@ -20,33 +18,17 @@ public class OrxGLSurfaceView extends GLSurfaceView {
 
 	public OrxGLSurfaceView(final Context context) {
 		super(context);
-
-		initView(context, null);
-	}
-
-	public OrxGLSurfaceView(final Context context, boolean requireDepthBuffer) {
-		super(context);
-
-		mRequireDepthBuffer = requireDepthBuffer;
-		initView(context, null);
 	}
 
 	public OrxGLSurfaceView(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
-
-		initView(context, attrs);
 	}
 
-	protected void initView(Context context, AttributeSet attrs) {
-		if(attrs != null) {
-			TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.OrxGLSurfaceView);
-			mRequireDepthBuffer = a.getBoolean(R.styleable.OrxGLSurfaceView_requireDepthBuffer, false);
-			a.recycle();
-		}
-		
+	public void initView(boolean requireDepthBuffer) {
 		setFocusableInTouchMode(true);
 		setEGLContextClientVersion(2);
-		setEGLConfigChooser(mRequireDepthBuffer);
+		// force RGB565 surface
+		setEGLConfigChooser(5, 6, 5, 0, requireDepthBuffer ? 16 : 0, 0);
 		setPreserveEGLContextOnPause(true);
 	}
 	

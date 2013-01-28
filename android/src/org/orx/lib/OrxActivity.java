@@ -95,6 +95,7 @@ public abstract class OrxActivity extends Activity {
 			mGLSurfaceView = (OrxGLSurfaceView) findViewById(getOrxGLSurfaceViewId());
 		}
 
+		mGLSurfaceView.initView(mRequireDepthBuffer);
         mGLSurfaceView.setOrxRenderer(new OrxRenderer(this));
 		mAccelerometer = new OrxAccelerometer(this, mGLSurfaceView);
 	}
@@ -108,7 +109,7 @@ public abstract class OrxActivity extends Activity {
 	}
 	
     private OrxGLSurfaceView onCreateView() {
-    	return new OrxGLSurfaceView(this, mRequireDepthBuffer);
+    	return new OrxGLSurfaceView(this);
     }
     
     public void enableAccelerometer(int rate) {
