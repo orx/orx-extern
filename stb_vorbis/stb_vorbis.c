@@ -1331,7 +1331,7 @@ static int set_file_offset(stb_vorbis *f, unsigned int loc)
    } else {
       loc += f->f_start;
    }
-   if (orxResource_Seek(f->h, loc, orxSEEK_OFFSET_WHENCE_START) == loc)
+   if ((unsigned int)orxResource_Seek(f->h, loc, orxSEEK_OFFSET_WHENCE_START) == loc)
       return 1;
    f->eof = 1;
    orxResource_Seek(f->h, f->f_start, orxSEEK_OFFSET_WHENCE_END);
