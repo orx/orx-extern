@@ -43,6 +43,8 @@
 #include <stdio.h>
 #endif
 
+#include "core/orxResource.h"
+
 #define stb_prof(X)
 
 #ifdef __cplusplus
@@ -218,7 +220,7 @@ extern stb_vorbis * stb_vorbis_open_filename(char *filename,
 // create an ogg vorbis decoder from a filename via fopen(). on failure,
 // returns NULL and sets *error (possibly to VORBIS_file_open_failure).
 
-extern stb_vorbis * stb_vorbis_open_file(FILE *f, int close_handle_on_close,
+extern stb_vorbis * stb_vorbis_open_file(orxHANDLE f, int close_handle_on_close,
                                   int *error, stb_vorbis_alloc *alloc_buffer);
 // create an ogg vorbis decoder from an open FILE *, looking for a stream at
 // the _current_ seek point (ftell). on failure, returns NULL and sets *error.
@@ -228,7 +230,7 @@ extern stb_vorbis * stb_vorbis_open_file(FILE *f, int close_handle_on_close,
 // owns the _entire_ rest of the file after the start point. Use the next
 // function, stb_vorbis_open_file_section(), to limit it.
 
-extern stb_vorbis * stb_vorbis_open_file_section(FILE *f, int close_handle_on_close,
+extern stb_vorbis * stb_vorbis_open_file_section(orxHANDLE f, int close_handle_on_close,
                 int *error, stb_vorbis_alloc *alloc_buffer, unsigned int len);
 // create an ogg vorbis decoder from an open FILE *, looking for a stream at
 // the _current_ seek point (ftell); the stream will be of length 'len' bytes.
@@ -711,7 +713,7 @@ struct stb_vorbis
 
   // input config
 #ifndef STB_VORBIS_NO_STDIO
-   FILE *f;
+   orxHANDLE h;
    uint32 f_start;
    int close_on_free;
 #endif
@@ -878,13 +880,13 @@ static void *setup_malloc(vorb *f, int sz)
       f->setup_offset += sz;
       return p;
    }
-   return sz ? malloc(sz) : NULL;
+   return sz ? orxMemory_Allocate(sz, orxMEMORY_TYPE_MAIN) : NULL;
 }
 
 static void setup_free(vorb *f, void *p)
 {
    if (f->alloc.alloc_buffer) return; // do nothing; setup mem is not a stack
-   free(p);
+   orxMemory_Free(p);
 }
 
 static void *setup_temp_malloc(vorb *f, int sz)
@@ -895,7 +897,7 @@ static void *setup_temp_malloc(vorb *f, int sz)
       f->temp_offset -= sz;
       return (char *) f->alloc.alloc_buffer + f->temp_offset;
    }
-   return malloc(sz);
+   return orxMemory_Allocate(sz, orxMEMORY_TYPE_TEMP);
 }
 
 static void setup_temp_free(vorb *f, void *p, size_t sz)
@@ -904,7 +906,7 @@ static void setup_temp_free(vorb *f, void *p, size_t sz)
       f->temp_offset += (sz+3)&~3;
       return;
    }
-   free(p);
+   orxMemory_Free(p);
 }
 
 #define CRC32_POLY    0x04c11db7   // from spec
@@ -1253,7 +1255,9 @@ static uint8 get8(vorb *z)
 
    #ifndef STB_VORBIS_NO_STDIO
    {
-   int c = fgetc(z->f);
+   uint8 c;
+   
+   orxResource_Read(z->h, sizeof(uint8), &c);
    if (c == EOF) { z->eof = TRUE; return 0; }
    return c;
    }
@@ -1280,7 +1284,7 @@ static int getn(vorb *z, uint8 *data, int n)
    }
 
    #ifndef STB_VORBIS_NO_STDIO   
-   if (fread(data, n, 1, z->f) == 1)
+   if (orxResource_Read(z->h, n, data) == n)
       return 1;
    else {
       z->eof = 1;
@@ -1298,8 +1302,8 @@ static void skip(vorb *z, int n)
    }
    #ifndef STB_VORBIS_NO_STDIO
    {
-      long x = ftell(z->f);
-      fseek(z->f, x+n, SEEK_SET);
+      long x = orxResource_Tell(z->h);
+      orxResource_Seek(z->h, x+n, orxSEEK_OFFSET_WHENCE_START);
    }
    #endif
 }
@@ -1327,10 +1331,10 @@ static int set_file_offset(stb_vorbis *f, unsigned int loc)
    } else {
       loc += f->f_start;
    }
-   if (!fseek(f->f, loc, SEEK_SET))
+   if (orxResource_Seek(f->h, loc, orxSEEK_OFFSET_WHENCE_START) == loc)
       return 1;
    f->eof = 1;
-   fseek(f->f, f->f_start, SEEK_END);
+   orxResource_Seek(f->h, f->f_start, orxSEEK_OFFSET_WHENCE_END);
    return 0;
    #endif
 }
@@ -4143,7 +4147,7 @@ static void vorbis_deinit(stb_vorbis *p)
       setup_free(p, p->window[i]);
    }
    #ifndef STB_VORBIS_NO_STDIO
-   if (p->close_on_free) fclose(p->f);
+   if (p->close_on_free) orxResource_Close(p->h);
    #endif
 }
 
@@ -4169,7 +4173,7 @@ static void vorbis_init(stb_vorbis *p, stb_vorbis_alloc *z)
    p->page_crc_tests = -1;
    #ifndef STB_VORBIS_NO_STDIO
    p->close_on_free = FALSE;
-   p->f = NULL;
+   p->h = NULL;
    #endif
 }
 
@@ -4418,7 +4422,7 @@ unsigned int stb_vorbis_get_file_offset(stb_vorbis *f)
    #endif
    if (USE_MEMORY(f)) return f->stream - f->stream_start;
    #ifndef STB_VORBIS_NO_STDIO
-   return ftell(f->f) - f->f_start;
+   return orxResource_Tell(f->h) - f->f_start;
    #endif
 }
 
@@ -4961,12 +4965,12 @@ int stb_vorbis_get_frame_float(stb_vorbis *f, int *channels, float ***output)
 
 #ifndef STB_VORBIS_NO_STDIO
 
-stb_vorbis * stb_vorbis_open_file_section(FILE *file, int close_on_free, int *error, stb_vorbis_alloc *alloc, unsigned int length)
+stb_vorbis * stb_vorbis_open_file_section(orxHANDLE file, int close_on_free, int *error, stb_vorbis_alloc *alloc, unsigned int length)
 {
    stb_vorbis *f, p;
    vorbis_init(&p, alloc);
-   p.f = file;
-   p.f_start = ftell(file);
+   p.h = file;
+   p.f_start = orxResource_Tell(file);
    p.stream_len   = length;
    p.close_on_free = close_on_free;
    if (start_decoder(&p)) {
@@ -4982,21 +4986,21 @@ stb_vorbis * stb_vorbis_open_file_section(FILE *file, int close_on_free, int *er
    return NULL;
 }
 
-stb_vorbis * stb_vorbis_open_file(FILE *file, int close_on_free, int *error, stb_vorbis_alloc *alloc)
+stb_vorbis * stb_vorbis_open_file(orxHANDLE file, int close_on_free, int *error, stb_vorbis_alloc *alloc)
 {
    unsigned int len, start;
-   start = ftell(file);
-   fseek(file, 0, SEEK_END);
-   len = ftell(file) - start;
-   fseek(file, start, SEEK_SET);
+   start = orxResource_Tell(file);
+   orxResource_Seek(file, 0, orxSEEK_OFFSET_WHENCE_END);
+   len = orxResource_Tell(file) - start;
+   orxResource_Seek(file, start, orxSEEK_OFFSET_WHENCE_START);
    return stb_vorbis_open_file_section(file, close_on_free, error, alloc, len);
 }
 
 stb_vorbis * stb_vorbis_open_filename(char *filename, int *error, stb_vorbis_alloc *alloc)
 {
-   FILE *f = fopen(filename, "rb");
-   if (f) 
-      return stb_vorbis_open_file(f, TRUE, error, alloc);
+   orxHANDLE h = orxResource_Open(filename);
+   if (h) 
+      return stb_vorbis_open_file(h, TRUE, error, alloc);
    if (error) *error = VORBIS_file_open_failure;
    return NULL;
 }
