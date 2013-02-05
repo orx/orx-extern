@@ -1258,7 +1258,7 @@ static uint8 get8(vorb *z)
    uint8 c;
    
    orxResource_Read(z->h, sizeof(uint8), &c);
-   if (c == EOF) { z->eof = TRUE; return 0; }
+   if (c == (uint8)EOF) { z->eof = TRUE; return 0; }
    return c;
    }
    #endif
