@@ -1256,9 +1256,8 @@ static uint8 get8(vorb *z)
    #ifndef STB_VORBIS_NO_STDIO
    {
    uint8 c;
-   
-   orxResource_Read(z->h, sizeof(uint8), &c);
-   if (c == (uint8)EOF) { z->eof = TRUE; return 0; }
+
+   if (orxResource_Read(z->h, sizeof(uint8), &c) <= 0) { z->eof = TRUE; return 0; }
    return c;
    }
    #endif
