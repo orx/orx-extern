@@ -30,17 +30,31 @@
 
 #endif // ANDROID
 
-//! End of Orx modification
-
 b2Version b2_version = {2, 2, 0};
+
+void* (*b2_custom_alloc)(int32) = NULL;
+void (*b2_custom_free)(void*) = NULL;
+
+void b2SetCustomAllocFree(void*(*_alloc)(int32), void(*_free)(void*))
+{
+  b2_custom_alloc = _alloc;
+  b2_custom_free  = _free;
+}
+
+void set_b2_custom_alloc(void*(*_alloc)(int32))
+{
+  b2_custom_alloc = _alloc;
+}
 
 // Memory allocators. Modify these to use your own allocator.
 void* b2Alloc(int32 size)
 {
-	return malloc(size);
+  return b2_custom_alloc ? b2_custom_alloc(size) : malloc(size);
 }
 
 void b2Free(void* mem)
 {
-	free(mem);
+  b2_custom_free ? b2_custom_free(mem) : free(mem);
 }
+
+//! End of Orx modification

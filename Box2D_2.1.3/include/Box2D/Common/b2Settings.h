@@ -123,6 +123,10 @@ typedef float float32;
 
 // Memory Allocation
 
+//! Orx modification
+void b2SetCustomAllocFree(void*(*_alloc)(int32), void(*_free)(void*));
+//! End of Orx modification
+
 /// Implement this function to use your own memory allocator.
 void* b2Alloc(int32 size);
 
