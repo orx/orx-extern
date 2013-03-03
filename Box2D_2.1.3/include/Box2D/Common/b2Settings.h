@@ -124,14 +124,14 @@ typedef float float32;
 // Memory Allocation
 
 //! Orx modification
-void b2SetCustomAllocFree(void*(*_alloc)(int32), void(*_free)(void*));
+extern void b2SetCustomAllocFree(void*(*_alloc)(int32), void(*_free)(void*));
 //! End of Orx modification
 
 /// Implement this function to use your own memory allocator.
-void* b2Alloc(int32 size);
+extern void* b2Alloc(int32 size);
 
 /// If you implement b2Alloc, you should also implement this function.
-void b2Free(void* mem);
+extern void b2Free(void* mem);
 
 /// Version numbering scheme.
 /// See http://en.wikipedia.org/wiki/Software_versioning
