@@ -880,7 +880,7 @@ static void *setup_malloc(vorb *f, int sz)
       f->setup_offset += sz;
       return p;
    }
-   return sz ? orxMemory_Allocate(sz, orxMEMORY_TYPE_MAIN) : NULL;
+   return sz ? orxMemory_Allocate(sz, orxMEMORY_TYPE_AUDIO) : NULL;
 }
 
 static void setup_free(vorb *f, void *p)
@@ -897,7 +897,7 @@ static void *setup_temp_malloc(vorb *f, int sz)
       f->temp_offset -= sz;
       return (char *) f->alloc.alloc_buffer + f->temp_offset;
    }
-   return orxMemory_Allocate(sz, orxMEMORY_TYPE_TEMP);
+   return orxMemory_Allocate(sz, orxMEMORY_TYPE_AUDIO);
 }
 
 static void setup_temp_free(vorb *f, void *p, size_t sz)
@@ -5298,7 +5298,7 @@ int stb_vorbis_decode_memory(uint8 *mem, int len, int *channels, short **output)
    *channels = v->channels;
    offset = data_len = 0;
    total = limit;
-   data = (short *) malloc(total * sizeof(*data));
+   data = (short *) orxMemory_Allocate(total * sizeof(*data), orxMEMORY_TYPE_AUDIO);
    if (data == NULL) {
       stb_vorbis_close(v);
       return -2;
@@ -5313,7 +5313,7 @@ int stb_vorbis_decode_memory(uint8 *mem, int len, int *channels, short **output)
          total *= 2;
          data2 = (short *) realloc(data, total * sizeof(*data));
          if (data2 == NULL) {
-            free(data);
+            orxMemory_Free(data);
             stb_vorbis_close(v);
             return -2;
          }
