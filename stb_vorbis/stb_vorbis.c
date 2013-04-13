@@ -4994,7 +4994,7 @@ stb_vorbis * stb_vorbis_open_file(orxHANDLE file, int close_on_free, int *error,
 
 stb_vorbis * stb_vorbis_open_filename(char *filename, int *error, stb_vorbis_alloc *alloc)
 {
-   orxHANDLE h = orxResource_Open(filename);
+   orxHANDLE h = orxResource_Open(filename, orxFALSE);
    if (h) 
       return stb_vorbis_open_file(h, TRUE, error, alloc);
    if (error) *error = VORBIS_file_open_failure;
