@@ -7,7 +7,6 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -19,36 +18,31 @@ import android.view.WindowManager;
 public class OrxActivity extends Activity {
 
     // Keep track of the paused state
-    public static boolean mIsPaused = false;
-
+    boolean mIsPaused = false;
+    
     // Main components
-    private static OrxActivity mSingleton;
-    private static OrxSurface mSurface;
+    private OrxSurface mSurface;
 
     // This is what Orx runs in. It invokes Orx_main(), eventually
-    private static Thread mOrxThread;
+    private Thread mOrxThread;
 
     // EGL private objects
-    private static EGLContext  mEGLContext;
-    private static EGLSurface  mEGLSurface;
-    private static EGLDisplay  mEGLDisplay;
-    private static EGLConfig   mEGLConfig;
-    private static int mGLMajor, mGLMinor;
+    private EGLContext  mEGLContext;
+    private EGLSurface  mEGLSurface;
+    private EGLDisplay  mEGLDisplay;
+    private EGLConfig   mEGLConfig;
+    private int mGLMajor, mGLMinor;
 
     // Setup
     protected void onCreate(Bundle savedInstanceState) {
         Log.v("Orx", "onCreate()");
         super.onCreate(savedInstanceState);
         
-        // So we can call stuff from static callbacks
-        mSingleton = this;
-
         // Set up the surface
         mSurface = new OrxSurface(getApplication());
+        mSurface.setActivity(this);
 
         setContentView(mSurface);
-
-        SurfaceHolder holder = mSurface.getHolder();
     }
 
     protected int getLayoutId() {
@@ -71,20 +65,20 @@ public class OrxActivity extends Activity {
     protected void onPause() {
         Log.v("Orx", "onPause()");
         super.onPause();
-        OrxActivity.nativePause();
+        nativePause();
     }
 
     protected void onResume() {
         Log.v("Orx", "onResume()");
         super.onResume();
-        OrxActivity.nativeResume();
+        nativeResume();
     }
 
     protected void onDestroy() {
         super.onDestroy();
         Log.v("Orx", "onDestroy()");
         // Send a quit message to the application
-        OrxActivity.nativeQuit();
+        nativeQuit();
 
         // Now wait for the Orx thread to quit
         if (mOrxThread != null) {
@@ -100,40 +94,36 @@ public class OrxActivity extends Activity {
     }
 
     // C functions we call
-    public static native void nativeInit();
-    public static native void nativeQuit();
-    public static native void nativePause();
-    public static native void nativeResume();
-    public static native void nativeSurfaceDestroyed();
-    public static native void nativeSurfaceCreated();
-    public static native void onNativeResize(int x, int y);
-    public static native void onNativeKeyDown(int keycode);
-    public static native void onNativeKeyUp(int keycode);
-    public static native void onNativeTouch(int touchDevId, int pointerFingerId,
+    native void nativeInit();
+    native void nativeQuit();
+    native void nativePause();
+    native void nativeResume();
+    native void nativeSurfaceDestroyed();
+    native void nativeSurfaceCreated();
+    native void onNativeResize(int x, int y);
+    native void onNativeKeyDown(int keycode);
+    native void onNativeKeyUp(int keycode);
+    native void onNativeTouch(int touchDevId, int pointerFingerId,
                                             int action, float x, 
                                             float y, float p);
 
     // Java functions called from C
     
-    public static int getRotation() {
-    	WindowManager windowMgr = (WindowManager) mSingleton.getSystemService(WINDOW_SERVICE);
+    public int getRotation() {
+    	WindowManager windowMgr = (WindowManager) getSystemService(WINDOW_SERVICE);
     	int rotationIndex = windowMgr.getDefaultDisplay().getRotation();
     	return rotationIndex;
     }
 
-    public static boolean createGLContext(int majorVersion, int minorVersion, int[] attribs) {
+    public boolean createGLContext(int majorVersion, int minorVersion, int[] attribs) {
         return initEGL(majorVersion, minorVersion, attribs);
     }
 
-    public static void flipBuffers() {
+    public void flipBuffers() {
         flipEGL();
     }
 
-    public static Context getContext() {
-        return mSingleton;
-    }
-
-    public static void startApp() {
+    void startApp() {
         // Start up the C app thread
         if (mOrxThread == null) {
             mOrxThread = new Thread(new OrxMain(), "OrxThread");
@@ -145,20 +135,20 @@ public class OrxActivity extends Activity {
              * every time we get one of those events, only if it comes after surfaceDestroyed
              */
             if (mIsPaused) {
-                OrxActivity.nativeSurfaceCreated();
-                OrxActivity.mIsPaused = false;
+                nativeSurfaceCreated();
+                mIsPaused = false;
             }
         }
     }
     
-    public static void finishApp() {
-    	mSingleton.finish();
+    private void finishApp() {
+    	finish();
     }
     
     // EGL functions
-    public static boolean initEGL(int majorVersion, int minorVersion, int[] attribs) {
+    private boolean initEGL(int majorVersion, int minorVersion, int[] attribs) {
         try {
-            if (OrxActivity.mEGLDisplay == null) {
+            if (mEGLDisplay == null) {
                 Log.v("Orx", "Starting up OpenGL ES " + majorVersion + "." + minorVersion);
 
                 EGL10 egl = (EGL10)EGLContext.getEGL();
@@ -176,12 +166,12 @@ public class OrxActivity extends Activity {
                 }
                 EGLConfig config = configs[0];
 
-                OrxActivity.mEGLDisplay = dpy;
-                OrxActivity.mEGLConfig = config;
-                OrxActivity.mGLMajor = majorVersion;
-                OrxActivity.mGLMinor = minorVersion;
+                mEGLDisplay = dpy;
+                mEGLConfig = config;
+                mGLMajor = majorVersion;
+                mGLMinor = minorVersion;
             }
-            return OrxActivity.createEGLSurface();
+            return createEGLSurface();
 
         } catch(Exception e) {
             Log.v("Orx", e + "");
@@ -192,51 +182,51 @@ public class OrxActivity extends Activity {
         }
     }
 
-    public static boolean createEGLContext() {
+    private boolean createEGLContext() {
         EGL10 egl = (EGL10)EGLContext.getEGL();
         int EGL_CONTEXT_CLIENT_VERSION=0x3098;
-        int contextAttrs[] = new int[] { EGL_CONTEXT_CLIENT_VERSION, OrxActivity.mGLMajor, EGL10.EGL_NONE };
-        OrxActivity.mEGLContext = egl.eglCreateContext(OrxActivity.mEGLDisplay, OrxActivity.mEGLConfig, EGL10.EGL_NO_CONTEXT, contextAttrs);
-        if (OrxActivity.mEGLContext == EGL10.EGL_NO_CONTEXT) {
+        int contextAttrs[] = new int[] { EGL_CONTEXT_CLIENT_VERSION, mGLMajor, EGL10.EGL_NONE };
+        mEGLContext = egl.eglCreateContext(mEGLDisplay, mEGLConfig, EGL10.EGL_NO_CONTEXT, contextAttrs);
+        if (mEGLContext == EGL10.EGL_NO_CONTEXT) {
             Log.e("Orx", "Couldn't create context");
             return false;
         }
         return true;
     }
 
-    public static boolean createEGLSurface() {
-        if (OrxActivity.mEGLDisplay != null && OrxActivity.mEGLConfig != null) {
+    private boolean createEGLSurface() {
+        if (mEGLDisplay != null && mEGLConfig != null) {
             EGL10 egl = (EGL10)EGLContext.getEGL();
-            if (OrxActivity.mEGLContext == null) createEGLContext();
+            if (mEGLContext == null) createEGLContext();
 
             Log.v("Orx", "Creating new EGL Surface");
-            EGLSurface surface = egl.eglCreateWindowSurface(OrxActivity.mEGLDisplay, OrxActivity.mEGLConfig, OrxActivity.mSurface, null);
+            EGLSurface surface = egl.eglCreateWindowSurface(mEGLDisplay, mEGLConfig, mSurface, null);
             if (surface == EGL10.EGL_NO_SURFACE) {
                 Log.e("Orx", "Couldn't create surface");
                 return false;
             }
 
-            if (egl.eglGetCurrentContext() != OrxActivity.mEGLContext) {
-                if (!egl.eglMakeCurrent(OrxActivity.mEGLDisplay, surface, surface, OrxActivity.mEGLContext)) {
+            if (egl.eglGetCurrentContext() != mEGLContext) {
+                if (!egl.eglMakeCurrent(mEGLDisplay, surface, surface, mEGLContext)) {
                     Log.e("Orx", "Old EGL Context doesnt work, trying with a new one");
                     // TODO: Notify the user via a message that the old context could not be restored, and that textures need to be manually restored.
                     createEGLContext();
-                    if (!egl.eglMakeCurrent(OrxActivity.mEGLDisplay, surface, surface, OrxActivity.mEGLContext)) {
+                    if (!egl.eglMakeCurrent(mEGLDisplay, surface, surface, mEGLContext)) {
                         Log.e("Orx", "Failed making EGL Context current");
                         return false;
                     }
                 }
             }
-            OrxActivity.mEGLSurface = surface;
+            mEGLSurface = surface;
             return true;
         } else {
-            Log.e("Orx", "Surface creation failed, display = " + OrxActivity.mEGLDisplay + ", config = " + OrxActivity.mEGLConfig);
+            Log.e("Orx", "Surface creation failed, display = " + mEGLDisplay + ", config = " + mEGLConfig);
             return false;
         }
     }
 
     // EGL buffer flip
-    public static void flipEGL() {
+    public void flipEGL() {
         try {
             EGL10 egl = (EGL10)EGLContext.getEGL();
 
@@ -246,7 +236,7 @@ public class OrxActivity extends Activity {
 
             egl.eglWaitGL();
 
-            egl.eglSwapBuffers(OrxActivity.mEGLDisplay, OrxActivity.mEGLSurface);
+            egl.eglSwapBuffers(mEGLDisplay, mEGLSurface);
 
 
         } catch(Exception e) {
@@ -256,18 +246,19 @@ public class OrxActivity extends Activity {
             }
         }
     }
+    
+	/**
+	 * Simple nativeInit() runnable
+	 */
+	class OrxMain implements Runnable {
+		public void run() {
+			// Runs Orx_main()
+			nativeInit();
+
+			Log.v("Orx", "Orx thread terminated");
+
+			finishApp();
+		}
+	}
 }
 
-/**
-    Simple nativeInit() runnable
-*/
-class OrxMain implements Runnable {
-    public void run() {
-        // Runs Orx_main()
-        OrxActivity.nativeInit();
-
-        Log.v("Orx", "Orx thread terminated");
-        
-        OrxActivity.finishApp();
-    }
-}

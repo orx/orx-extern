@@ -18,8 +18,7 @@ import android.view.View;
 public class OrxSurface extends SurfaceView implements SurfaceHolder.Callback,
 		View.OnKeyListener, View.OnTouchListener {
 
-	// Keep track of the surface size to normalize touch events
-	private static float mWidth, mHeight;
+	private OrxActivity mOrxActivity;
 
 	// Startup
 	public OrxSurface(Context context) {
@@ -31,10 +30,10 @@ public class OrxSurface extends SurfaceView implements SurfaceHolder.Callback,
 		requestFocus();
 		setOnKeyListener(this);
 		setOnTouchListener(this);
-
-		// Some arbitrary defaults to avoid a potential division by zero
-		mWidth = 1.0f;
-		mHeight = 1.0f;
+	}
+	
+	public void setActivity(OrxActivity activity) {
+		mOrxActivity = activity;
 	}
 
 	// Called when we have a valid drawing surface
@@ -45,9 +44,9 @@ public class OrxSurface extends SurfaceView implements SurfaceHolder.Callback,
 	// Called when we lose the surface
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		Log.v("Orx", "surfaceDestroyed()");
-		if (!OrxActivity.mIsPaused) {
-			OrxActivity.mIsPaused = true;
-			OrxActivity.nativeSurfaceDestroyed();
+		if (!mOrxActivity.mIsPaused) {
+			mOrxActivity.mIsPaused = true;
+			mOrxActivity.nativeSurfaceDestroyed();
 		}
 	}
 
@@ -56,12 +55,10 @@ public class OrxSurface extends SurfaceView implements SurfaceHolder.Callback,
 			int height) {
 		Log.v("Orx", "surfaceChanged()");
 
-		mWidth = (float) width;
-		mHeight = (float) height;
-		OrxActivity.onNativeResize(width, height);
+		mOrxActivity.onNativeResize(width, height);
 		Log.v("Orx", "Window size:" + width + "x" + height);
 
-		OrxActivity.startApp();
+		mOrxActivity.startApp();
 	}
 
 	// unused
@@ -76,11 +73,11 @@ public class OrxSurface extends SurfaceView implements SurfaceHolder.Callback,
 		case KeyEvent.KEYCODE_MENU:
 			if (event.getAction() == KeyEvent.ACTION_DOWN) {
 				Log.v("Orx", "key down: " + keyCode);
-				OrxActivity.onNativeKeyDown(keyCode);
+				mOrxActivity.onNativeKeyDown(keyCode);
 				return true;
 			} else if (event.getAction() == KeyEvent.ACTION_UP) {
 				Log.v("Orx", "key up: " + keyCode);
-				OrxActivity.onNativeKeyUp(keyCode);
+				mOrxActivity.onNativeKeyUp(keyCode);
 				return true;
 			}
 		}
@@ -109,11 +106,11 @@ public class OrxSurface extends SurfaceView implements SurfaceHolder.Callback,
 				x = event.getX(i);
 				y = event.getY(i);
 				p = event.getPressure(i);
-				OrxActivity.onNativeTouch(touchDevId, pointerFingerId, action,
+				mOrxActivity.onNativeTouch(touchDevId, pointerFingerId, action,
 						x, y, p);
 			}
 		} else {
-			OrxActivity.onNativeTouch(touchDevId, pointerFingerId, action, x,
+			mOrxActivity.onNativeTouch(touchDevId, pointerFingerId, action, x,
 					y, p);
 		}
 		return true;
