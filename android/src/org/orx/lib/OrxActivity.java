@@ -7,6 +7,7 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 
 import android.app.Activity;
+import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
@@ -20,7 +21,7 @@ public class OrxActivity extends Activity {
     boolean mIsPaused = false;
     
     // Main components
-    private OrxSurface mSurface;
+    private OrxGLSurfaceView mSurface;
 
     // This is what Orx runs in. It invokes Orx_main(), eventually
     private Thread mOrxThread;
@@ -37,11 +38,28 @@ public class OrxActivity extends Activity {
         Log.v("Orx", "onCreate()");
         super.onCreate(savedInstanceState);
         
-        // Set up the surface
-        mSurface = new OrxSurface(getApplication());
-        mSurface.setActivity(this);
-
-        setContentView(mSurface);
+        getWindow().setFormat(PixelFormat.RGB_565);
+        init();
+    }
+    
+    @Override
+    protected void onStart() {
+    	super.onStart();
+    	
+    	getWindow().setFormat(PixelFormat.RGB_565);
+    }
+    
+    private void init() {
+    	if(getLayoutId() == 0 || getOrxGLSurfaceViewId() == 0) {
+            // Set up the surface
+            mSurface = new OrxGLSurfaceView(getApplication());
+            setContentView(mSurface);
+    	} else {
+			setContentView(getLayoutId());
+			mSurface = (OrxGLSurfaceView) findViewById(getOrxGLSurfaceViewId());
+		}
+    	
+    	mSurface.setActivity(this);
     }
 
     protected int getLayoutId() {
