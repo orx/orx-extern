@@ -9,7 +9,6 @@ import javax.microedition.khronos.egl.EGLSurface;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.SurfaceHolder;
 import android.view.WindowManager;
 
 /**
