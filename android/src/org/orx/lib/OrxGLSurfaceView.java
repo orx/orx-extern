@@ -48,6 +48,7 @@ public class OrxGLSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 	// Called when we have a valid drawing surface
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.v("Orx", "surfaceCreated()");
+		mOrxActivity.nativeSurfaceCreated(holder.getSurface());
 	}
 
 	// Called when we lose the surface
