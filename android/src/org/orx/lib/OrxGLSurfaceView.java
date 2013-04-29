@@ -1,219 +1,128 @@
 package org.orx.lib;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
 
-public class OrxGLSurfaceView extends GLSurfaceView {
-	// ===========================================================
-	// Fields
-	// ===========================================================
+/**
+ * OrxSurface. This is what we draw on, so we need to know when it's created in
+ * order to do anything useful.
+ * 
+ * Because of this, that's where we set up the Orx thread
+ */
+public class OrxGLSurfaceView extends SurfaceView implements SurfaceHolder.Callback,
+		View.OnKeyListener, View.OnTouchListener {
 
-	private OrxRenderer mOrxRenderer;
+	private OrxActivity mOrxActivity;
 
-	// ===========================================================
-	// Constructors
-	// ===========================================================
-
-	public OrxGLSurfaceView(final Context context) {
+	// Startup
+	public OrxGLSurfaceView(Context context) {
 		super(context);
-	}
-
-	public OrxGLSurfaceView(final Context context, final AttributeSet attrs) {
-		super(context, attrs);
-	}
-
-	public void initView(boolean requireDepthBuffer) {
-		setFocusableInTouchMode(true);
-		setEGLContextClientVersion(2);
-		// force RGB565 surface
-		setEGLConfigChooser(5, 6, 5, 0, requireDepthBuffer ? 16 : 0, 0);
-		setPreserveEGLContextOnPause(true);
+		init();
 	}
 	
-	// ===========================================================
-	// Getter & Setter
-	// ===========================================================
-
-	public void setOrxRenderer(final OrxRenderer renderer) {
-		mOrxRenderer = renderer;
-		setRenderer(mOrxRenderer);
+	public OrxGLSurfaceView(final Context context, final AttributeSet attrs) {
+		super(context, attrs);
+		init();
 	}
 
-	// ===========================================================
-	// Methods for/from SuperClass/Interfaces
-	// ===========================================================
+	private void init() {
+		getHolder().addCallback(this);
+		setFocusable(true);
+		setFocusableInTouchMode(true);
+		requestFocus();
+		setOnKeyListener(this);
+		setOnTouchListener(this);
+	}
+	
+	public void setActivity(OrxActivity activity) {
+		mOrxActivity = activity;
+	}
 
-	@Override
-	public void onResume() {
-		super.onResume();
+	// Called when we have a valid drawing surface
+	public void surfaceCreated(SurfaceHolder holder) {
+		Log.v("Orx", "surfaceCreated()");
+		mOrxActivity.nativeSurfaceCreated(holder.getSurface());
+	}
 
-		queueEvent(new Runnable() {
-			@Override
-			public void run() {
-				OrxGLSurfaceView.this.mOrxRenderer.handleOnResume();
+	// Called when we lose the surface
+	public void surfaceDestroyed(SurfaceHolder holder) {
+		Log.v("Orx", "surfaceDestroyed()");
+		if (!mOrxActivity.mIsPaused) {
+			mOrxActivity.mIsPaused = true;
+			mOrxActivity.nativeSurfaceDestroyed();
+		}
+	}
+
+	// Called when the surface is resized
+	public void surfaceChanged(SurfaceHolder holder, int format, int width,
+			int height) {
+		Log.v("Orx", "surfaceChanged()");
+
+		mOrxActivity.onNativeResize(width, height);
+		Log.v("Orx", "Window size:" + width + "x" + height);
+
+		mOrxActivity.startApp();
+	}
+
+	// unused
+	public void onDraw(Canvas canvas) {
+	}
+
+	// Key events
+	public boolean onKey(View v, int keyCode, KeyEvent event) {
+
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_BACK:
+		case KeyEvent.KEYCODE_MENU:
+			if (event.getAction() == KeyEvent.ACTION_DOWN) {
+				Log.v("Orx", "key down: " + keyCode);
+				mOrxActivity.onNativeKeyDown(keyCode);
+				return true;
+			} else if (event.getAction() == KeyEvent.ACTION_UP) {
+				Log.v("Orx", "key up: " + keyCode);
+				mOrxActivity.onNativeKeyUp(keyCode);
+				return true;
 			}
-		});
-	}
-
-	@Override
-	public void onPause() {
-		queueEvent(new Runnable() {
-			@Override
-			public void run() {
-				OrxGLSurfaceView.this.mOrxRenderer.handleOnPause();
-			}
-		});
-
-		super.onPause();
-	}
-
-	@Override
-	public boolean onTouchEvent(final MotionEvent pMotionEvent) {
-		// these data are used in ACTION_MOVE and ACTION_CANCEL
-		final int pointerNumber = pMotionEvent.getPointerCount();
-		final int[] ids = new int[pointerNumber];
-		final float[] xs = new float[pointerNumber];
-		final float[] ys = new float[pointerNumber];
-
-		for (int i = 0; i < pointerNumber; i++) {
-			ids[i] = pMotionEvent.getPointerId(i);
-			xs[i] = pMotionEvent.getX(i);
-			ys[i] = pMotionEvent.getY(i);
 		}
 
-		switch (pMotionEvent.getAction() & MotionEvent.ACTION_MASK) {
-		case MotionEvent.ACTION_POINTER_DOWN:
-			final int indexPointerDown = pMotionEvent.getAction() >> MotionEvent.ACTION_POINTER_ID_SHIFT;
-			final int idPointerDown = pMotionEvent
-					.getPointerId(indexPointerDown);
-			final float xPointerDown = pMotionEvent.getX(indexPointerDown);
-			final float yPointerDown = pMotionEvent.getY(indexPointerDown);
+		return false;
+	}
 
-			queueEvent(new Runnable() {
-				@Override
-				public void run() {
-					OrxGLSurfaceView.this.mOrxRenderer.handleActionDown(
-							idPointerDown, xPointerDown, yPointerDown);
-				}
-			});
-			break;
+	// Touch events
+	public boolean onTouch(View v, MotionEvent event) {
+		final int touchDevId = event.getDeviceId();
+		final int pointerCount = event.getPointerCount();
+		// touchId, pointerId, action, x, y, pressure
+		int actionPointerIndex = event.getActionIndex();
+		int pointerFingerId = event.getPointerId(actionPointerIndex);
+		int action = event.getActionMasked();
 
-		case MotionEvent.ACTION_DOWN:
-			// there are only one finger on the screen
-			final int idDown = pMotionEvent.getPointerId(0);
-			final float xDown = xs[0];
-			final float yDown = ys[0];
+		float x = event.getX(actionPointerIndex);
+		float y = event.getY(actionPointerIndex);
+		float p = event.getPressure(actionPointerIndex);
 
-			queueEvent(new Runnable() {
-				@Override
-				public void run() {
-					OrxGLSurfaceView.this.mOrxRenderer.handleActionDown(idDown,
-							xDown, yDown);
-				}
-			});
-			break;
-
-		case MotionEvent.ACTION_MOVE:
-			queueEvent(new Runnable() {
-				@Override
-				public void run() {
-					OrxGLSurfaceView.this.mOrxRenderer.handleActionMove(ids,
-							xs, ys);
-				}
-			});
-			break;
-
-		case MotionEvent.ACTION_POINTER_UP:
-			final int indexPointUp = pMotionEvent.getAction() >> MotionEvent.ACTION_POINTER_ID_SHIFT;
-			final int idPointerUp = pMotionEvent.getPointerId(indexPointUp);
-			final float xPointerUp = pMotionEvent.getX(indexPointUp);
-			final float yPointerUp = pMotionEvent.getY(indexPointUp);
-
-			queueEvent(new Runnable() {
-				@Override
-				public void run() {
-					OrxGLSurfaceView.this.mOrxRenderer.handleActionUp(
-							idPointerUp, xPointerUp, yPointerUp);
-				}
-			});
-			break;
-
-		case MotionEvent.ACTION_UP:
-			// there are only one finger on the screen
-			final int idUp = pMotionEvent.getPointerId(0);
-			final float xUp = xs[0];
-			final float yUp = ys[0];
-
-			queueEvent(new Runnable() {
-				@Override
-				public void run() {
-					OrxGLSurfaceView.this.mOrxRenderer.handleActionUp(idUp,
-							xUp, yUp);
-				}
-			});
-			break;
-
-		case MotionEvent.ACTION_CANCEL:
-			queueEvent(new Runnable() {
-				@Override
-				public void run() {
-					OrxGLSurfaceView.this.mOrxRenderer.handleActionCancel(ids,
-							xs, ys);
-				}
-			});
-			break;
+		if (action == MotionEvent.ACTION_MOVE && pointerCount > 1) {
+			// TODO send motion to every pointer if its position has
+			// changed since prev event.
+			for (int i = 0; i < pointerCount; i++) {
+				pointerFingerId = event.getPointerId(i);
+				x = event.getX(i);
+				y = event.getY(i);
+				p = event.getPressure(i);
+				mOrxActivity.onNativeTouch(touchDevId, pointerFingerId, action,
+						x, y, p);
+			}
+		} else {
+			mOrxActivity.onNativeTouch(touchDevId, pointerFingerId, action, x,
+					y, p);
 		}
-
 		return true;
-	}
-
-	/*
-	 * This function is called before OrxRenderer.nativeInit(), so the width and
-	 * height is correct.
-	 */
-	@Override
-	protected void onSizeChanged(final int pNewSurfaceWidth,
-			final int pNewSurfaceHeight, final int pOldSurfaceWidth,
-			final int pOldSurfaceHeight) {
-		if (!this.isInEditMode()) {
-			mOrxRenderer.setScreenWidthAndHeight(pNewSurfaceWidth,
-					pNewSurfaceHeight);
-		}
-	}
-
-	@Override
-	public boolean onKeyDown(final int pKeyCode, final KeyEvent pKeyEvent) {
-		switch (pKeyCode) {
-		case KeyEvent.KEYCODE_BACK:
-		case KeyEvent.KEYCODE_MENU:
-			queueEvent(new Runnable() {
-				@Override
-				public void run() {
-					OrxGLSurfaceView.this.mOrxRenderer.handleKeyDown(pKeyCode);
-				}
-			});
-			return true;
-		default:
-			return super.onKeyDown(pKeyCode, pKeyEvent);
-		}
-	}
-
-	@Override
-	public boolean onKeyUp(final int pKeyCode, KeyEvent pKeyEvent) {
-		switch (pKeyCode) {
-		case KeyEvent.KEYCODE_BACK:
-		case KeyEvent.KEYCODE_MENU:
-			queueEvent(new Runnable() {
-				@Override
-				public void run() {
-					OrxGLSurfaceView.this.mOrxRenderer.handleKeyUp(pKeyCode);
-				}
-			});
-			return true;
-		default:
-			return super.onKeyUp(pKeyCode, pKeyEvent);
-		}
 	}
 }

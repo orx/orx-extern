@@ -3,125 +3,158 @@ package org.orx.lib;
 import android.app.Activity;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
+import android.util.Log;
+import android.view.Surface;
+import android.view.WindowManager;
 
-public abstract class OrxActivity extends Activity {
-	// ===========================================================
-	// Fields
-	// ===========================================================
-	
-	private OrxGLSurfaceView mGLSurfaceView;
-	
-	private int mAccelerometerRate = -1;
-	private boolean mRequireDepthBuffer = false;
-	private OrxAccelerometer mAccelerometer;
+/**
+    Orx Activity
+*/
+public class OrxActivity extends Activity {
 
-	// ===========================================================
-	// Constructors
-	// ===========================================================
+    // Keep track of the paused state
+    boolean mIsPaused = false;
+    
+    // Main components
+    private OrxGLSurfaceView mSurface;
 
-	@Override
-	protected void onCreate(final Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		
-		getWindow().setFormat(PixelFormat.RGB_565);
-    	init();
-	}
+    // This is what Orx runs in. It invokes Orx_main(), eventually
+    private Thread mOrxThread;
 
-	
-	// ===========================================================
-	// Getter & Setter
-	// ===========================================================
-
-	// ===========================================================
-	// Methods for/from SuperClass/Interfaces
-	// ===========================================================
-
-	@Override
-	protected void onStart() {
-		super.onStart();
-
-		getWindow().setFormat(PixelFormat.RGB_565);
-	}
-
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-
-		mGLSurfaceView.onResume();
-		
-		if(mAccelerometerRate != -1)
-			mAccelerometer.enable(mAccelerometerRate);
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-
-		mGLSurfaceView.onPause();
-		
-		if(mAccelerometerRate != -1)
-			mAccelerometer.disable();
-	}
-
-	// ===========================================================
-	// Methods
-	// ===========================================================
-	public void init() {
-		nativeInit();
-
-    	mRequireDepthBuffer = requireDepthBuffer();
+    // Setup
+    protected void onCreate(Bundle savedInstanceState) {
+        Log.v("Orx", "onCreate()");
+        super.onCreate(savedInstanceState);
+        
+        getWindow().setFormat(PixelFormat.RGB_565);
+        init();
+    }
+    
+    @Override
+    protected void onStart() {
+    	super.onStart();
     	
-		if(getLayoutId() == 0 || getOrxGLSurfaceViewId() == 0) {
-	    	// FrameLayout
-	        ViewGroup.LayoutParams framelayout_params =
-	            new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
-	                                       ViewGroup.LayoutParams.FILL_PARENT);
-	        FrameLayout framelayout = new FrameLayout(this);
-	        framelayout.setLayoutParams(framelayout_params);
-
-	        // OrxxGLSurfaceView
-	        mGLSurfaceView = onCreateView();
-
-	        // ...add to FrameLayout
-	        framelayout.addView(mGLSurfaceView);
-			
-	        // Set framelayout as the content view
-			setContentView(framelayout);
-		} else {
+    	getWindow().setFormat(PixelFormat.RGB_565);
+    }
+    
+    private void init() {
+    	if(getLayoutId() == 0 || getOrxGLSurfaceViewId() == 0) {
+            // Set up the surface
+            mSurface = new OrxGLSurfaceView(getApplication());
+            setContentView(mSurface);
+    	} else {
 			setContentView(getLayoutId());
-			mGLSurfaceView = (OrxGLSurfaceView) findViewById(getOrxGLSurfaceViewId());
+			mSurface = (OrxGLSurfaceView) findViewById(getOrxGLSurfaceViewId());
 		}
+    	
+    	mSurface.setActivity(this);
+    }
 
-		mGLSurfaceView.initView(mRequireDepthBuffer);
-        mGLSurfaceView.setOrxRenderer(new OrxRenderer(this));
-		mAccelerometer = new OrxAccelerometer(this, mGLSurfaceView);
-	}
-	
-	protected int getLayoutId() {
+    protected int getLayoutId() {
+		/*
+		 * Override this if you want to use a custom layout
+		 * return the layout id
+		 */
 		return 0;
 	}
-	
-	protected int getOrxGLSurfaceViewId() {
+    
+    protected int getOrxGLSurfaceViewId() {
+		/*
+		 * Override this if you want to use a custom layout
+		 * return the OrxGLSurfaceView id
+		 */
 		return 0;
 	}
-	
-    private OrxGLSurfaceView onCreateView() {
-    	return new OrxGLSurfaceView(this);
+    
+    // Events
+    protected void onPause() {
+        Log.v("Orx", "onPause()");
+        super.onPause();
+        nativePause();
+    }
+
+    protected void onResume() {
+        Log.v("Orx", "onResume()");
+        super.onResume();
+        nativeResume();
+    }
+
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.v("Orx", "onDestroy()");
+        // Send a quit message to the application
+        nativeQuit();
+
+        // Now wait for the Orx thread to quit
+        if (mOrxThread != null) {
+            try {
+                mOrxThread.join();
+            } catch(Exception e) {
+                Log.v("Orx", "Problem stopping thread: " + e);
+            }
+            mOrxThread = null;
+
+            Log.v("Orx", "Finished waiting for Orx thread");
+        }
+    }
+
+    // C functions we call
+    native void nativeInit();
+    native void nativeQuit();
+    native void nativePause();
+    native void nativeResume();
+    native void nativeSurfaceDestroyed();
+    native void nativeSurfaceCreated(Surface surface);
+    native void nativeSurfaceChanged();
+    native void onNativeResize(int x, int y);
+    native void onNativeKeyDown(int keycode);
+    native void onNativeKeyUp(int keycode);
+    native void onNativeTouch(int touchDevId, int pointerFingerId,
+                                            int action, float x, 
+                                            float y, float p);
+
+    // Java functions called from C
+    
+    public int getRotation() {
+    	WindowManager windowMgr = (WindowManager) getSystemService(WINDOW_SERVICE);
+    	int rotationIndex = windowMgr.getDefaultDisplay().getRotation();
+    	return rotationIndex;
+    }
+
+    void startApp() {
+        // Start up the C app thread
+        if (mOrxThread == null) {
+            mOrxThread = new Thread(new OrxMain(), "OrxThread");
+            mOrxThread.start();
+        }
+        else {
+            /*
+             * Some Android variants may send multiple surfaceChanged events, so we don't need to resume every time
+             * every time we get one of those events, only if it comes after surfaceDestroyed
+             */
+            if (mIsPaused) {
+            	nativeSurfaceChanged();
+                mIsPaused = false;
+            }
+        }
     }
     
-    public void enableAccelerometer(int rate) {
-    	mAccelerometerRate = rate;
-    	mAccelerometer.enable(mAccelerometerRate);
+    private void finishApp() {
+    	finish();
     }
     
-    private native void nativeInit();
-    
-    protected void runOnOrxThread(Runnable r) {
-    	mGLSurfaceView.queueEvent(r);
-    }
-    
-    private native boolean requireDepthBuffer();
+	/**
+	 * Simple nativeInit() runnable
+	 */
+	class OrxMain implements Runnable {
+		public void run() {
+			// Runs Orx_main()
+			nativeInit();
+
+			Log.v("Orx", "Orx thread terminated");
+
+			finishApp();
+		}
+	}
 }
+

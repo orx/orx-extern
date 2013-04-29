@@ -18,7 +18,15 @@ LOCAL_SRC_FILES = \
         res012.c       \
         vorbisfile.c
 
-LOCAL_CFLAGS := -DANDROID -D_ARM_ASSEM_ -DUSE_MEMORY_H -DHAVE_ALLOCA_H
+LOCAL_CFLAGS := -DANDROID -DUSE_MEMORY_H -DHAVE_ALLOCA_H -D_LOW_ACCURACY_
+
+ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
+    LOCAL_CFLAGS += -D_ARM_ASSEM_
+endif
+
+ifeq ($(TARGET_ARCH_ABI),armeabi)
+    LOCAL_CFLAGS += -D_ARM_ASSEM_
+endif
 
 LOCAL_ARM_MODE := arm
 TARGET_PLATFORM = android-9
