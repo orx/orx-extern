@@ -107,11 +107,6 @@ View.OnKeyListener, View.OnTouchListener {
 	// Called when we have a valid drawing surface
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.v("Orx", "surfaceCreated()");
-		
-		if(!mDestroyed) {
-			mCurSurfaceHolder = holder;
-			nativeSurfaceCreated(holder.getSurface());
-		}
 	}
 
 	// Called when we lose the surface
@@ -132,7 +127,7 @@ View.OnKeyListener, View.OnTouchListener {
 		if(!mDestroyed) {
 			mCurSurfaceHolder = holder;
 			Log.v("Orx", "Window size:" + width + "x" + height);
-			nativeSurfaceChanged();
+			nativeSurfaceChanged(holder.getSurface());
 		}
 	}
 
@@ -202,8 +197,7 @@ View.OnKeyListener, View.OnTouchListener {
     native void nativePause();
     native void nativeResume();
     native void nativeSurfaceDestroyed();
-    native void nativeSurfaceCreated(Surface surface);
-    native void nativeSurfaceChanged();
+    native void nativeSurfaceChanged(Surface surface);
     native void onNativeKeyDown(int keycode);
     native void onNativeKeyUp(int keycode);
     native void onNativeTouch(int touchDevId, int pointerFingerId,
