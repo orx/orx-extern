@@ -1,19 +1,25 @@
 package org.orx.lib;
 
 import android.app.Activity;
-import android.graphics.PixelFormat;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.View;
 import android.view.WindowManager;
 
 /**
     Orx Activity
 */
-public class OrxActivity extends Activity {
+public class OrxActivity extends Activity implements SurfaceHolder.Callback,
+View.OnKeyListener, View.OnTouchListener {
 
-    // Keep track of the paused state
-    boolean mIsPaused = false;
+    private boolean mDestroyed = false;
+    private boolean mFinished = false;
+    private SurfaceHolder mCurSurfaceHolder;
     
     // Main components
     private OrxGLSurfaceView mSurface;
@@ -24,17 +30,12 @@ public class OrxActivity extends Activity {
     // Setup
     protected void onCreate(Bundle savedInstanceState) {
         Log.v("Orx", "onCreate()");
-        super.onCreate(savedInstanceState);
         
-        getWindow().setFormat(PixelFormat.RGB_565);
+        nativeCreate();
         init();
-    }
-    
-    @Override
-    protected void onStart() {
-    	super.onStart();
-    	
-    	getWindow().setFormat(PixelFormat.RGB_565);
+		startApp();
+		
+        super.onCreate(savedInstanceState);
     }
     
     private void init() {
@@ -47,7 +48,12 @@ public class OrxActivity extends Activity {
 			mSurface = (OrxGLSurfaceView) findViewById(getOrxGLSurfaceViewId());
 		}
     	
-    	mSurface.setActivity(this);
+    	mSurface.getHolder().addCallback(this);
+    	mSurface.setFocusable(true);
+    	mSurface.setFocusableInTouchMode(true);
+    	mSurface.requestFocus();
+    	mSurface.setOnKeyListener(this);
+    	mSurface.setOnTouchListener(this);
     }
 
     protected int getLayoutId() {
@@ -70,7 +76,9 @@ public class OrxActivity extends Activity {
     protected void onPause() {
         Log.v("Orx", "onPause()");
         super.onPause();
-        nativePause();
+        
+        if(!mFinished)
+        	nativePause();
     }
 
     protected void onResume() {
@@ -80,25 +88,115 @@ public class OrxActivity extends Activity {
     }
 
     protected void onDestroy() {
-        super.onDestroy();
         Log.v("Orx", "onDestroy()");
-        // Send a quit message to the application
-        nativeQuit();
-
-        // Now wait for the Orx thread to quit
-        if (mOrxThread != null) {
-            try {
-                mOrxThread.join();
-            } catch(Exception e) {
-                Log.v("Orx", "Problem stopping thread: " + e);
-            }
-            mOrxThread = null;
-
-            Log.v("Orx", "Finished waiting for Orx thread");
+        
+        if (mCurSurfaceHolder != null && !mFinished) {
+        	nativeSurfaceDestroyed();
         }
+        mCurSurfaceHolder = null;
+        
+        // Send a quit message to the application
+        if(!mFinished)
+        	nativeQuit();
+
+        mDestroyed = true;
+        
+        super.onDestroy();
     }
 
+	// Called when we have a valid drawing surface
+	public void surfaceCreated(SurfaceHolder holder) {
+		Log.v("Orx", "surfaceCreated()");
+		
+		if(!mDestroyed) {
+			mCurSurfaceHolder = holder;
+			nativeSurfaceCreated(holder.getSurface());
+		}
+	}
+
+	// Called when we lose the surface
+	public void surfaceDestroyed(SurfaceHolder holder) {
+		Log.v("Orx", "surfaceDestroyed()");
+		
+		if (!mDestroyed && !mFinished) {
+			nativeSurfaceDestroyed();
+		}
+		mCurSurfaceHolder = null;
+	}
+
+	// Called when the surface is resized
+	public void surfaceChanged(SurfaceHolder holder, int format, int width,
+			int height) {
+		Log.v("Orx", "surfaceChanged()");
+
+		if(!mDestroyed) {
+			mCurSurfaceHolder = holder;
+			Log.v("Orx", "Window size:" + width + "x" + height);
+			nativeSurfaceChanged();
+		}
+	}
+
+	// unused
+	public void onDraw(Canvas canvas) {
+	}
+
+	// Key events
+	public boolean onKey(View v, int keyCode, KeyEvent event) {
+
+		if(!mFinished) {
+			switch (keyCode) {
+			case KeyEvent.KEYCODE_BACK:
+			case KeyEvent.KEYCODE_MENU:
+				if (event.getAction() == KeyEvent.ACTION_DOWN) {
+					Log.v("Orx", "key down: " + keyCode);
+					onNativeKeyDown(keyCode);
+					return true;
+				} else if (event.getAction() == KeyEvent.ACTION_UP) {
+					Log.v("Orx", "key up: " + keyCode);
+					onNativeKeyUp(keyCode);
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	// Touch events
+	public boolean onTouch(View v, MotionEvent event) {
+		if(!mFinished) {
+			final int touchDevId = event.getDeviceId();
+			final int pointerCount = event.getPointerCount();
+			// touchId, pointerId, action, x, y, pressure
+			int actionPointerIndex = event.getActionIndex();
+			int pointerFingerId = event.getPointerId(actionPointerIndex);
+			int action = event.getActionMasked();
+
+			float x = event.getX(actionPointerIndex);
+			float y = event.getY(actionPointerIndex);
+			float p = event.getPressure(actionPointerIndex);
+
+			if (action == MotionEvent.ACTION_MOVE && pointerCount > 1) {
+				// TODO send motion to every pointer if its position has
+				// changed since prev event.
+				for (int i = 0; i < pointerCount; i++) {
+					pointerFingerId = event.getPointerId(i);
+					x = event.getX(i);
+					y = event.getY(i);
+					p = event.getPressure(i);
+					onNativeTouch(touchDevId, pointerFingerId, action,
+							x, y, p);
+				}
+			} else {
+				onNativeTouch(touchDevId, pointerFingerId, action, x,
+						y, p);
+			}
+		}
+		return true;
+	}
+
     // C functions we call
+	native void nativeCreate();
     native void nativeInit();
     native void nativeQuit();
     native void nativePause();
@@ -106,7 +204,6 @@ public class OrxActivity extends Activity {
     native void nativeSurfaceDestroyed();
     native void nativeSurfaceCreated(Surface surface);
     native void nativeSurfaceChanged();
-    native void onNativeResize(int x, int y);
     native void onNativeKeyDown(int keycode);
     native void onNativeKeyUp(int keycode);
     native void onNativeTouch(int touchDevId, int pointerFingerId,
@@ -123,23 +220,12 @@ public class OrxActivity extends Activity {
 
     void startApp() {
         // Start up the C app thread
-        if (mOrxThread == null) {
-            mOrxThread = new Thread(new OrxMain(), "OrxThread");
-            mOrxThread.start();
-        }
-        else {
-            /*
-             * Some Android variants may send multiple surfaceChanged events, so we don't need to resume every time
-             * every time we get one of those events, only if it comes after surfaceDestroyed
-             */
-            if (mIsPaused) {
-            	nativeSurfaceChanged();
-                mIsPaused = false;
-            }
-        }
+    	mOrxThread = new Thread(new OrxMain(), "OrxThread");
+        mOrxThread.start();
     }
     
     private void finishApp() {
+    	mFinished = true;
     	finish();
     }
     
