@@ -3,6 +3,7 @@ package org.orx.lib;
 import android.app.Activity;
 import android.graphics.Canvas;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -21,6 +22,8 @@ View.OnKeyListener, View.OnTouchListener {
     private boolean mFinished = false;
     private SurfaceHolder mCurSurfaceHolder;
     
+    private Handler mHandler = new Handler();
+    
     // Main components
     private OrxGLSurfaceView mSurface;
 
@@ -29,8 +32,6 @@ View.OnKeyListener, View.OnTouchListener {
 
     // Setup
     protected void onCreate(Bundle savedInstanceState) {
-        Log.v("Orx", "onCreate()");
-        
         nativeCreate();
         init();
 		startApp();
@@ -55,7 +56,7 @@ View.OnKeyListener, View.OnTouchListener {
     	mSurface.setOnKeyListener(this);
     	mSurface.setOnTouchListener(this);
     }
-
+    
     protected int getLayoutId() {
 		/*
 		 * Override this if you want to use a custom layout
@@ -74,7 +75,6 @@ View.OnKeyListener, View.OnTouchListener {
     
     // Events
     protected void onPause() {
-        Log.v("Orx", "onPause()");
         super.onPause();
         
         if(!mFinished)
@@ -82,14 +82,12 @@ View.OnKeyListener, View.OnTouchListener {
     }
 
     protected void onResume() {
-        Log.v("Orx", "onResume()");
         super.onResume();
+        
         nativeResume();
     }
 
     protected void onDestroy() {
-        Log.v("Orx", "onDestroy()");
-        
         if (mCurSurfaceHolder != null && !mFinished) {
         	nativeSurfaceDestroyed();
         }
@@ -106,13 +104,10 @@ View.OnKeyListener, View.OnTouchListener {
 
 	// Called when we have a valid drawing surface
 	public void surfaceCreated(SurfaceHolder holder) {
-		Log.v("Orx", "surfaceCreated()");
 	}
 
 	// Called when we lose the surface
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		Log.v("Orx", "surfaceDestroyed()");
-		
 		if (!mDestroyed && !mFinished) {
 			nativeSurfaceDestroyed();
 		}
@@ -122,11 +117,8 @@ View.OnKeyListener, View.OnTouchListener {
 	// Called when the surface is resized
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
-		Log.v("Orx", "surfaceChanged()");
-
 		if(!mDestroyed) {
 			mCurSurfaceHolder = holder;
-			Log.v("Orx", "Window size:" + width + "x" + height);
 			nativeSurfaceChanged(holder.getSurface());
 		}
 	}
@@ -143,11 +135,9 @@ View.OnKeyListener, View.OnTouchListener {
 			case KeyEvent.KEYCODE_BACK:
 			case KeyEvent.KEYCODE_MENU:
 				if (event.getAction() == KeyEvent.ACTION_DOWN) {
-					Log.v("Orx", "key down: " + keyCode);
 					onNativeKeyDown(keyCode);
 					return true;
 				} else if (event.getAction() == KeyEvent.ACTION_UP) {
-					Log.v("Orx", "key up: " + keyCode);
 					onNativeKeyUp(keyCode);
 					return true;
 				}
@@ -211,8 +201,23 @@ View.OnKeyListener, View.OnTouchListener {
     	int rotationIndex = windowMgr.getDefaultDisplay().getRotation();
     	return rotationIndex;
     }
+    
+    public void setWindowFormat(int format) {
+    	Log.v("setWindowFormat", "format = " + format);
+    	
+    	final int f = format;
+    	mHandler.post(new Runnable() {
 
-    void startApp() {
+			@Override
+			public void run() {
+				getWindow().setFormat(f);
+			}
+    		
+    	});
+    	
+    }
+
+    private void startApp() {
         // Start up the C app thread
     	mOrxThread = new Thread(new OrxMain(), "OrxThread");
         mOrxThread.start();
@@ -230,9 +235,6 @@ View.OnKeyListener, View.OnTouchListener {
 		public void run() {
 			// Runs Orx_main()
 			nativeInit();
-
-			Log.v("Orx", "Orx thread terminated");
-
 			finishApp();
 		}
 	}
