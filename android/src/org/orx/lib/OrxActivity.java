@@ -130,16 +130,18 @@ View.OnKeyListener, View.OnTouchListener {
 	public boolean onKey(View v, int keyCode, KeyEvent event) {
 
 		if(!mFinished) {
-			switch (keyCode) {
-			case KeyEvent.KEYCODE_BACK:
-			case KeyEvent.KEYCODE_MENU:
-				if (event.getAction() == KeyEvent.ACTION_DOWN) {
+			/* dont send VOL+ and VOL- */
+			if(keyCode != KeyEvent.KEYCODE_VOLUME_UP && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN) {
+				switch(event.getAction()) {
+				case KeyEvent.ACTION_DOWN:
 					onNativeKeyDown(keyCode);
-					return true;
-				} else if (event.getAction() == KeyEvent.ACTION_UP) {
+					break;
+				case KeyEvent.ACTION_UP:
 					onNativeKeyUp(keyCode);
-					return true;
+					break;
 				}
+				
+				return true;
 			}
 		}
 
