@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -203,8 +202,6 @@ View.OnKeyListener, View.OnTouchListener {
     }
     
     public void setWindowFormat(int format) {
-    	Log.v("setWindowFormat", "format = " + format);
-    	
     	final int f = format;
     	mHandler.post(new Runnable() {
 
