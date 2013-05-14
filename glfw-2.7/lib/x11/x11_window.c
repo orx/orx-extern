@@ -47,6 +47,10 @@
 #define _NET_WM_STATE_TOGGLE        2
 
 
+//! Orx: Mouse move
+static Bool sbMouseMoveProcessed = False;
+
+
 //************************************************************************
 //****                  GLFW internal functions                       ****
 //************************************************************************
@@ -1285,6 +1289,10 @@ static GLboolean processSingleEvent( void )
                                                _glfwInput.MousePosY );
                 }
             }
+
+            //! Orx: Flags mouse move as processed
+            sbMouseMoveProcessed = True;
+
             break;
         }
 
@@ -1820,6 +1828,9 @@ void _glfwPlatformPollEvents( void )
     // Flag that the cursor has not moved
     _glfwInput.MouseMoved = GL_FALSE;
 
+    //! Orx: Resets mouse move status
+    sbMouseMoveProcessed = False;
+
     // Process all pending events
     while( XPending( _glfwLibrary.display ) )
     {
@@ -1841,6 +1852,32 @@ void _glfwPlatformPollEvents( void )
     //     //       the necessary actions per callback call.
     //     XFlush( _glfwLibrary.display );
     // }
+
+    //! Orx: Wasn't mouse move processed? (ie. cursor's outside windows)
+    if(sbMouseMoveProcessed == False)
+    {
+        Window window, root;
+        int windowX, windowY, rootX, rootY;
+        unsigned int mask;
+
+        if(XQueryPointer( _glfwLibrary.display,
+                       _glfwWin.window,
+                       &root,
+                       &window,
+                       &rootX, &rootY,
+                       &windowX, &windowY,
+                       &mask ) != False)
+        {
+            _glfwInput.CursorPosX = _glfwInput.MousePosX = windowX;
+            _glfwInput.CursorPosY = _glfwInput.MousePosY = windowY;
+
+            if( _glfwWin.mousePosCallback )
+            {
+                _glfwWin.mousePosCallback( _glfwInput.MousePosX,
+                                           _glfwInput.MousePosY );
+            }
+        }
+    }
 
     if( closeRequested && _glfwWin.windowCloseCallback )
     {

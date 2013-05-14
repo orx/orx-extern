@@ -30,6 +30,8 @@
 
 #include "internal.h"
 
+//! Orx: Mouse move
+static BOOL sbMouseMoveProcessed = FALSE;
 
 
 //************************************************************************
@@ -925,6 +927,10 @@ static LRESULT CALLBACK windowProc( HWND hWnd, UINT uMsg,
                                                _glfwInput.MousePosY );
                 }
             }
+
+            //! Orx: Flags mouse move as processed
+            sbMouseMoveProcessed = TRUE;
+
             return 0;
         }
 
@@ -1777,6 +1783,9 @@ void _glfwPlatformPollEvents( void )
     // there was a mouse move event)
     _glfwInput.MouseMoved = GL_FALSE;
 
+    //! Orx: Resets mouse move status
+    sbMouseMoveProcessed = FALSE;
+
     // Check for new window messages
     while( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) )
     {
@@ -1791,6 +1800,27 @@ void _glfwPlatformPollEvents( void )
             default:
                 DispatchMessage( &msg );
                 break;
+        }
+    }
+
+    //! Orx: Wasn't mouse move processed? (ie. cursor's outside windows)
+    if(sbMouseMoveProcessed == FALSE)
+    {
+        POINT pos;
+
+        // Gets current cursor position
+        GetCursorPos( &pos );
+        ScreenToClient( _glfwWin.window, &pos );
+
+        // Updates internals
+        _glfwInput.OldMouseX = _glfwInput.MousePosX = pos.x;
+        _glfwInput.OldMouseY = _glfwInput.MousePosY = pos.y;
+        _glfwInput.MouseMoved = GL_TRUE;
+
+        if( _glfwWin.mousePosCallback )
+        {
+            _glfwWin.mousePosCallback( _glfwInput.MousePosX,
+                                       _glfwInput.MousePosY );
         }
     }
 
