@@ -116,7 +116,7 @@ View.OnKeyListener, View.OnTouchListener {
 	// Called when the surface is resized
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
-		if(!mDestroyed) {
+		if(!mDestroyed && mCurSurfaceHolder != holder) {
 			mCurSurfaceHolder = holder;
 			nativeSurfaceChanged(holder.getSurface());
 		}
