@@ -1,9 +1,9 @@
 package org.orx.lib;
 
-import android.app.Activity;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentActivity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -14,7 +14,7 @@ import android.view.WindowManager;
 /**
     Orx Activity
 */
-public class OrxActivity extends Activity implements SurfaceHolder.Callback,
+public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callback,
 View.OnKeyListener, View.OnTouchListener {
 
     private boolean mDestroyed = false;
