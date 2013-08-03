@@ -48,8 +48,7 @@ LOCAL_SRC_FILES = \
 	Common/b2Math.cpp
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../include
-LOCAL_CFLAGS := -DANDROID -flto
-LOCAL_LDFLAGS := -flto
+LOCAL_CFLAGS := -DANDROID
 
 LOCAL_ARM_MODE := arm
 TARGET_PLATFORM = android-9

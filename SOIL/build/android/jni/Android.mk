@@ -9,8 +9,7 @@ LOCAL_SRC_FILES = \
 	SOIL.c \
 	stb_image_aug.c
 
-LOCAL_CFLAGS := -DANDROID -flto
-LOCAL_LDFLAGS := -flto
+LOCAL_CFLAGS := -DANDROID
 
 LOCAL_ARM_MODE := arm
 TARGET_PLATFORM = android-9
