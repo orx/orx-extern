@@ -1,7 +1,7 @@
 --
 -- make_cpp.lua
 -- Generate a C/C++ project makefile.
--- Copyright (c) 2002-2011 Jason Perkins and the Premake project
+-- Copyright (c) 2002-2013 Jason Perkins and the Premake project
 --
 
 	premake.make.cpp = { }
@@ -109,19 +109,8 @@
 		-- precompiler header rule
 		cpp.pchrules(prj)
 
-		-- per-file rules
-		for _, file in ipairs(prj.files) do
-			if path.iscppfile(file) then
-				_p('$(OBJDIR)/%s.o: %s', _MAKE.esc(path.getbasename(file)), _MAKE.esc(file))
-				_p('\t@echo $(notdir $<)')
-				cpp.buildcommand(path.iscfile(file), "o")
-			elseif (path.getextension(file) == ".rc") then
-				_p('$(OBJDIR)/%s.res: %s', _MAKE.esc(path.getbasename(file)), _MAKE.esc(file))
-				_p('\t@echo $(notdir $<)')
-				_p('\t$(SILENT) $(RESCOMP) $< -O coff -o "$@" $(RESFLAGS)')
-			end
-		end
-		_p('')
+		-- per-file build rules
+		cpp.fileRules(prj)
 
 		-- include the dependencies, built by GCC (with the -MMD flag)
 		_p('-include $(OBJECTS:%%.o=%%.d)')
@@ -154,7 +143,7 @@
 		_p('CXX = %s', cc.cxx)
 		_p('AR = %s', cc.ar)
 		_p('')
-		
+
 		_p('ifndef RESCOMP')
 		_p('  ifdef WINDRES')
 		_p('    RESCOMP = $(WINDRES)')
@@ -162,7 +151,7 @@
 		_p('    RESCOMP = windres')
 		_p('  endif')
 		_p('endif')
-		_p('')	
+		_p('')
 	end
 
 --
@@ -179,31 +168,17 @@
 		_p('  OBJDIR     = %s', _MAKE.esc(cfg.objectsdir))
 		_p('  TARGETDIR  = %s', _MAKE.esc(cfg.buildtarget.directory))
 		_p('  TARGET     = $(TARGETDIR)/%s', _MAKE.esc(cfg.buildtarget.name))
-		_p('  DEFINES   += %s', table.concat(cc.getdefines(cfg.defines), " "))
-		_p('  INCLUDES  += %s', table.concat(cc.getincludedirs(cfg.includedirs), " "))
-
-		-- CPPFLAGS, CFLAGS, CXXFLAGS, LDFLAGS, and RESFLAGS
-		cpp.flags(cfg, cc)
+		_p('  DEFINES   +=%s', make.list(cc.getdefines(cfg.defines)))
+		_p('  INCLUDES  +=%s', make.list(cc.getincludedirs(cfg.includedirs)))
 
 		-- set up precompiled headers
 		cpp.pchconfig(cfg)
 
-		_p('  LIBS      += %s', table.concat(cc.getlinkflags(cfg), " "))
-		_p('  LDDEPS    += %s', table.concat(_MAKE.esc(premake.getlinks(cfg, "siblings", "fullpath")), " "))
+		-- CPPFLAGS, CFLAGS, CXXFLAGS, and RESFLAGS
+		cpp.flags(cfg, cc)
 
-		if cfg.kind == "StaticLib" then
-			if cfg.platform:startswith("Universal") then
-				_p('  LINKCMD    = libtool -o $(TARGET) $(OBJECTS)')
-			else
-				_p('  LINKCMD    = $(AR) -rcs $(TARGET) $(OBJECTS)')
-			end
-		else
-			-- this was $(TARGET) $(LDFLAGS) $(OBJECTS)
-			--  but had trouble linking to certain static libs so $(OBJECTS) moved up
-			-- then $(LDFLAGS) moved to end
-			--   https://sourceforge.net/tracker/?func=detail&aid=3430158&group_id=71616&atid=531880
-			_p('  LINKCMD    = $(%s) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)', iif(cfg.language == "C", "CC", "CXX"))
-		end
+		-- write out libraries, linker flags, and the link command
+		cpp.linker(cfg, cc)
 
 		_p('  define PREBUILDCMDS')
 		if #cfg.prebuildcommands > 0 then
@@ -257,16 +232,51 @@
 --
 
 	function cpp.flags(cfg, cc)
-		_p('  CPPFLAGS  += %s $(DEFINES) $(INCLUDES)', table.concat(cc.getcppflags(cfg), " "))
-		_p('  CFLAGS    += $(CPPFLAGS) $(ARCH) %s', table.concat(table.join(cc.getcflags(cfg), cfg.buildoptions), " "))
-		_p('  CXXFLAGS  += $(CFLAGS) %s', table.concat(cc.getcxxflags(cfg), " "))
 
+		if cfg.pchheader and not cfg.flags.NoPCH then
+			_p('  FORCE_INCLUDE += -include $(OBJDIR)/$(notdir $(PCH))')
+		end
+
+		_p('  ALL_CPPFLAGS  += $(CPPFLAGS) %s $(DEFINES) $(INCLUDES) $(FORCE_INCLUDE)', table.concat(cc.getcppflags(cfg), " "))
+
+		_p('  ALL_CFLAGS    += $(CFLAGS) $(ALL_CPPFLAGS) $(ARCH)%s', make.list(table.join(cc.getcflags(cfg), cfg.buildoptions)))
+		_p('  ALL_CXXFLAGS  += $(CXXFLAGS) $(ALL_CFLAGS)%s', make.list(cc.getcxxflags(cfg)))
+
+		_p('  ALL_RESFLAGS  += $(RESFLAGS) $(DEFINES) $(INCLUDES)%s',
+		        make.list(table.join(cc.getdefines(cfg.resdefines),
+		                                cc.getincludedirs(cfg.resincludedirs), cfg.resoptions)))
+	end
+
+
+--
+-- Linker settings, including the libraries to link, the linker flags,
+-- and the linker command.
+--
+
+	function cpp.linker(cfg, cc)
 		-- Patch #3401184 changed the order
-		_p('  LDFLAGS   += %s', table.concat(table.join(cc.getlibdirflags(cfg), cc.getldflags(cfg), cfg.linkoptions), " "))
+		_p('  ALL_LDFLAGS   += $(LDFLAGS)%s', make.list(table.join(cc.getlibdirflags(cfg), cc.getldflags(cfg), cfg.linkoptions)))
 
-		_p('  RESFLAGS  += $(DEFINES) $(INCLUDES) %s',
-		        table.concat(table.join(cc.getdefines(cfg.resdefines),
-		                                cc.getincludedirs(cfg.resincludedirs), cfg.resoptions), " "))
+		_p('  LDDEPS    +=%s', make.list(_MAKE.esc(premake.getlinks(cfg, "siblings", "fullpath"))))
+		_p('  LIBS      += $(LDDEPS)%s', make.list(cc.getlinkflags(cfg)))
+
+		if cfg.kind == "StaticLib" then
+			if cfg.platform:startswith("Universal") then
+				_p('  LINKCMD    = libtool -o $(TARGET) $(OBJECTS)')
+			else
+				_p('  LINKCMD    = $(AR) -rcs $(TARGET) $(OBJECTS)')
+			end
+		else
+
+			-- this was $(TARGET) $(LDFLAGS) $(OBJECTS)
+			--   but had trouble linking to certain static libs; $(OBJECTS) moved up
+			-- $(LDFLAGS) moved to end (http://sourceforge.net/p/premake/patches/107/)
+			-- $(LIBS) moved to end (http://sourceforge.net/p/premake/bugs/279/)
+
+			local tool = iif(cfg.language == "C", "CC", "CXX")
+			_p('  LINKCMD    = $(%s) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(ALL_LDFLAGS) $(LIBS)', tool)
+
+		end
 	end
 
 
@@ -275,35 +285,47 @@
 --
 
 	function cpp.pchconfig(cfg)
-		-- GCC needs the full path to the PCH, while Visual Studio needs
-		-- only the name (or rather, the name as specified in the #include
-		-- statement). Try to locate the PCH in the project.
-		local pchheader = cfg.pchheader
+
+		-- If there is no header, or if PCH has been disabled, I can early out
+
+		if not cfg.pchheader or cfg.flags.NoPCH then
+			return
+		end
+
+		-- Visual Studio requires the PCH header to be specified in the same way
+		-- it appears in the #include statements used in the source code; the PCH
+		-- source actual handles the compilation of the header. GCC compiles the
+		-- header file directly, and needs the file's actual file system path in
+		-- order to locate it.
+
+		-- To maximize the compatibility between the two approaches, see if I can
+		-- locate the specified PCH header on one of the include file search paths
+		-- and, if so, adjust the path automatically so the user doesn't have
+		-- add a conditional configuration to the project script.
+
+		local pch = cfg.pchheader
 		for _, incdir in ipairs(cfg.includedirs) do
-			local testname = path.join(incdir, cfg.pchheader)
+			local testname = path.join(incdir, pch)
 			if os.isfile(testname) then
-				pchheader = testname
+				pch = path.getrelative(cfg.location, testname)
 				break
 			end
 		end
 
-		if not cfg.flags.NoPCH and cfg.pchheader then
-			_p('  PCH        = %s', _MAKE.esc(path.getrelative(cfg.location, cfg.pchheader)))
-			_p('  GCH        = $(OBJDIR)/%s.gch', _MAKE.esc(path.getname(cfg.pchheader)))
-			_p('  CPPFLAGS  += -I$(OBJDIR) -include $(OBJDIR)/%s', _MAKE.esc(path.getname(cfg.pchheader)))
-		end
+		_p('  PCH        = %s', _MAKE.esc(pch))
+		_p('  GCH        = $(OBJDIR)/$(notdir $(PCH)).gch')
+
 	end
+
 
 	function cpp.pchrules(prj)
 		_p('ifneq (,$(PCH))')
 		_p('$(GCH): $(PCH)')
 		_p('\t@echo $(notdir $<)')
-		_p('ifeq (posix,$(SHELLTYPE))')
-		_p('\t-$(SILENT) cp $< $(OBJDIR)')
-		_p('else')
-		_p('\t$(SILENT) xcopy /D /Y /Q "$(subst /,\\,$<)" "$(subst /,\\,$(OBJDIR))" 1>nul')
-		_p('endif')
-		cpp.buildcommand(prj.language == "C", "gch")
+
+		local cmd = iif(prj.language == "C", "$(CC) -x c-header", "$(CXX) -x c++-header")
+		_p('\t$(SILENT) %s $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES) -o "$@" -MF "$(@:%%.gch=%%.d)" -c "$<"', cmd)
+
 		_p('endif')
 		_p('')
 	end
@@ -313,7 +335,23 @@
 -- Build command for a single file.
 --
 
+	function cpp.fileRules(prj)
+		for _, file in ipairs(prj.files or {}) do
+			if path.iscppfile(file) then
+				_p('$(OBJDIR)/%s.o: %s', _MAKE.esc(path.getbasename(file)), _MAKE.esc(file))
+				_p('\t@echo $(notdir $<)')
+				cpp.buildcommand(path.iscfile(file), "o")
+				_p('')
+			elseif (path.getextension(file) == ".rc") then
+				_p('$(OBJDIR)/%s.res: %s', _MAKE.esc(path.getbasename(file)), _MAKE.esc(file))
+				_p('\t@echo $(notdir $<)')
+				_p('\t$(SILENT) $(RESCOMP) $< -O coff -o "$@" $(ALL_RESFLAGS)')
+				_p('')
+			end
+		end
+	end
+
 	function cpp.buildcommand(iscfile, objext)
-		local flags = iif(iscfile, '$(CC) $(CFLAGS)', '$(CXX) $(CXXFLAGS)')
+		local flags = iif(iscfile, '$(CC) $(ALL_CFLAGS)', '$(CXX) $(ALL_CXXFLAGS)')
 		_p('\t$(SILENT) %s -o "$@" -MF $(@:%%.%s=%%.d) -c "$<"', flags, objext)
 	end

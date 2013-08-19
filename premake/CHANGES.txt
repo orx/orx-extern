@@ -65,6 +65,17 @@
 * Patch 3462994: Make flag values case-insensitive (Konstantin Tokarev)
 * Patch 3466877: Removed -flat_namespace from Mac OS X flags (Konstantin Tokarev)
 * Pull 25: Add Unix support to os.getversion() (wfgleper)
+* Bug 268: Target extension not set properly for Visual Studio 2010
+* Allow command line override of makefile flags (Cameron Hart)
+* Fix linking to external libraries outside of project folder
+* Improve processing of ld.so.conf (Cameron Hart)
+* Patch 154: Fix .def file support for VS2010 (Riccardo Ghetta)
+* Patch 159: Validate all values passed to options (Moi_ioM)
+* Pull 11: Add support for Visual Studio 2012 (Oliver Schneider)
+* Bug 171: ImpLib used incorrectly in dependency paths
+* Bug 176: Target prefix breaks GCC linking
+* Improved handling of precompiled headers across toolsets
+* Initial support for Visual Studio 2013 (Igor Karatayev)
 
 
 -------

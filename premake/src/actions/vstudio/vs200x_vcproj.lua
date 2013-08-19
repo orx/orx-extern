@@ -1,7 +1,7 @@
 --
 -- vs200x_vcproj.lua
 -- Generate a Visual Studio 2002-2008 C/C++ project.
--- Copyright (c) 2009-2011 Jason Perkins and the Premake project
+-- Copyright (c) 2009-2013 Jason Perkins and the Premake project
 --
 
 
@@ -92,6 +92,9 @@
 		if (cfg.flags.MFC) then
 			_p(3, 'UseOfMFC="%d"', iif(cfg.flags.StaticRuntime, 1, 2))
 		end				  
+		if (cfg.flags.ATL or cfg.flags.StaticATL) then
+			_p(3, 'UseOfATL="%d"', iif(cfg.flags.StaticATL, 1, 2))
+		end
 		_p(3,'CharacterSet="%s"', iif(cfg.flags.Unicode, 1, 2))
 		if cfg.flags.Managed then
 			_p(3,'ManagedExtensions="1"')
@@ -308,7 +311,7 @@
 		
 		if not cfg.flags.NoPCH and cfg.pchheader then
 			_p(4,'UsePrecompiledHeader="%s"', iif(_ACTION < "vs2005", 3, 2))
-			_p(4,'PrecompiledHeaderThrough="%s"', path.getname(cfg.pchheader))
+			_p(4,'PrecompiledHeaderThrough="%s"', cfg.pchheader)
 		else
 			_p(4,'UsePrecompiledHeader="%s"', iif(_ACTION > "vs2003" or cfg.flags.NoPCH, 0, 2))
 		end

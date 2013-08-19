@@ -1,112 +1,126 @@
-	
-	T.gcc_linking = { }
+--
+-- tests/actions/make/test_make_linking.lua
+-- Validate library references in makefiles.
+-- Copyright (c) 2010-2013 Jason Perkins and the Premake project
+--
+
+	T.gcc_linking = {}
 	local suite = T.gcc_linking
-	
-	local staticPrj
-	local linksToStaticProj
-	local sln
-	
+	local cpp = premake.make.cpp
+
+--
+-- Setup
+--
+
+	local sln, prj
+
 	function suite.setup()
-		_ACTION = "gmake"
+		_OS = "linux"
+		sln, prj = test.createsolution()
+	end
 
-		sln = solution "MySolution"
-		configurations { "Debug" }
-		platforms {}
-	
-		staticPrj = project "staticPrj"
-		targetdir 'bar'
-		language 'C++'
-		kind "StaticLib"
-		
-		linksToStaticProj = project "linksToStaticProj"
-		language 'C++'
-		kind 'ConsoleApp'
-		links{'staticPrj'}
-	end
-	
-	function suite.teardown()
-		staticPrj = nil
-		linksToStaticProj = nil
-		sln = nil
-	end
-	
-	local get_buffer = function(projectName)
-		io.capture()
+	local function prepare()
 		premake.bake.buildconfigs()
-		local cfg = premake.getconfig(projectName, 'Debug', 'Native')
-		premake.gmake_cpp_config(cfg, premake.gcc)
-		local buffer = io.endcapture()
-		return buffer
-	end
-	
-	function suite.projectLinksToStaticPremakeMadeLibrary_linksUsingTheFormat_pathNameExtension()
-		local buffer = get_buffer(linksToStaticProj)
-		local format_exspected = 'LIBS      %+%= bar/libstaticPrj.a'
-		test.string_contains(buffer,format_exspected)
+		cfg = premake.getconfig(prj, "Debug")
+		cpp.linker(cfg, premake.gcc)
 	end
 
-	T.link_suite= { }
-	local firstProject = nil
-	local linksToFirstProject = nil
-	
-	function T.link_suite.setup()
-		_ACTION = "gmake"
-		solution('dontCareSolution')
-			configurations{'Debug'}
-	end
-	
-	function T.link_suite.teardown()
-		_ACTION = nil
-		firstProject = nil
-		linksToFirstProject = nil
-	end
-	
-	function T.link_suite.projectLinksToSharedPremakeMadeLibrary_linksUsingFormat_dashLName()
-	
-		firstProject = project 'firstProject'
-			kind 'SharedLib'
-			language 'C'
-	
-		linksToFirstProject = project 'linksToFirstProject'
-			kind 'ConsoleApp'
-			language 'C'
-			links{'firstProject'}
-			
-		local buffer = get_buffer(linksToFirstProject)
-		local format_exspected = 'LIBS      %+%= %-lfirstProject'
-		test.string_contains(buffer,format_exspected)
-	end
-		
-	function T.link_suite.projectLinksToPremakeMadeConsoleApp_doesNotLinkToConsoleApp()
-		
-		firstProject = project 'firstProject'
-			kind 'ConsoleApp'
-			language 'C'
-	
-		linksToFirstProject = project 'linksToFirstProject'
-			kind 'ConsoleApp'
-			language 'C'
-			links{'firstProject'}
-			
-		local buffer = get_buffer(linksToFirstProject)
-		local format_exspected = 'LIBS      %+%=%s+\n'
-		test.string_contains(buffer,format_exspected)
-	end
-	
-	function T.link_suite.projectLinksToStaticPremakeMadeLibrary_projectDifferInDirectoryHeights_linksUsingCorrectRelativePath()
-	
-		firstProject = project 'firstProject'
-			kind 'StaticLib'
-			language 'C'
 
-		linksToFirstProject = project 'linksToFirstProject'
-			kind 'ConsoleApp'
-			language 'C'
-			links{'firstProject'}
-			location './foo/bar'
-			
-		local buffer = get_buffer(linksToFirstProject)
-		local format_exspected = 'LIBS      %+%= ../../libfirstProject.a'
-		test.string_contains(buffer,format_exspected)
+--
+-- Check linking to a shared library sibling project. In order to support
+-- custom target prefixes and extensions, use the full, relative path
+-- to the library.
+--
+
+	function suite.onSharedLibrarySibling()
+		links { "MyProject2" }
+		test.createproject(sln)
+		kind "SharedLib"
+		targetdir "libs"
+		prepare()
+		test.capture [[
+  ALL_LDFLAGS   += $(LDFLAGS) -Llibs -s
+  LDDEPS    += libs/libMyProject2.so
+  LIBS      += $(LDDEPS)
+		]]
 	end
 
+
+--
+-- Check linking to a static library sibling project. As with shared
+-- libraries, it should list out the full relative path.
+--
+
+	function suite.onStaticLibrarySibling()
+		links { "MyProject2" }
+		test.createproject(sln)
+		kind "StaticLib"
+		targetdir "libs"
+		prepare()
+		test.capture [[
+  ALL_LDFLAGS   += $(LDFLAGS) -Llibs -s
+  LDDEPS    += libs/libMyProject2.a
+  LIBS      += $(LDDEPS)
+		]]
+	end
+
+
+--
+-- If an executable is listed in the links, no linking should happen (a
+-- build dependency would have been created at the solution level)
+--
+
+	function suite.onConsoleAppSibling()
+		links { "MyProject2" }
+		test.createproject(sln)
+		kind "ConsoleApp"
+		targetdir "libs"
+		prepare()
+		test.capture [[
+  ALL_LDFLAGS   += $(LDFLAGS) -s
+  LDDEPS    +=
+  LIBS      += $(LDDEPS)
+		]]
+	end
+
+
+--
+-- Make sure that project locations are taken into account when building
+-- the path to the library.
+--
+
+
+	function suite.onProjectLocations()
+		location "MyProject"
+		links { "MyProject2" }
+
+		test.createproject(sln)
+		kind "SharedLib"
+		location "MyProject2"
+		targetdir "MyProject2"
+
+		prepare()
+		test.capture [[
+  ALL_LDFLAGS   += $(LDFLAGS) -L../MyProject2 -s
+  LDDEPS    += ../MyProject2/libMyProject2.so
+  LIBS      += $(LDDEPS)
+		]]
+	end
+
+
+--
+-- When referencing an external library via a path, the directory
+-- should be added to the library search paths, and the library
+-- itself included via an -l flag.
+--
+
+ function suite.onExternalLibraryWithPath()
+ 	location "MyProject"
+	links { "libs/SomeLib" }
+	prepare()
+	test.capture [[
+  ALL_LDFLAGS   += $(LDFLAGS) -L../libs -s
+  LDDEPS    +=
+  LIBS      += $(LDDEPS) -lSomeLib
+	]]
+ end
