@@ -123,15 +123,14 @@
 	
 
 
-	--
-	-- This is poorly named: returns a list of linker flags for external 
-	-- (i.e. system, or non-sibling) libraries. See bug #1729227 for 
-	-- background on why the path must be split.
-	--
+--
+-- Returns a list of linker flags for library search directories and library
+-- names. See bug #1729227 for background on why the path must be split.
+--
 
 	function premake.snc.getlinkflags(cfg)
-		local result = {}
-		for _, value in ipairs(premake.getlinks(cfg, "system", "name")) do
+		local result = { }
+		for _, value in ipairs(premake.getlinks(cfg, "all", "basename")) do
 			table.insert(result, '-l' .. _MAKE.esc(value))
 		end
 		return result
