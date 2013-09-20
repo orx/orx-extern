@@ -37,12 +37,15 @@ LOCAL_SRC_FILES = \
 
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     LOCAL_CFLAGS += -DHAVE_NEON -DHAVE_ARM_NEON_H
-    LOCAL_SRC_FILES += Alc/mixer_neon.c.neon build/android/jni/cpu-features.c
+    LOCAL_SRC_FILES += Alc/mixer_neon.c.neon
 endif
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/build/android/jni $(LOCAL_PATH)/include $(LOCAL_PATH)/OpenAL32/Include
 
 LOCAL_ARM_MODE := arm
 TARGET_PLATFORM = android-9
+LOCAL_STATIC_LIBRARIES += cpufeatures
 
 include $(BUILD_STATIC_LIBRARY)
+
+$(call import-module,android/cpufeatures)

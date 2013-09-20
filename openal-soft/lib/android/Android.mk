@@ -6,4 +6,9 @@ LOCAL_SRC_FILES := $(TARGET_ARCH_ABI)/libopenal-soft.a
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/../../include
 LOCAL_EXPORT_LDLIBS = -lOpenSLES
 TARGET_PLATFORM = android-9
+
+LOCAL_STATIC_LIBRARIES += cpufeatures
+
 include $(PREBUILT_STATIC_LIBRARY)
+
+$(call import-module,android/cpufeatures)
