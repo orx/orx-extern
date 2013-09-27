@@ -1298,8 +1298,8 @@ static void skip(vorb *z, int n)
    }
    #ifndef STB_VORBIS_NO_STDIO
    {
-      long x = orxResource_Tell(z->h);
-      orxResource_Seek(z->h, x+n, orxSEEK_OFFSET_WHENCE_START);
+      long x = (long)orxResource_Tell(z->h);
+      orxResource_Seek(z->h, (orxS64)x+n, orxSEEK_OFFSET_WHENCE_START);
    }
    #endif
 }
@@ -1327,10 +1327,10 @@ static int set_file_offset(stb_vorbis *f, unsigned int loc)
    } else {
       loc += f->f_start;
    }
-   if ((unsigned int)orxResource_Seek(f->h, loc, orxSEEK_OFFSET_WHENCE_START) == loc)
+   if ((unsigned int)orxResource_Seek(f->h, (orxS64)loc, orxSEEK_OFFSET_WHENCE_START) == loc)
       return 1;
    f->eof = 1;
-   orxResource_Seek(f->h, f->f_start, orxSEEK_OFFSET_WHENCE_END);
+   orxResource_Seek(f->h, (orxS64)f->f_start, orxSEEK_OFFSET_WHENCE_END);
    return 0;
    #endif
 }
@@ -4418,7 +4418,7 @@ unsigned int stb_vorbis_get_file_offset(stb_vorbis *f)
    #endif
    if (USE_MEMORY(f)) return f->stream - f->stream_start;
    #ifndef STB_VORBIS_NO_STDIO
-   return orxResource_Tell(f->h) - f->f_start;
+   return (unsigned int)orxResource_Tell(f->h) - f->f_start;
    #endif
 }
 
@@ -4966,7 +4966,7 @@ stb_vorbis * stb_vorbis_open_file_section(orxHANDLE file, int close_on_free, int
    stb_vorbis *f, p;
    vorbis_init(&p, alloc);
    p.h = file;
-   p.f_start = orxResource_Tell(file);
+   p.f_start = (uint32)orxResource_Tell(file);
    p.stream_len   = length;
    p.close_on_free = close_on_free;
    if (start_decoder(&p)) {
@@ -4985,10 +4985,10 @@ stb_vorbis * stb_vorbis_open_file_section(orxHANDLE file, int close_on_free, int
 stb_vorbis * stb_vorbis_open_file(orxHANDLE file, int close_on_free, int *error, stb_vorbis_alloc *alloc)
 {
    unsigned int len, start;
-   start = orxResource_Tell(file);
+   start = (unsigned int)orxResource_Tell(file);
    orxResource_Seek(file, 0, orxSEEK_OFFSET_WHENCE_END);
-   len = orxResource_Tell(file) - start;
-   orxResource_Seek(file, start, orxSEEK_OFFSET_WHENCE_START);
+   len = (unsigned int)orxResource_Tell(file) - start;
+   orxResource_Seek(file, (orxS64)start, orxSEEK_OFFSET_WHENCE_START);
    return stb_vorbis_open_file_section(file, close_on_free, error, alloc, len);
 }
 
