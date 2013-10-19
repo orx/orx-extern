@@ -65,12 +65,13 @@
       </ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <FloatingPointModel>Fast</FloatingPointModel>
       <CallingConvention>Cdecl</CallingConvention>
     </ClCompile>
     <Lib>
       <OutputFile>$(OutDir)SOIL.lib</OutputFile>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
