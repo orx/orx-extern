@@ -9,7 +9,11 @@ import android.view.SurfaceView;
  * order to do anything useful.
  * 
  * Because of this, that's where we set up the Orx thread
+ * 
+ * @deprecated use {@link android.view.SurfaceView} instead.
  */
+
+@Deprecated
 public class OrxGLSurfaceView extends SurfaceView {
 
 	// Startup

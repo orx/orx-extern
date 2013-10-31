@@ -8,6 +8,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 
@@ -24,7 +25,7 @@ View.OnKeyListener, View.OnTouchListener {
     private Handler mHandler = new Handler();
     
     // Main components
-    private OrxGLSurfaceView mSurface;
+    private SurfaceView mSurface;
 
     // This is what Orx runs in. It invokes Orx_main(), eventually
     private Thread mOrxThread;
@@ -33,19 +34,20 @@ View.OnKeyListener, View.OnTouchListener {
     protected void onCreate(Bundle savedInstanceState) {
         nativeCreate();
         init();
-		startApp();
+        
+		startOrx();
 		
         super.onCreate(savedInstanceState);
     }
     
     private void init() {
-    	if(getLayoutId() == 0 || getOrxGLSurfaceViewId() == 0) {
+    	if(getLayoutId() == 0 || getSurfaceViewId() == 0) {
             // Set up the surface
-            mSurface = new OrxGLSurfaceView(getApplication());
+            mSurface = new SurfaceView(getApplication());
             setContentView(mSurface);
     	} else {
 			setContentView(getLayoutId());
-			mSurface = (OrxGLSurfaceView) findViewById(getOrxGLSurfaceViewId());
+			mSurface = (SurfaceView) findViewById(getSurfaceViewId());
 		}
     	
     	mSurface.getHolder().addCallback(this);
@@ -64,7 +66,7 @@ View.OnKeyListener, View.OnTouchListener {
 		return 0;
 	}
     
-    protected int getOrxGLSurfaceViewId() {
+    protected int getSurfaceViewId() {
 		/*
 		 * Override this if you want to use a custom layout
 		 * return the OrxGLSurfaceView id
@@ -170,12 +172,10 @@ View.OnKeyListener, View.OnTouchListener {
 					x = event.getX(i);
 					y = event.getY(i);
 					p = event.getPressure(i);
-					onNativeTouch(touchDevId, pointerFingerId, action,
-							x, y, p);
+					onNativeTouch(touchDevId, pointerFingerId, action, x, y, p);
 				}
 			} else {
-				onNativeTouch(touchDevId, pointerFingerId, action, x,
-						y, p);
+				onNativeTouch(touchDevId, pointerFingerId, action, x, y, p);
 			}
 		}
 		return true;
@@ -183,7 +183,7 @@ View.OnKeyListener, View.OnTouchListener {
 
     // C functions we call
 	native void nativeCreate();
-    native void nativeInit();
+    native void runOrx();
     native void nativeQuit();
     native void nativePause();
     native void nativeResume();
@@ -213,12 +213,11 @@ View.OnKeyListener, View.OnTouchListener {
 			}
     		
     	});
-    	
     }
 
-    private void startApp() {
+    private void startOrx() {
         // Start up the C app thread
-    	mOrxThread = new Thread(new OrxMain(), "OrxThread");
+    	mOrxThread = new OrxThread("OrxThread");
         mOrxThread.start();
     }
     
@@ -227,15 +226,17 @@ View.OnKeyListener, View.OnTouchListener {
     	finish();
     }
     
-	/**
-	 * Simple nativeInit() runnable
-	 */
-	class OrxMain implements Runnable {
-		public void run() {
-			// Runs Orx_main()
-			nativeInit();
+    class OrxThread extends Thread {
+    	
+    	public OrxThread(String threadName) {
+    		super(threadName);
+    	}
+    	
+    	@Override
+    	public void run() {
+			runOrx();
 			finishApp();
-		}
-	}
+    	}
+    }
 }
 
