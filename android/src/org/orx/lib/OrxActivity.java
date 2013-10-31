@@ -1,9 +1,9 @@
 package org.orx.lib;
 
-import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -18,26 +18,25 @@ import android.view.WindowManager;
 public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callback,
 View.OnKeyListener, View.OnTouchListener {
 
-    private boolean mDestroyed = false;
-    private boolean mFinished = false;
-    private SurfaceHolder mCurSurfaceHolder;
-    
-    private Handler mHandler = new Handler();
-    
-    // Main components
     private SurfaceView mSurface;
+    private SurfaceHolder mCurSurfaceHolder;
 
-    // This is what Orx runs in. It invokes Orx_main(), eventually
-    private Thread mOrxThread;
+    private Handler mHandler = new Handler();
+
+    private OrxThreadFragment mOrxThreadFragment;
 
     // Setup
     protected void onCreate(Bundle savedInstanceState) {
-        nativeCreate();
-        init();
-        
-		startOrx();
-		
         super.onCreate(savedInstanceState);
+
+        init();
+
+        FragmentManager fm = getSupportFragmentManager();
+        mOrxThreadFragment = (OrxThreadFragment) fm.findFragmentByTag(OrxThreadFragment.TAG);
+        if (mOrxThreadFragment == null) {
+            mOrxThreadFragment = new OrxThreadFragment();
+            fm.beginTransaction().add(mOrxThreadFragment, OrxThreadFragment.TAG).commit();
+        }
     }
     
     private void init() {
@@ -73,35 +72,6 @@ View.OnKeyListener, View.OnTouchListener {
 		 */
 		return 0;
 	}
-    
-    // Events
-    protected void onPause() {
-        super.onPause();
-        
-        if(!mFinished)
-        	nativePause();
-    }
-
-    protected void onResume() {
-        super.onResume();
-        
-        nativeResume();
-    }
-
-    protected void onDestroy() {
-        if (mCurSurfaceHolder != null && !mFinished) {
-        	nativeSurfaceDestroyed();
-        }
-        mCurSurfaceHolder = null;
-        
-        // Send a quit message to the application
-        if(!mFinished)
-        	nativeQuit();
-
-        mDestroyed = true;
-        
-        super.onDestroy();
-    }
 
 	// Called when we have a valid drawing surface
 	public void surfaceCreated(SurfaceHolder holder) {
@@ -109,84 +79,68 @@ View.OnKeyListener, View.OnTouchListener {
 
 	// Called when we lose the surface
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		if (!mDestroyed && !mFinished) {
-			nativeSurfaceDestroyed();
-		}
+		nativeSurfaceDestroyed();
 		mCurSurfaceHolder = null;
 	}
 
 	// Called when the surface is resized
-	public void surfaceChanged(SurfaceHolder holder, int format, int width,
-			int height) {
-		if(!mDestroyed && mCurSurfaceHolder != holder) {
+	public void surfaceChanged(SurfaceHolder holder, int format, int width,	int height) {
+		if(mCurSurfaceHolder != holder) {
 			mCurSurfaceHolder = holder;
 			nativeSurfaceChanged(holder.getSurface());
 		}
 	}
 
-	// unused
-	public void onDraw(Canvas canvas) {
-	}
-
 	// Key events
 	public boolean onKey(View v, int keyCode, KeyEvent event) {
 
-		if(!mFinished) {
-			/* dont send VOL+ and VOL- */
-			if(keyCode != KeyEvent.KEYCODE_VOLUME_UP && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN) {
-				switch(event.getAction()) {
-				case KeyEvent.ACTION_DOWN:
-					onNativeKeyDown(keyCode);
-					break;
-				case KeyEvent.ACTION_UP:
-					onNativeKeyUp(keyCode);
-					break;
-				}
-				
-				return true;
-			}
-		}
+		/* dont send VOL+ and VOL- */
+        if(keyCode != KeyEvent.KEYCODE_VOLUME_UP && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN) {
+            switch(event.getAction()) {
+                case KeyEvent.ACTION_DOWN:
+                    onNativeKeyDown(keyCode);
+                    break;
+                case KeyEvent.ACTION_UP:
+                    onNativeKeyUp(keyCode);
+                    break;
+            }
+
+            return true;
+        }
 
 		return false;
 	}
 
 	// Touch events
 	public boolean onTouch(View v, MotionEvent event) {
-		if(!mFinished) {
-			final int touchDevId = event.getDeviceId();
-			final int pointerCount = event.getPointerCount();
-			// touchId, pointerId, action, x, y, pressure
-			int actionPointerIndex = event.getActionIndex();
-			int pointerFingerId = event.getPointerId(actionPointerIndex);
-			int action = event.getActionMasked();
+        final int touchDevId = event.getDeviceId();
+        final int pointerCount = event.getPointerCount();
+        // touchId, pointerId, action, x, y, pressure
+        int actionPointerIndex = event.getActionIndex();
+        int pointerFingerId = event.getPointerId(actionPointerIndex);
+        int action = event.getActionMasked();
 
-			float x = event.getX(actionPointerIndex);
-			float y = event.getY(actionPointerIndex);
-			float p = event.getPressure(actionPointerIndex);
+        float x = event.getX(actionPointerIndex);
+        float y = event.getY(actionPointerIndex);
+        float p = event.getPressure(actionPointerIndex);
 
-			if (action == MotionEvent.ACTION_MOVE && pointerCount > 1) {
-				// TODO send motion to every pointer if its position has
-				// changed since prev event.
-				for (int i = 0; i < pointerCount; i++) {
-					pointerFingerId = event.getPointerId(i);
-					x = event.getX(i);
-					y = event.getY(i);
-					p = event.getPressure(i);
-					onNativeTouch(touchDevId, pointerFingerId, action, x, y, p);
-				}
-			} else {
-				onNativeTouch(touchDevId, pointerFingerId, action, x, y, p);
-			}
-		}
-		return true;
+        if (action == MotionEvent.ACTION_MOVE && pointerCount > 1) {
+            // TODO send motion to every pointer if its position has
+            // changed since prev event.
+            for (int i = 0; i < pointerCount; i++) {
+                pointerFingerId = event.getPointerId(i);
+                x = event.getX(i);
+                y = event.getY(i);
+                p = event.getPressure(i);
+                onNativeTouch(touchDevId, pointerFingerId, action, x, y, p);
+            }
+        } else {
+            onNativeTouch(touchDevId, pointerFingerId, action, x, y, p);
+        }
+        return true;
 	}
 
     // C functions we call
-	native void nativeCreate();
-    native void runOrx();
-    native void nativeQuit();
-    native void nativePause();
-    native void nativeResume();
     native void nativeSurfaceDestroyed();
     native void nativeSurfaceChanged(Surface surface);
     native void onNativeKeyDown(int keycode);
@@ -213,30 +167,6 @@ View.OnKeyListener, View.OnTouchListener {
 			}
     		
     	});
-    }
-
-    private void startOrx() {
-        // Start up the C app thread
-    	mOrxThread = new OrxThread("OrxThread");
-        mOrxThread.start();
-    }
-    
-    private void finishApp() {
-    	mFinished = true;
-    	finish();
-    }
-    
-    class OrxThread extends Thread {
-    	
-    	public OrxThread(String threadName) {
-    		super(threadName);
-    	}
-    	
-    	@Override
-    	public void run() {
-			runOrx();
-			finishApp();
-    	}
     }
 }
 
