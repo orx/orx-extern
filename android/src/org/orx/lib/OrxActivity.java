@@ -16,7 +16,7 @@ import android.view.WindowManager;
     Orx Activity
 */
 public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callback,
-View.OnKeyListener, View.OnTouchListener {
+    View.OnKeyListener, View.OnTouchListener, View.OnFocusChangeListener {
 
     private SurfaceView mSurface;
     private SurfaceHolder mCurSurfaceHolder;
@@ -55,6 +55,7 @@ View.OnKeyListener, View.OnTouchListener {
     	mSurface.requestFocus();
     	mSurface.setOnKeyListener(this);
     	mSurface.setOnTouchListener(this);
+        mSurface.setOnFocusChangeListener(this);
     }
     
     protected int getLayoutId() {
@@ -140,6 +141,15 @@ View.OnKeyListener, View.OnTouchListener {
         return true;
 	}
 
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        if(hasFocus) {
+            nativeFocusGained();
+        } else {
+            nativeFocusLost();
+        }
+    }
+
     // C functions we call
     native void nativeSurfaceDestroyed();
     native void nativeSurfaceChanged(Surface surface);
@@ -148,6 +158,8 @@ View.OnKeyListener, View.OnTouchListener {
     native void onNativeTouch(int touchDevId, int pointerFingerId,
                                             int action, float x, 
                                             float y, float p);
+    native void nativeFocusGained();
+    native void nativeFocusLost();
 
     // Java functions called from C
     
@@ -164,6 +176,9 @@ View.OnKeyListener, View.OnTouchListener {
 			@Override
 			public void run() {
 				getWindow().setFormat(f);
+                if(mCurSurfaceHolder != null) {
+                    mCurSurfaceHolder.setFormat(f);
+                }
 			}
     		
     	});
