@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -176,9 +177,6 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 			@Override
 			public void run() {
 				getWindow().setFormat(f);
-                if(mCurSurfaceHolder != null) {
-                    mCurSurfaceHolder.setFormat(f);
-                }
 			}
     		
     	});
