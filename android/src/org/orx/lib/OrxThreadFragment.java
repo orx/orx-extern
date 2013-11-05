@@ -12,16 +12,16 @@ public class OrxThreadFragment extends Fragment {
 
     private boolean mRunning = false;
 
-    private native void runOrx(Fragment fragment);
-    private native void nativePause();
-    private native void nativeResume();
-    private native void nativeCreate();
-    private native void nativeQuit();
+    private native void startOrx(Fragment fragment);
+    private native void nativeOnPause();
+    private native void nativeOnResume();
+    private native void nativeOnCreate();
+    private native void stopOrx();
 
     private final Thread mOrxThread = new Thread("OrxThread") {
         @Override
         public void run() {
-            runOrx(OrxThreadFragment.this);
+            startOrx(OrxThreadFragment.this);
             getActivity().finish();
         }
     };
@@ -31,7 +31,7 @@ public class OrxThreadFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         setRetainInstance(true);
-        nativeCreate();
+        nativeOnCreate();
     }
 
     @Override
@@ -42,7 +42,7 @@ public class OrxThreadFragment extends Fragment {
             mOrxThread.start();
             mRunning = true;
         } else {
-            nativeResume();
+            nativeOnResume();
         }
     }
 
@@ -51,7 +51,7 @@ public class OrxThreadFragment extends Fragment {
         super.onPause();
 
         if(mRunning) {
-            nativePause();
+            nativeOnPause();
         }
     }
 
@@ -60,7 +60,7 @@ public class OrxThreadFragment extends Fragment {
         super.onDestroy();
 
         if(mRunning) {
-            nativeQuit();
+            stopOrx();
             mRunning = false;
         }
     }

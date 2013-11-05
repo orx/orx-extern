@@ -17,12 +17,10 @@ import android.view.WindowManager;
     Orx Activity
 */
 public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callback,
-    View.OnKeyListener, View.OnTouchListener, View.OnFocusChangeListener {
+    View.OnKeyListener, View.OnTouchListener {
 
     private SurfaceView mSurface;
     private SurfaceHolder mCurSurfaceHolder;
-
-    private Handler mHandler = new Handler();
 
     private OrxThreadFragment mOrxThreadFragment;
 
@@ -56,7 +54,6 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     	mSurface.requestFocus();
     	mSurface.setOnKeyListener(this);
     	mSurface.setOnTouchListener(this);
-        mSurface.setOnFocusChangeListener(this);
     }
     
     protected int getLayoutId() {
@@ -81,7 +78,7 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 
 	// Called when we lose the surface
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		nativeSurfaceDestroyed();
+		nativeOnSurfaceDestroyed();
 		mCurSurfaceHolder = null;
 	}
 
@@ -89,7 +86,7 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,	int height) {
 		if(mCurSurfaceHolder != holder) {
 			mCurSurfaceHolder = holder;
-			nativeSurfaceChanged(holder.getSurface());
+			nativeOnSurfaceChanged(holder.getSurface());
 		}
 	}
 
@@ -100,10 +97,10 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
         if(keyCode != KeyEvent.KEYCODE_VOLUME_UP && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN) {
             switch(event.getAction()) {
                 case KeyEvent.ACTION_DOWN:
-                    onNativeKeyDown(keyCode);
+                    nativeOnKeyDown(keyCode);
                     break;
                 case KeyEvent.ACTION_UP:
-                    onNativeKeyUp(keyCode);
+                    nativeOnKeyUp(keyCode);
                     break;
             }
 
@@ -113,7 +110,13 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 		return false;
 	}
 
-	// Touch events
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        nativeOnFocusChanged(hasFocus);
+    }
+
+    // Touch events
 	public boolean onTouch(View v, MotionEvent event) {
         final int touchDevId = event.getDeviceId();
         final int pointerCount = event.getPointerCount();
@@ -134,33 +137,23 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
                 x = event.getX(i);
                 y = event.getY(i);
                 p = event.getPressure(i);
-                onNativeTouch(touchDevId, pointerFingerId, action, x, y, p);
+                nativeOnTouch(touchDevId, pointerFingerId, action, x, y, p);
             }
         } else {
-            onNativeTouch(touchDevId, pointerFingerId, action, x, y, p);
+            nativeOnTouch(touchDevId, pointerFingerId, action, x, y, p);
         }
         return true;
 	}
 
-    @Override
-    public void onFocusChange(View v, boolean hasFocus) {
-        if(hasFocus) {
-            nativeFocusGained();
-        } else {
-            nativeFocusLost();
-        }
-    }
-
     // C functions we call
-    native void nativeSurfaceDestroyed();
-    native void nativeSurfaceChanged(Surface surface);
-    native void onNativeKeyDown(int keycode);
-    native void onNativeKeyUp(int keycode);
-    native void onNativeTouch(int touchDevId, int pointerFingerId,
+    native void nativeOnSurfaceDestroyed();
+    native void nativeOnSurfaceChanged(Surface surface);
+    native void nativeOnKeyDown(int keycode);
+    native void nativeOnKeyUp(int keycode);
+    native void nativeOnTouch(int touchDevId, int pointerFingerId,
                                             int action, float x, 
                                             float y, float p);
-    native void nativeFocusGained();
-    native void nativeFocusLost();
+    native void nativeOnFocusChanged(boolean hasFocus);
 
     // Java functions called from C
     
@@ -170,16 +163,13 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     	return rotationIndex;
     }
     
-    public void setWindowFormat(int format) {
-    	final int f = format;
-    	mHandler.post(new Runnable() {
-
-			@Override
-			public void run() {
-				getWindow().setFormat(f);
-			}
-    		
-    	});
+    public void setWindowFormat(final int format) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getWindow().setFormat(format);
+            }
+        });
     }
 }
 
