@@ -1,10 +1,8 @@
 package org.orx.lib;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -20,7 +18,6 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     View.OnKeyListener, View.OnTouchListener {
 
     private SurfaceView mSurface;
-    private SurfaceHolder mCurSurfaceHolder;
 
     private OrxThreadFragment mOrxThreadFragment;
 
@@ -74,20 +71,17 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 
 	// Called when we have a valid drawing surface
 	public void surfaceCreated(SurfaceHolder holder) {
+        nativeOnSurfaceCreated(holder.getSurface());
 	}
 
 	// Called when we lose the surface
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		nativeOnSurfaceDestroyed();
-		mCurSurfaceHolder = null;
 	}
 
 	// Called when the surface is resized
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,	int height) {
-		if(mCurSurfaceHolder != holder) {
-			mCurSurfaceHolder = holder;
-			nativeOnSurfaceChanged(holder.getSurface());
-		}
+		nativeOnSurfaceChanged(width, height);
 	}
 
 	// Key events
@@ -146,8 +140,9 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 	}
 
     // C functions we call
+    native void nativeOnSurfaceCreated(Surface surface);
     native void nativeOnSurfaceDestroyed();
-    native void nativeOnSurfaceChanged(Surface surface);
+    native void nativeOnSurfaceChanged(int width, int height);
     native void nativeOnKeyDown(int keycode);
     native void nativeOnKeyUp(int keycode);
     native void nativeOnTouch(int touchDevId, int pointerFingerId,
