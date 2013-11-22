@@ -11,6 +11,10 @@ LOCAL_SRC_FILES = \
 
 LOCAL_CFLAGS := -DANDROID
 
+ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
+    LOCAL_CFLAGS += -mhard-float
+endif
+
 LOCAL_ARM_MODE := arm
 TARGET_PLATFORM = android-9
 

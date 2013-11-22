@@ -119,22 +119,20 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
         int pointerFingerId = event.getPointerId(actionPointerIndex);
         int action = event.getActionMasked();
 
-        float x = event.getX(actionPointerIndex);
-        float y = event.getY(actionPointerIndex);
-        float p = event.getPressure(actionPointerIndex);
+        int x = (int)event.getX(actionPointerIndex);
+        int y = (int)event.getY(actionPointerIndex);
 
         if (action == MotionEvent.ACTION_MOVE && pointerCount > 1) {
             // TODO send motion to every pointer if its position has
             // changed since prev event.
             for (int i = 0; i < pointerCount; i++) {
                 pointerFingerId = event.getPointerId(i);
-                x = event.getX(i);
-                y = event.getY(i);
-                p = event.getPressure(i);
-                nativeOnTouch(touchDevId, pointerFingerId, action, x, y, p);
+                x = (int)event.getX(i);
+                y = (int)event.getY(i);
+                nativeOnTouch(touchDevId, pointerFingerId, action, x, y);
             }
         } else {
-            nativeOnTouch(touchDevId, pointerFingerId, action, x, y, p);
+            nativeOnTouch(touchDevId, pointerFingerId, action, x, y);
         }
         return true;
 	}
@@ -146,8 +144,7 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     native void nativeOnKeyDown(int keycode);
     native void nativeOnKeyUp(int keycode);
     native void nativeOnTouch(int touchDevId, int pointerFingerId,
-                                            int action, float x, 
-                                            float y, float p);
+                                            int action, int x, int y);
     native void nativeOnFocusChanged(boolean hasFocus);
 
     // Java functions called from C
