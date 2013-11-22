@@ -119,8 +119,8 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
         int pointerFingerId = event.getPointerId(actionPointerIndex);
         int action = event.getActionMasked();
 
-        int x = (int)event.getX(actionPointerIndex);
-        int y = (int)event.getY(actionPointerIndex);
+        float x = event.getX(actionPointerIndex);
+        float y = event.getY(actionPointerIndex);
 
         if (action == MotionEvent.ACTION_MOVE && pointerCount > 1) {
             // TODO send motion to every pointer if its position has
@@ -144,7 +144,7 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     native void nativeOnKeyDown(int keycode);
     native void nativeOnKeyUp(int keycode);
     native void nativeOnTouch(int touchDevId, int pointerFingerId,
-                                            int action, int x, int y);
+                                            int action, float x, float y);
     native void nativeOnFocusChanged(boolean hasFocus);
 
     // Java functions called from C
