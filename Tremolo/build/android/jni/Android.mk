@@ -27,7 +27,7 @@ ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
            floor1LARM.S   \
            mdctLARM.S
 
-    LOCAL_CFLAGS += -mhard-float -D_ARM_ASSEM_
+    LOCAL_CFLAGS += -D_ARM_ASSEM_
 endif
 
 ifeq ($(TARGET_ARCH_ABI),armeabi)

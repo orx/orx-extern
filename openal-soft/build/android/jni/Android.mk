@@ -36,7 +36,7 @@ LOCAL_SRC_FILES = \
         Alc/backends/wave.c
 
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
-    LOCAL_CFLAGS += -mhard-float -DHAVE_NEON -DHAVE_ARM_NEON_H
+    LOCAL_CFLAGS += -DHAVE_NEON -DHAVE_ARM_NEON_H
     LOCAL_SRC_FILES += Alc/mixer_neon.c.neon
 endif
 
