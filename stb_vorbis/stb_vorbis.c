@@ -1254,7 +1254,7 @@ static uint8 get8(vorb *z)
    {
    uint8 c;
 
-   if (orxResource_Read(z->h, sizeof(uint8), &c) <= 0) { z->eof = TRUE; return 0; }
+   if (orxResource_Read(z->h, sizeof(uint8), &c, orxNULL, orxNULL) <= 0) { z->eof = TRUE; return 0; }
    return c;
    }
    #endif
@@ -1280,7 +1280,7 @@ static int getn(vorb *z, uint8 *data, int n)
    }
 
    #ifndef STB_VORBIS_NO_STDIO   
-   if (orxResource_Read(z->h, n, data) == n)
+   if (orxResource_Read(z->h, n, data, orxNULL, orxNULL) == n)
       return 1;
    else {
       z->eof = 1;
