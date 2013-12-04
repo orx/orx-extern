@@ -3,6 +3,7 @@ package org.orx.lib;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -10,6 +11,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 
 /**
     Orx Activity
@@ -86,6 +88,8 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 
 	// Key events
 	public boolean onKey(View v, int keyCode, KeyEvent event) {
+		
+		Log.e("OrxActivity", "keyCode = " + keyCode + ", event = " + event.getAction());
 
 		/* dont send VOL+ and VOL- */
         if(keyCode != KeyEvent.KEYCODE_VOLUME_UP && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN) {
@@ -165,6 +169,22 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
                 getWindow().setFormat(format);
             }
         });
+    }
+    
+    public void showKeyboard(final boolean show) {
+    	runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
+		        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+
+		        if (show) {
+		        	imm.showSoftInput(mSurface, InputMethodManager.SHOW_IMPLICIT);
+		        } else {
+		        	imm.hideSoftInputFromWindow(mSurface.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+		        }
+			}
+		});
     }
 }
 
