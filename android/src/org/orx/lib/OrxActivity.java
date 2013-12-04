@@ -3,7 +3,6 @@ package org.orx.lib;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -88,9 +87,6 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 
 	// Key events
 	public boolean onKey(View v, int keyCode, KeyEvent event) {
-		
-		Log.e("OrxActivity", "keyCode = " + keyCode + ", event = " + event.getAction());
-
 		/* dont send VOL+ and VOL- */
         if(keyCode != KeyEvent.KEYCODE_VOLUME_UP && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN) {
             switch(event.getAction()) {
