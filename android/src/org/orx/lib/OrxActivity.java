@@ -3,6 +3,7 @@ package org.orx.lib;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -10,6 +11,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 
 /**
     Orx Activity
@@ -86,20 +88,39 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 
 	// Key events
 	public boolean onKey(View v, int keyCode, KeyEvent event) {
+		switch (event.getAction()) {
+		case KeyEvent.ACTION_DOWN:
+			nativeOnKeyDown(keyCode, event.getUnicodeChar() & KeyCharacterMap.COMBINING_ACCENT_MASK);
+			break;
+		case KeyEvent.ACTION_UP:
+			nativeOnKeyUp(keyCode);
+			break;
+			
+		case KeyEvent.ACTION_MULTIPLE:
+			if(keyCode == KeyEvent.KEYCODE_UNKNOWN) {
+				final KeyCharacterMap m = KeyCharacterMap.load(event.getDeviceId());
+                final KeyEvent[] es = m.getEvents(event.getCharacters().toCharArray());
+                
+                if (es != null) {
+                	for (KeyEvent s : es) {
+                		switch(s.getAction()) {
+                		case KeyEvent.ACTION_DOWN:
+                    		nativeOnKeyDown(s.getKeyCode(), event.getUnicodeChar() & KeyCharacterMap.COMBINING_ACCENT_MASK);
+                			break;
+                		case KeyEvent.ACTION_UP:
+                			nativeOnKeyUp(s.getKeyCode());
+                			break;
+                		}
+                	}
+                }
+                
+                return true;
+			}
+		}
 
-		/* dont send VOL+ and VOL- */
-        if(keyCode != KeyEvent.KEYCODE_VOLUME_UP && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN) {
-            switch(event.getAction()) {
-                case KeyEvent.ACTION_DOWN:
-                    nativeOnKeyDown(keyCode);
-                    break;
-                case KeyEvent.ACTION_UP:
-                    nativeOnKeyUp(keyCode);
-                    break;
-            }
-
-            return true;
-        }
+		if (keyCode != KeyEvent.KEYCODE_VOLUME_UP
+				&& keyCode != KeyEvent.KEYCODE_VOLUME_DOWN)
+			return true;
 
 		return false;
 	}
@@ -143,7 +164,7 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     native void nativeOnSurfaceCreated(Surface surface);
     native void nativeOnSurfaceDestroyed();
     native void nativeOnSurfaceChanged(int width, int height);
-    native void nativeOnKeyDown(int keycode);
+    native void nativeOnKeyDown(int keycode, int unicode);
     native void nativeOnKeyUp(int keycode);
     native void nativeOnTouch(int touchDevId, int pointerFingerId,
                                             int action, float x, 
@@ -165,6 +186,22 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
                 getWindow().setFormat(format);
             }
         });
+    }
+    
+    public void showKeyboard(final boolean show) {
+    	runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
+		        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+
+		        if (show) {
+		        	imm.showSoftInput(mSurface, InputMethodManager.SHOW_IMPLICIT);
+		        } else {
+		        	imm.hideSoftInputFromWindow(mSurface.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+		        }
+			}
+		});
     }
 }
 

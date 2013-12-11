@@ -68,7 +68,7 @@
 ifneq (,$(PCH))
 $(GCH): $(PCH)
 	@echo $(notdir $<)
-	$(SILENT) $(CXX) -x c++-header $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES) -o "$@" -MF "$(@:%.gch=%.d)" -c "$<"
+	$(SILENT) $(CXX) -x c++-header $(ALL_CXXFLAGS) -MMD -MP $(DEFINES) $(INCLUDES) -o "$@" -MF "$(@:%.gch=%.d)" -c "$<"
 		]]
 	end
 
@@ -81,9 +81,10 @@ $(GCH): $(PCH)
 ifneq (,$(PCH))
 $(GCH): $(PCH)
 	@echo $(notdir $<)
-	$(SILENT) $(CC) -x c-header $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES) -o "$@" -MF "$(@:%.gch=%.d)" -c "$<"
+	$(SILENT) $(CC) -x c-header $(ALL_CFLAGS) -MMD -MP $(DEFINES) $(INCLUDES) -o "$@" -MF "$(@:%.gch=%.d)" -c "$<"
 		]]
 	end
+
 
 --
 -- Ensure that PCH is included on all files that use it.
@@ -97,7 +98,23 @@ $(GCH): $(PCH)
 		test.capture [[
 $(OBJDIR)/main.o: main.cpp
 	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF $(@:%.o=%.d) -c "$<"
 		]]
 	end
 
+
+--
+-- If the header is located on one of the include file
+-- search directories, it should get found automatically.
+--
+
+	function suite.findsPCH_onIncludeDirs()
+		location "MyProject"
+		pchheader "premake.h"
+		includedirs { "../src/host" }
+		prepare()
+		_.pchconfig(cfg)
+		test.capture [[
+  PCH        = ../../src/host/premake.h
+		]]
+	end
