@@ -44,6 +44,10 @@
 #endif
 
 #include "core/orxResource.h"
+#ifndef __orxDEBUG__
+#undef assert
+#define assert(X) 0
+#endif // __orxDEBUG__
 
 #define stb_prof(X)
 
@@ -530,7 +534,9 @@ enum STBVorbisError
 #ifndef STB_VORBIS_NO_CRT
 #include <stdlib.h>
 #include <string.h>
+#ifdef __orxDEBUG__
 #include <assert.h>
+#endif // __orxDEBUG__
 #include <math.h>
 #else
 #define NULL 0
