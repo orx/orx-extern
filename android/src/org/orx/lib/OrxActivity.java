@@ -73,7 +73,9 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 
 	// Called when we have a valid drawing surface
 	public void surfaceCreated(SurfaceHolder holder) {
-        nativeOnSurfaceCreated(holder.getSurface());
+                Surface s = holder.getSurface();
+		nativeOnSurfaceCreated(s);
+		s.release();
 	}
 
 	// Called when we lose the surface
