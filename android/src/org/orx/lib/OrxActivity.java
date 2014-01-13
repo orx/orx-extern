@@ -1,5 +1,7 @@
 package org.orx.lib;
 
+import android.annotation.SuppressLint;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -72,10 +74,14 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 	}
 
 	// Called when we have a valid drawing surface
+	@SuppressLint("NewApi")
 	public void surfaceCreated(SurfaceHolder holder) {
-                Surface s = holder.getSurface();
+        Surface s = holder.getSurface();
 		nativeOnSurfaceCreated(s);
-		s.release();
+		
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+			s.release();
+		}
 	}
 
 	// Called when we lose the surface
