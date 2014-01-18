@@ -97,6 +97,7 @@ typedef struct {
 
     void *buffer;
     ALuint bufferSize;
+    ALuint curBuffer;
 
     ALuint frameSize;
 } osl_data;
@@ -175,12 +176,16 @@ static void opensl_callback(SLAndroidSimpleBufferQueueItf bq, void *context)
 {
     ALCdevice *Device = context;
     osl_data *data = Device->ExtraData;
+    ALvoid *buf;
     SLresult result;
 
-    aluMixData(Device, data->buffer, data->bufferSize/data->frameSize);
+    buf = (ALbyte*)data->buffer + data->curBuffer*data->bufferSize;
+    aluMixData(Device, buf, data->bufferSize/data->frameSize);
 
-    result = (*bq)->Enqueue(bq, data->buffer, data->bufferSize);
+    result = (*bq)->Enqueue(bq, buf, data->bufferSize);
     PRINTERR(result, "bq->Enqueue");
+
+    data->curBuffer = (data->curBuffer+1) % Device->NumUpdates;
 }
 
 
@@ -354,7 +359,7 @@ static ALCboolean opensl_start_playback(ALCdevice *Device)
     {
         data->frameSize = FrameSizeFromDevFmt(Device->FmtChans, Device->FmtType);
         data->bufferSize = Device->UpdateSize * data->frameSize;
-        data->buffer = calloc(1, data->bufferSize);
+        data->buffer = calloc(Device->NumUpdates, data->bufferSize);
         if(!data->buffer)
         {
             result = SL_RESULT_MEMORY_FAILURE;
@@ -366,10 +371,12 @@ static ALCboolean opensl_start_playback(ALCdevice *Device)
     {
         if(SL_RESULT_SUCCESS == result)
         {
-            result = (*bufferQueue)->Enqueue(bufferQueue, data->buffer, data->bufferSize);
+            ALvoid *buf = (ALbyte*)data->buffer + i*data->bufferSize;
+            result = (*bufferQueue)->Enqueue(bufferQueue, buf, data->bufferSize);
             PRINTERR(result, "bufferQueue->Enqueue");
         }
     }
+    data->curBuffer = 0;
     if(SL_RESULT_SUCCESS == result)
     {
         result = SLObjectItf_GetInterface(data->bufferQueueObject, SL_IID_PLAY, &player);
@@ -401,6 +408,16 @@ static ALCboolean opensl_start_playback(ALCdevice *Device)
 static void opensl_stop_playback(ALCdevice *Device)
 {
     osl_data *data = Device->ExtraData;
+    SLPlayItf player;
+    SLresult result;
+
+    result = SLObjectItf_GetInterface(data->bufferQueueObject, SL_IID_PLAY, &player);
+    PRINTERR(result, "bufferQueue->GetInterface");
+    if(SL_RESULT_SUCCESS == result)
+    {
+        result = SLPlayItf_SetPlayState(player, SL_PLAYSTATE_STOPPED);
+        PRINTERR(result, "player->SetPlayState");
+    }
 
     free(data->buffer);
     data->buffer = NULL;
@@ -420,8 +437,6 @@ static const BackendFuncs opensl_funcs = {
     NULL,
     NULL,
     NULL,
-    ALCdevice_LockDefault,
-    ALCdevice_UnlockDefault,
     ALCdevice_GetLatencyDefault
 };
 
