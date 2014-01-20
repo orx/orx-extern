@@ -113,6 +113,9 @@
 /* Define if we have cpuid.h */
 /* #undef HAVE_CPUID_H */
 
+/* Define if we have sys/sysconf.h */
+#define HAVE_SYS_SYSCONF_H
+
 /* Define if we have guiddef.h */
 /* #undef HAVE_GUIDDEF_H */
 
