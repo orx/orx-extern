@@ -791,11 +791,16 @@ ALuint GetMovingHrtfCoeffs(const struct Hrtf *Hrtf, ALfloat elevation, ALfloat a
 
 extern FILE *LogFile;
 
+#ifdef ANDROID
+#include <android/log.h>
+#define AL_PRINT(T, MSG, ...) __android_log_print(ANDROID_LOG_DEBUG, "AL lib", "%s %s: "MSG, T, __FUNCTION__ , ## __VA_ARGS__);
+#else
 #ifdef __GNUC__
 #define AL_PRINT(T, MSG, ...) fprintf(LogFile, "AL lib: %s %s: "MSG, T, __FUNCTION__ , ## __VA_ARGS__)
 #else
 void al_print(const char *type, const char *func, const char *fmt, ...) PRINTF_STYLE(3,4);
 #define AL_PRINT(T, MSG, ...) al_print((T), __FUNCTION__, MSG, __VA_ARGS__)
+#endif
 #endif
 
 enum LogLevel {

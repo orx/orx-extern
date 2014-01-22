@@ -2,12 +2,12 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := OpenAL-prebuilt
-LOCAL_SRC_FILES := $(TARGET_ARCH_ABI)/libopenal-soft.a
+LOCAL_SRC_FILES := $(TARGET_ARCH_ABI)/libopenal-soft.so
 LOCAL_EXPORT_LDLIBS = -lOpenSLES -llog
 TARGET_PLATFORM = android-9
 
 LOCAL_STATIC_LIBRARIES += cpufeatures
 
-include $(PREBUILT_STATIC_LIBRARY)
+include $(PREBUILT_SHARED_LIBRARY)
 
 $(call import-module,android/cpufeatures)

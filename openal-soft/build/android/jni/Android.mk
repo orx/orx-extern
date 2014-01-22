@@ -61,7 +61,8 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/build/android/jni $(LOCAL_PATH)/include $(LOCA
 LOCAL_ARM_MODE := arm
 TARGET_PLATFORM = android-9
 LOCAL_STATIC_LIBRARIES += cpufeatures
+LOCAL_LDLIBS = -llog -lOpenSLES
 
-include $(BUILD_STATIC_LIBRARY)
+include $(BUILD_SHARED_LIBRARY)
 
 $(call import-module,android/cpufeatures)
