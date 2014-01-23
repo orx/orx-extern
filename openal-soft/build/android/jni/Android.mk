@@ -56,6 +56,11 @@ ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     LOCAL_SRC_FILES += Alc/mixer_neon.c.neon
 endif
 
+ifeq ($(TARGET_ARCH_ABI),x86)
+    LOCAL_CFLAGS += -DHAVE_SSE -DHAVE_XMMINTRIN_H
+    LOCAL_SRC_FILES += Alc/mixer_sse.c
+endif
+
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/build/android/jni $(LOCAL_PATH)/include $(LOCAL_PATH)/OpenAL32/Include $(LOCAL_PATH)/Alc
 
 LOCAL_ARM_MODE := arm
