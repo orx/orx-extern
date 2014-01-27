@@ -849,12 +849,21 @@ static void alc_deinit(void) __attribute__((destructor));
 #error "No global initialization available on this platform!"
 #endif
 
+static int siInitialized = 0;
+
 static void ReleaseThreadCtx(void *ptr);
 static void alc_init(void)
 {
     const char *str;
 
     LogFile = stderr;
+
+    siInitialized++;
+
+    if(siInitialized != 1)
+    {
+      return;
+    }
 
     str = getenv("__ALSOFT_HALF_ANGLE_CONES");
     if(str && (strcasecmp(str, "true") == 0 || strtol(str, NULL, 0) == 1))
@@ -1189,6 +1198,13 @@ static void alc_deinit_safe(void)
 static void alc_deinit(void)
 {
     int i;
+
+    siInitialized--;
+
+    if(siInitialized != 0)
+    {
+      return;
+    }
 
     alc_cleanup();
 
@@ -2904,6 +2920,8 @@ ALC_API ALCdevice* ALC_APIENTRY alcOpenDevice(const ALCchar *deviceName)
     ALCdevice *device;
     ALCenum err;
 
+    alc_init();
+
     DO_INITCONFIG();
 
     if(!PlaybackBackend.name)
@@ -3184,6 +3202,8 @@ ALC_API ALCboolean ALC_APIENTRY alcCloseDevice(ALCdevice *Device)
     Device->Flags &= ~DEVICE_RUNNING;
 
     ALCdevice_DecRef(Device);
+
+    alc_deinit();
 
     return ALC_TRUE;
 }
