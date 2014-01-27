@@ -177,12 +177,12 @@ typedef struct ALeffect {
     ALuint id;
 } ALeffect;
 
-inline struct ALeffect *LookupEffect(ALCdevice *device, ALuint id)
+static inline struct ALeffect *LookupEffect(ALCdevice *device, ALuint id)
 { return (struct ALeffect*)LookupUIntMapKey(&device->EffectMap, id); }
-inline struct ALeffect *RemoveEffect(ALCdevice *device, ALuint id)
+static inline struct ALeffect *RemoveEffect(ALCdevice *device, ALuint id)
 { return (struct ALeffect*)RemoveUIntMapKey(&device->EffectMap, id); }
 
-inline ALboolean IsReverbEffect(ALenum type)
+static inline ALboolean IsReverbEffect(ALenum type)
 { return type == AL_EFFECT_REVERB || type == AL_EFFECT_EAXREVERB; }
 
 ALenum InitEffect(ALeffect *effect);

@@ -18,7 +18,7 @@ typedef LONG althread_once_t;
 #define ALTHREAD_ONCE_INIT 0
 void althread_once(althread_once_t *once, void (*callback)(void));
 
-inline int alsched_yield(void)
+static inline int alsched_yield(void)
 { SwitchToThread(); return 0; }
 
 WCHAR *strdupW(const WCHAR *str);

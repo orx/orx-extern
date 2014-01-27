@@ -34,7 +34,7 @@ typedef struct ALfilterState {
 void ALfilterState_clear(ALfilterState *filter);
 void ALfilterState_setParams(ALfilterState *filter, ALfilterType type, ALfloat gain, ALfloat freq_scale, ALfloat bandwidth);
 
-inline ALfloat ALfilterState_processSingle(ALfilterState *filter, ALfloat sample)
+static inline ALfloat ALfilterState_processSingle(ALfilterState *filter, ALfloat sample)
 {
     ALfloat outsmp;
 
@@ -51,7 +51,7 @@ inline ALfloat ALfilterState_processSingle(ALfilterState *filter, ALfloat sample
     return outsmp;
 }
 
-inline ALfloat ALfilterState_processSingleC(const ALfilterState *filter, ALfloat sample)
+static inline ALfloat ALfilterState_processSingleC(const ALfilterState *filter, ALfloat sample)
 {
     return filter->b[0] * sample +
            filter->b[1] * filter->x[0] +
@@ -92,9 +92,9 @@ typedef struct ALfilter {
 #define ALfilter_GetParamf(x, c, p, v)  ((x)->GetParamf((x),(c),(p),(v)))
 #define ALfilter_GetParamfv(x, c, p, v) ((x)->GetParamfv((x),(c),(p),(v)))
 
-inline struct ALfilter *LookupFilter(ALCdevice *device, ALuint id)
+static inline struct ALfilter *LookupFilter(ALCdevice *device, ALuint id)
 { return (struct ALfilter*)LookupUIntMapKey(&device->FilterMap, id); }
-inline struct ALfilter *RemoveFilter(ALCdevice *device, ALuint id)
+static inline struct ALfilter *RemoveFilter(ALCdevice *device, ALuint id)
 { return (struct ALfilter*)RemoveUIntMapKey(&device->FilterMap, id); }
 
 ALvoid ReleaseALFilters(ALCdevice *device);

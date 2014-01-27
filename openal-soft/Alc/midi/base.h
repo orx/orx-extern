@@ -53,21 +53,21 @@ typedef struct MidiSynth {
 void MidiSynth_Construct(MidiSynth *self, ALCdevice *device);
 void MidiSynth_Destruct(MidiSynth *self);
 ALenum MidiSynth_selectSoundfonts(MidiSynth *self, ALCcontext *context, ALsizei count, const ALuint *ids);
-inline void MidiSynth_setGain(MidiSynth *self, ALfloat gain) { self->Gain = gain; }
-inline ALfloat MidiSynth_getGain(const MidiSynth *self) { return self->Gain; }
-inline void MidiSynth_setState(MidiSynth *self, ALenum state) { ExchangeInt(&self->State, state); }
-inline ALenum MidiSynth_getState(const MidiSynth *self) { return self->State; }
+static inline void MidiSynth_setGain(MidiSynth *self, ALfloat gain) { self->Gain = gain; }
+static inline ALfloat MidiSynth_getGain(const MidiSynth *self) { return self->Gain; }
+static inline void MidiSynth_setState(MidiSynth *self, ALenum state) { ExchangeInt(&self->State, state); }
+static inline ALenum MidiSynth_getState(const MidiSynth *self) { return self->State; }
 void MidiSynth_stop(MidiSynth *self);
-inline void MidiSynth_reset(MidiSynth *self) { MidiSynth_stop(self); }
+static inline void MidiSynth_reset(MidiSynth *self) { MidiSynth_stop(self); }
 ALuint64 MidiSynth_getTime(const MidiSynth *self);
-inline ALuint64 MidiSynth_getNextEvtTime(const MidiSynth *self)
+static inline ALuint64 MidiSynth_getNextEvtTime(const MidiSynth *self)
 {
     if(self->EventQueue.pos == self->EventQueue.size)
         return UINT64_MAX;
     return self->EventQueue.events[self->EventQueue.pos].time;
 }
 void MidiSynth_setSampleRate(MidiSynth *self, ALdouble srate);
-inline void MidiSynth_update(MidiSynth *self, ALCdevice *device)
+static inline void MidiSynth_update(MidiSynth *self, ALCdevice *device)
 { MidiSynth_setSampleRate(self, device->Frequency); }
 ALenum MidiSynth_insertEvent(MidiSynth *self, ALuint64 time, ALuint event, ALsizei param1, ALsizei param2);
 ALenum MidiSynth_insertSysExEvent(MidiSynth *self, ALuint64 time, const ALbyte *data, ALsizei size);

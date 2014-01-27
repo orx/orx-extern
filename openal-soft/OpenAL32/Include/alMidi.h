@@ -96,14 +96,14 @@ void ALfontsound_setModStagei(ALfontsound *self, ALCcontext *context, ALsizei st
 
 ALfontsound *NewFontsound(ALCcontext *context);
 
-inline struct ALfontsound *LookupFontsound(ALCdevice *device, ALuint id)
+static inline struct ALfontsound *LookupFontsound(ALCdevice *device, ALuint id)
 { return (struct ALfontsound*)LookupUIntMapKey(&device->FontsoundMap, id); }
-inline struct ALfontsound *RemoveFontsound(ALCdevice *device, ALuint id)
+static inline struct ALfontsound *RemoveFontsound(ALCdevice *device, ALuint id)
 { return (struct ALfontsound*)RemoveUIntMapKey(&device->FontsoundMap, id); }
 
-inline struct ALsfmodulator *LookupModulator(ALfontsound *sound, ALuint id)
+static inline struct ALsfmodulator *LookupModulator(ALfontsound *sound, ALuint id)
 { return (struct ALsfmodulator*)LookupUIntMapKey(&sound->ModulatorMap, id); }
-inline struct ALsfmodulator *RemoveModulator(ALfontsound *sound, ALuint id)
+static inline struct ALsfmodulator *RemoveModulator(ALfontsound *sound, ALuint id)
 { return (struct ALsfmodulator*)RemoveUIntMapKey(&sound->ModulatorMap, id); }
 
 void ReleaseALFontsounds(ALCdevice *device);
@@ -124,9 +124,9 @@ typedef struct ALsfpreset {
 ALsfpreset *NewPreset(ALCcontext *context);
 void DeletePreset(ALsfpreset *preset, ALCdevice *device);
 
-inline struct ALsfpreset *LookupPreset(ALCdevice *device, ALuint id)
+static inline struct ALsfpreset *LookupPreset(ALCdevice *device, ALuint id)
 { return (struct ALsfpreset*)LookupUIntMapKey(&device->PresetMap, id); }
-inline struct ALsfpreset *RemovePreset(ALCdevice *device, ALuint id)
+static inline struct ALsfpreset *RemovePreset(ALCdevice *device, ALuint id)
 { return (struct ALsfpreset*)RemoveUIntMapKey(&device->PresetMap, id); }
 
 void ReleaseALPresets(ALCdevice *device);
@@ -152,9 +152,9 @@ void ALsoundfont_Destruct(ALsoundfont *self);
 ALsoundfont *ALsoundfont_getDefSoundfont(ALCcontext *context);
 void ALsoundfont_deleteSoundfont(ALsoundfont *self, ALCdevice *device);
 
-inline struct ALsoundfont *LookupSfont(ALCdevice *device, ALuint id)
+static inline struct ALsoundfont *LookupSfont(ALCdevice *device, ALuint id)
 { return (struct ALsoundfont*)LookupUIntMapKey(&device->SfontMap, id); }
-inline struct ALsoundfont *RemoveSfont(ALCdevice *device, ALuint id)
+static inline struct ALsoundfont *RemoveSfont(ALCdevice *device, ALuint id)
 { return (struct ALsoundfont*)RemoveUIntMapKey(&device->SfontMap, id); }
 
 void ReleaseALSoundfonts(ALCdevice *device);

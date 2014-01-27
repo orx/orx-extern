@@ -16,7 +16,7 @@
 #endif
 
 /* Define to the appropriate 'restrict' keyword */
-#define RESTRICT __restrict
+#define restrict __restrict
 
 /* Define if we have the C11 aligned_alloc function */
 /* #undef HAVE_ALIGNED_ALLOC */

@@ -373,7 +373,7 @@ struct Hrtf;
 
 
 /* Find the next power-of-2 for non-power-of-2 numbers. */
-inline ALuint NextPowerOf2(ALuint value)
+static inline ALuint NextPowerOf2(ALuint value)
 {
     if(value > 0)
     {
@@ -389,7 +389,7 @@ inline ALuint NextPowerOf2(ALuint value)
 
 /* Fast float-to-int conversion. Assumes the FPU is already in round-to-zero
  * mode. */
-inline ALint fastf2i(ALfloat f)
+static inline ALint fastf2i(ALfloat f)
 {
 #ifdef HAVE_LRINTF
     return lrintf(f);
@@ -405,7 +405,7 @@ inline ALint fastf2i(ALfloat f)
 
 /* Fast float-to-uint conversion. Assumes the FPU is already in round-to-zero
  * mode. */
-inline ALuint fastf2u(ALfloat f)
+static inline ALuint fastf2u(ALfloat f)
 { return fastf2i(f); }
 
 
@@ -528,7 +528,7 @@ enum DevFmtChannels {
 
 ALuint BytesFromDevFmt(enum DevFmtType type);
 ALuint ChannelsFromDevFmt(enum DevFmtChannels chans);
-inline ALuint FrameSizeFromDevFmt(enum DevFmtChannels chans, enum DevFmtType type)
+static inline ALuint FrameSizeFromDevFmt(enum DevFmtChannels chans, enum DevFmtType type)
 {
     return ChannelsFromDevFmt(chans) * BytesFromDevFmt(type);
 }
@@ -723,10 +723,10 @@ void ALCdevice_Lock(ALCdevice *device);
 void ALCdevice_Unlock(ALCdevice *device);
 ALint64 ALCdevice_GetLatency(ALCdevice *device);
 
-inline void LockContext(ALCcontext *context)
+static inline void LockContext(ALCcontext *context)
 { ALCdevice_Lock(context->Device); }
 
-inline void UnlockContext(ALCcontext *context)
+static inline void UnlockContext(ALCcontext *context)
 { ALCdevice_Unlock(context->Device); }
 
 
