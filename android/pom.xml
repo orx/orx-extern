@@ -1,0 +1,112 @@
+ <project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.orx</groupId>
+  <artifactId>android-lib</artifactId>
+  <packaging>jar</packaging>
+  <name>orx android Java library</name>
+  <version>1.0</version>
+  <description>The android Java glue code for orx.</description>
+  <url>http://orx-project.org/</url>
+
+  <licenses>
+    <license>
+      <name>zlib License</name>
+      <url>http://en.wikipedia.org/wiki/Zlib_License</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://bitbucket.org/orx/orx</url>
+    <connection>scm:hg:https://bitbucket.org/orx/orx</connection>
+    <developerConnection>scm:hg:https://bitbucket.org/orx/orx</developerConnection>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>loki666</id>
+      <name>Philippe Simons</name>
+    </developer>
+  </developers>
+
+  <issueManagement>
+    <system>Bitbucket Issues</system>
+    <url>https://bitbucket.org/orx/orx/issues</url>
+  </issueManagement>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.google.android</groupId>
+        <artifactId>android</artifactId>
+        <version>4.1.1.4</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.android</groupId>
+        <artifactId>support-v4</artifactId>
+        <version>r7</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.google.android</groupId>
+      <artifactId>android</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.android</groupId>
+      <artifactId>support-v4</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.jayway.maven.plugins.android.generation2</groupId>
+          <artifactId>android-maven-plugin</artifactId>
+          <version>3.8.2</version>
+          <configuration>
+            <sdk>
+              <platform>16</platform>
+            </sdk>
+            <undeployBeforeDeploy>true</undeployBeforeDeploy>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>com.jayway.maven.plugins.android.generation2</groupId>
+        <artifactId>android-maven-plugin</artifactId>
+        <extensions>true</extensions>
+      </plugin>
+<!--
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+-->
+    </plugins>
+
+  </build>
+
+</project>
