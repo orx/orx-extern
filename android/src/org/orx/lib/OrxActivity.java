@@ -12,6 +12,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
@@ -22,56 +23,52 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     View.OnKeyListener, View.OnTouchListener {
 
     private SurfaceView mSurface;
-
     private OrxThreadFragment mOrxThreadFragment;
-
-    // Setup
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        init();
-
+    
+    @Override
+    protected void onCreate(Bundle arg0) {
+    	super.onCreate(arg0);
+    	
         FragmentManager fm = getSupportFragmentManager();
         mOrxThreadFragment = (OrxThreadFragment) fm.findFragmentByTag(OrxThreadFragment.TAG);
         if (mOrxThreadFragment == null) {
             mOrxThreadFragment = new OrxThreadFragment();
             fm.beginTransaction().add(mOrxThreadFragment, OrxThreadFragment.TAG).commit();
-        }
+        }    	
     }
     
-    private void init() {
-    	if(getLayoutId() == 0 || getSurfaceViewId() == 0) {
-            // Set up the surface
-            mSurface = new SurfaceView(getApplication());
-            setContentView(mSurface);
-    	} else {
-			setContentView(getLayoutId());
-			mSurface = (SurfaceView) findViewById(getSurfaceViewId());
-		}
+    @Override
+    protected void onStart() {
+    	super.onStart();
     	
-    	mSurface.getHolder().addCallback(this);
-    	mSurface.setFocusable(true);
-    	mSurface.setFocusableInTouchMode(true);
-    	mSurface.requestFocus();
-    	mSurface.setOnKeyListener(this);
-    	mSurface.setOnTouchListener(this);
+    	if(mSurface == null) {
+    		ViewGroup root = (ViewGroup) findViewById(android.R.id.content);
+    		
+    		if(root.getChildCount() == 0) {
+    			mSurface = new SurfaceView(getApplication());
+        		setContentView(mSurface);
+    		} else {
+            	int surfaceId = getResources().getIdentifier("id/orxSurfaceView", null, getPackageName());
+            	
+            	if(surfaceId != 0) {
+            		mSurface = (SurfaceView) root.findViewById(surfaceId);
+            		
+            		if(mSurface == null) {
+            			throw new RuntimeException("SurfaceView with identifier orxSurfaceView not found in layout.");
+            		}
+            	} else {
+            		throw new RuntimeException("No identifier orxSurfaceView found. Define a SurfaceView with android:id=\"@+id/orxSurfaceView\" in your layout.");
+            	}
+    		}
+    		
+        	mSurface.getHolder().addCallback(this);
+        	mSurface.setFocusable(true);
+        	mSurface.setFocusableInTouchMode(true);
+        	mSurface.requestFocus();
+        	mSurface.setOnKeyListener(this);
+        	mSurface.setOnTouchListener(this);    		
+    	}
     }
-    
-    protected int getLayoutId() {
-		/*
-		 * Override this if you want to use a custom layout
-		 * return the layout id
-		 */
-		return 0;
-	}
-    
-    protected int getSurfaceViewId() {
-		/*
-		 * Override this if you want to use a custom layout
-		 * return the OrxGLSurfaceView id
-		 */
-		return 0;
-	}
 
 	// Called when we have a valid drawing surface
 	@SuppressLint("NewApi")
