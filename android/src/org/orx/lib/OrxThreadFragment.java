@@ -22,7 +22,11 @@ public class OrxThreadFragment extends Fragment {
         @Override
         public void run() {
             startOrx(OrxThreadFragment.this);
-            getActivity().finish();
+
+            Activity a = getActivity();
+            if(a != null) {
+                a.finish();
+            }
         }
     };
 
