@@ -555,11 +555,13 @@ static ALCboolean opensl_start_playback(ALCdevice *Device)
 
     result = SLObjectItf_GetInterface(data->bufferQueueObject, SL_IID_BUFFERQUEUE, &bufferQueue);
     PRINTERR(result, "bufferQueue->GetInterface");
+
     if(SL_RESULT_SUCCESS == result)
     {
         result = (*bufferQueue)->RegisterCallback(bufferQueue, opensl_callback, Device);
         PRINTERR(result, "bufferQueue->RegisterCallback");
     }
+
     if(SL_RESULT_SUCCESS == result)
     {
         data->frameSize = FrameSizeFromDevFmt(Device->FmtChans, Device->FmtType);
@@ -571,6 +573,13 @@ static ALCboolean opensl_start_playback(ALCdevice *Device)
             PRINTERR(result, "calloc");
         }
     }
+
+    if(SL_RESULT_SUCCESS == result)
+    {
+        result = VCALL0(bufferQueue,Clear)();
+        PRINTERR(result, "bufferQueue->Clear");
+    }
+
     /* enqueue the first buffer to kick off the callbacks */
     for(i = 0;i < Device->NumUpdates;i++)
     {
@@ -614,23 +623,15 @@ static void opensl_stop_playback(ALCdevice *Device)
 {
     osl_data *data = Device->ExtraData;
     SLPlayItf player;
-    SLAndroidSimpleBufferQueueItf bufferQueue;
     SLresult result;
 
     result = VCALL(data->bufferQueueObject,GetInterface)(SL_IID_PLAY, &player);
     PRINTERR(result, "bufferQueue->GetInterface");
+
     if(SL_RESULT_SUCCESS == result)
     {
         result = VCALL(player,SetPlayState)(SL_PLAYSTATE_STOPPED);
         PRINTERR(result, "player->SetPlayState");
-    }
-
-    result = VCALL(data->bufferQueueObject,GetInterface)(SL_IID_BUFFERQUEUE, &bufferQueue);
-    PRINTERR(result, "bufferQueue->GetInterface");
-    if(SL_RESULT_SUCCESS == result)
-    {
-        result = VCALL0(bufferQueue,Clear)();
-        PRINTERR(result, "bufferQueue->Clear");
     }
 
     free(data->buffer);
