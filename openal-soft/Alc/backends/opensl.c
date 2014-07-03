@@ -147,8 +147,6 @@ static int HasFeatureAudioLowLatency() {
         jclass objClass;
         jfieldID field;
 
-        (*env)->PushLocalFrame(env, 256);
-
         /* check if running on JELLY_BEAN_MR1 or later */
         objClass = (*env)->FindClass(env, "android/os/Build$VERSION");
         field = (*env)->GetStaticFieldID(env, objClass, "SDK_INT", "I");
@@ -163,17 +161,20 @@ static int HasFeatureAudioLowLatency() {
             context = orxAndroid_GetActivity();
             contextClass = (*env)->FindClass(env, "android/content/Context");
             method = (*env)->GetMethodID(env, contextClass, "getPackageManager", "()Landroid/content/pm/PackageManager;");
+            (*env)->DeleteLocalRef(env, contextClass);
             packageManager = (*env)->CallObjectMethod(env, context, method);
+            (*env)->DeleteLocalRef(env, context);
 
             packageManagerClass = (*env)->FindClass(env, "android/content/pm/PackageManager");
             field = (*env)->GetStaticFieldID(env, packageManagerClass, "FEATURE_AUDIO_LOW_LATENCY", "Ljava/lang/String;");
             FEATURE_AUDIO_LOW_LATENCY = (*env)->GetStaticObjectField(env, packageManagerClass, field);
 
             method = (*env)->GetMethodID(env, packageManagerClass, "hasSystemFeature", "(Ljava/lang/String;)Z");
+            (*env)->DeleteLocalRef(env, packageManagerClass);
             claimsFeature = (*env)->CallBooleanMethod(env, packageManager, method, FEATURE_AUDIO_LOW_LATENCY);
+            (*env)->DeleteLocalRef(env, packageManager);
+            (*env)->DeleteLocalRef(env, FEATURE_AUDIO_LOW_LATENCY);
         }
-
-        (*env)->PopLocalFrame(env, NULL);
     }
 
     return claimsFeature == JNI_TRUE ? 1 : 0;
@@ -196,28 +197,34 @@ static ALuint GetFrequency(ALuint freq)
         jobject audioManager, context;
         const char *sampleRate;
 
-        (*env)->PushLocalFrame(env, 256);
- 
         context = orxAndroid_GetActivity();
         contextClass = (*env)->FindClass(env, "android/content/Context");
         field = (*env)->GetStaticFieldID(env, contextClass, "AUDIO_SERVICE", "Ljava/lang/String;");
         AUDIO_SERVICE = (*env)->GetStaticObjectField(env, contextClass, field);
         getSystemService = (*env)->GetMethodID(env, contextClass, "getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;");
+        (*env)->DeleteLocalRef(env, contextClass);
+
         audioManager = (*env)->CallObjectMethod(env, context, getSystemService, AUDIO_SERVICE);
+        (*env)->DeleteLocalRef(env, AUDIO_SERVICE);
+        (*env)->DeleteLocalRef(env, context);
+
         audioManagerClass = (*env)->FindClass(env, "android/media/AudioManager");
         field = (*env)->GetStaticFieldID(env, audioManagerClass, "PROPERTY_OUTPUT_SAMPLE_RATE", "Ljava/lang/String;");
         getProperty = (*env)->GetMethodID(env, audioManagerClass, "getProperty", "(Ljava/lang/String;)Ljava/lang/String;");
         PROPERTY_OUTPUT_SAMPLE_RATE = (*env)->GetStaticObjectField(env, audioManagerClass, field);
+        (*env)->DeleteLocalRef(env, audioManagerClass);
+
         sampleRateString = (*env)->CallObjectMethod(env, audioManager, getProperty, PROPERTY_OUTPUT_SAMPLE_RATE);
+        (*env)->DeleteLocalRef(env, PROPERTY_OUTPUT_SAMPLE_RATE);
+        (*env)->DeleteLocalRef(env, audioManager);
 
         if(sampleRateString != NULL)
         {
             sampleRate = (*env)->GetStringUTFChars(env, sampleRateString, NULL);
             result = (int)strtol(sampleRate, (char **)NULL, 10);
             (*env)->ReleaseStringUTFChars(env, sampleRateString, sampleRate);
+            (*env)->DeleteLocalRef(env, sampleRateString);
         }
-
-        (*env)->PopLocalFrame(env, NULL);
     }
 
 
@@ -241,28 +248,34 @@ static ALuint GetBufferSize(ALuint bufferSize)
         jobject audioManager, context;
         const char *framesPerBuffer;
 
-        (*env)->PushLocalFrame(env, 256);
- 
         context = orxAndroid_GetActivity();
         contextClass = (*env)->FindClass(env, "android/content/Context");
         field = (*env)->GetStaticFieldID(env, contextClass, "AUDIO_SERVICE", "Ljava/lang/String;");
         AUDIO_SERVICE = (*env)->GetStaticObjectField(env, contextClass, field);
         getSystemService = (*env)->GetMethodID(env, contextClass, "getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;");
+        (*env)->DeleteLocalRef(env, contextClass);
+
         audioManager = (*env)->CallObjectMethod(env, context, getSystemService, AUDIO_SERVICE);
+        (*env)->DeleteLocalRef(env, AUDIO_SERVICE);
+        (*env)->DeleteLocalRef(env, context);
+
         audioManagerClass = (*env)->FindClass(env, "android/media/AudioManager");
         field = (*env)->GetStaticFieldID(env, audioManagerClass, "PROPERTY_OUTPUT_FRAMES_PER_BUFFER", "Ljava/lang/String;");
         getProperty = (*env)->GetMethodID(env, audioManagerClass, "getProperty", "(Ljava/lang/String;)Ljava/lang/String;");
         PROPERTY_OUTPUT_FRAMES_PER_BUFFER = (*env)->GetStaticObjectField(env, audioManagerClass, field);
+        (*env)->DeleteLocalRef(env, audioManagerClass);
+
         framesPerBufferString = (*env)->CallObjectMethod(env, audioManager, getProperty, PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+        (*env)->DeleteLocalRef(env, PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+        (*env)->DeleteLocalRef(env, audioManager);
 
         if(framesPerBufferString != NULL)
         {
             framesPerBuffer = (*env)->GetStringUTFChars(env, framesPerBufferString, NULL);
             result = (int)strtol(framesPerBuffer, (char **)NULL, 10);
             (*env)->ReleaseStringUTFChars(env, framesPerBufferString, framesPerBuffer);
+            (*env)->DeleteLocalRef(env, framesPerBufferString);
         }
-
-        (*env)->PushLocalFrame(env, 256);
     }
 
     return result;
