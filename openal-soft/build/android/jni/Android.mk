@@ -54,6 +54,7 @@ LOCAL_SRC_FILES = \
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     LOCAL_CFLAGS += -DHAVE_NEON -DHAVE_ARM_NEON_H
     LOCAL_SRC_FILES += Alc/mixer_neon.c.neon
+    LOCAL_ARM_NEON  := true
 endif
 
 ifeq ($(TARGET_ARCH_ABI),x86)
