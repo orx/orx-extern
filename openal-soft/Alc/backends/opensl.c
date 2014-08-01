@@ -83,6 +83,10 @@ typedef struct SLDataLocator_AndroidSimpleBufferQueue {
 
 #define SLPlayItf_SetPlayState(a,b) ((*(a))->SetPlayState((a),(b)))
 
+/* Should start using these generic callers instead of the name-specific ones above. */
+#define VCALL(obj, func)  ((*(obj))->func((obj), EXTRACT_VCALL_ARGS
+#define VCALL0(obj, func)  ((*(obj))->func((obj) EXTRACT_VCALL_ARGS
+
 
 typedef struct {
     /* engine interfaces */
@@ -97,6 +101,7 @@ typedef struct {
 
     void *buffer;
     ALuint bufferSize;
+    ALuint curBuffer;
 
     ALuint frameSize;
 } osl_data;
@@ -104,6 +109,179 @@ typedef struct {
 
 static const ALCchar opensl_device[] = "OpenSL";
 
+#ifdef ANDROID
+
+#include <jni.h>
+#include <stdlib.h>
+
+extern void *orxAndroid_GetJNIEnv();
+extern jobject orxAndroid_GetActivity();
+
+/*
+The recommended sequence is:
+
+Check for API level 9 or higher, to confirm use of OpenSL ES.
+Check for feature "android.hardware.audio.low_latency" using code such as this:
+import android.content.pm.PackageManager;
+...
+PackageManager pm = getContext().getPackageManager();
+boolean claimsFeature = pm.hasSystemFeature(PackageManager.FEATURE_AUDIO_LOW_LATENCY);
+Check for API level 17 or higher, to confirm use of android.media.AudioManager.getProperty().
+Get the native or optimal output sample rate and buffer size for this device's primary output stream, using code such as this:
+import android.media.AudioManager;
+...
+AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+String sampleRate = am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE));
+String framesPerBuffer = am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER));
+Note that sampleRate and framesPerBuffer are Strings. First check for null and then convert to int using Integer.parseInt().
+Now use OpenSL ES to create an AudioPlayer with PCM buffer queue data locator.
+*/
+
+static int HasFeatureAudioLowLatency() {
+    JNIEnv *env;
+    jboolean claimsFeature = JNI_FALSE;
+
+    env = orxAndroid_GetJNIEnv();
+
+    if(env != NULL) {
+        jclass objClass;
+        jfieldID field;
+
+        /* check if running on JELLY_BEAN_MR1 or later */
+        objClass = (*env)->FindClass(env, "android/os/Build$VERSION");
+        field = (*env)->GetStaticFieldID(env, objClass, "SDK_INT", "I");
+
+        if((*env)->GetStaticIntField(env, objClass, field) >= 17) {
+            jclass contextClass, packageManagerClass;
+            jstring FEATURE_AUDIO_LOW_LATENCY;
+            jmethodID method;
+            jobject packageManager;
+            jobject context;
+
+            context = orxAndroid_GetActivity();
+            contextClass = (*env)->FindClass(env, "android/content/Context");
+            method = (*env)->GetMethodID(env, contextClass, "getPackageManager", "()Landroid/content/pm/PackageManager;");
+            (*env)->DeleteLocalRef(env, contextClass);
+            packageManager = (*env)->CallObjectMethod(env, context, method);
+            (*env)->DeleteLocalRef(env, context);
+
+            packageManagerClass = (*env)->FindClass(env, "android/content/pm/PackageManager");
+            field = (*env)->GetStaticFieldID(env, packageManagerClass, "FEATURE_AUDIO_LOW_LATENCY", "Ljava/lang/String;");
+            FEATURE_AUDIO_LOW_LATENCY = (*env)->GetStaticObjectField(env, packageManagerClass, field);
+
+            method = (*env)->GetMethodID(env, packageManagerClass, "hasSystemFeature", "(Ljava/lang/String;)Z");
+            (*env)->DeleteLocalRef(env, packageManagerClass);
+            claimsFeature = (*env)->CallBooleanMethod(env, packageManager, method, FEATURE_AUDIO_LOW_LATENCY);
+            (*env)->DeleteLocalRef(env, packageManager);
+            (*env)->DeleteLocalRef(env, FEATURE_AUDIO_LOW_LATENCY);
+        }
+    }
+
+    return claimsFeature == JNI_TRUE ? 1 : 0;
+}
+
+static ALuint GetFrequency(ALuint freq)
+{
+    ALuint result;
+    JNIEnv *env;
+
+    result = freq;
+    env = orxAndroid_GetJNIEnv();
+
+
+    if(env != NULL) {
+        jclass contextClass, audioManagerClass;
+        jfieldID field;
+        jstring AUDIO_SERVICE, PROPERTY_OUTPUT_SAMPLE_RATE, sampleRateString;
+        jmethodID getSystemService, getProperty;
+        jobject audioManager, context;
+        const char *sampleRate;
+
+        context = orxAndroid_GetActivity();
+        contextClass = (*env)->FindClass(env, "android/content/Context");
+        field = (*env)->GetStaticFieldID(env, contextClass, "AUDIO_SERVICE", "Ljava/lang/String;");
+        AUDIO_SERVICE = (*env)->GetStaticObjectField(env, contextClass, field);
+        getSystemService = (*env)->GetMethodID(env, contextClass, "getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;");
+        (*env)->DeleteLocalRef(env, contextClass);
+
+        audioManager = (*env)->CallObjectMethod(env, context, getSystemService, AUDIO_SERVICE);
+        (*env)->DeleteLocalRef(env, AUDIO_SERVICE);
+        (*env)->DeleteLocalRef(env, context);
+
+        audioManagerClass = (*env)->FindClass(env, "android/media/AudioManager");
+        field = (*env)->GetStaticFieldID(env, audioManagerClass, "PROPERTY_OUTPUT_SAMPLE_RATE", "Ljava/lang/String;");
+        getProperty = (*env)->GetMethodID(env, audioManagerClass, "getProperty", "(Ljava/lang/String;)Ljava/lang/String;");
+        PROPERTY_OUTPUT_SAMPLE_RATE = (*env)->GetStaticObjectField(env, audioManagerClass, field);
+        (*env)->DeleteLocalRef(env, audioManagerClass);
+
+        sampleRateString = (*env)->CallObjectMethod(env, audioManager, getProperty, PROPERTY_OUTPUT_SAMPLE_RATE);
+        (*env)->DeleteLocalRef(env, PROPERTY_OUTPUT_SAMPLE_RATE);
+        (*env)->DeleteLocalRef(env, audioManager);
+
+        if(sampleRateString != NULL)
+        {
+            sampleRate = (*env)->GetStringUTFChars(env, sampleRateString, NULL);
+            result = (int)strtol(sampleRate, (char **)NULL, 10);
+            (*env)->ReleaseStringUTFChars(env, sampleRateString, sampleRate);
+            (*env)->DeleteLocalRef(env, sampleRateString);
+        }
+    }
+
+
+    return result;
+}
+
+static ALuint GetBufferSize(ALuint bufferSize)
+{
+    ALuint result;
+    JNIEnv *env;
+
+    result = bufferSize;
+    env = orxAndroid_GetJNIEnv();
+
+
+    if(env != NULL) {
+        jclass contextClass, audioManagerClass;
+        jfieldID field;
+        jstring AUDIO_SERVICE, PROPERTY_OUTPUT_FRAMES_PER_BUFFER, framesPerBufferString;
+        jmethodID getSystemService, getProperty;
+        jobject audioManager, context;
+        const char *framesPerBuffer;
+
+        context = orxAndroid_GetActivity();
+        contextClass = (*env)->FindClass(env, "android/content/Context");
+        field = (*env)->GetStaticFieldID(env, contextClass, "AUDIO_SERVICE", "Ljava/lang/String;");
+        AUDIO_SERVICE = (*env)->GetStaticObjectField(env, contextClass, field);
+        getSystemService = (*env)->GetMethodID(env, contextClass, "getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;");
+        (*env)->DeleteLocalRef(env, contextClass);
+
+        audioManager = (*env)->CallObjectMethod(env, context, getSystemService, AUDIO_SERVICE);
+        (*env)->DeleteLocalRef(env, AUDIO_SERVICE);
+        (*env)->DeleteLocalRef(env, context);
+
+        audioManagerClass = (*env)->FindClass(env, "android/media/AudioManager");
+        field = (*env)->GetStaticFieldID(env, audioManagerClass, "PROPERTY_OUTPUT_FRAMES_PER_BUFFER", "Ljava/lang/String;");
+        getProperty = (*env)->GetMethodID(env, audioManagerClass, "getProperty", "(Ljava/lang/String;)Ljava/lang/String;");
+        PROPERTY_OUTPUT_FRAMES_PER_BUFFER = (*env)->GetStaticObjectField(env, audioManagerClass, field);
+        (*env)->DeleteLocalRef(env, audioManagerClass);
+
+        framesPerBufferString = (*env)->CallObjectMethod(env, audioManager, getProperty, PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+        (*env)->DeleteLocalRef(env, PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
+        (*env)->DeleteLocalRef(env, audioManager);
+
+        if(framesPerBufferString != NULL)
+        {
+            framesPerBuffer = (*env)->GetStringUTFChars(env, framesPerBufferString, NULL);
+            result = (int)strtol(framesPerBuffer, (char **)NULL, 10);
+            (*env)->ReleaseStringUTFChars(env, framesPerBufferString, framesPerBuffer);
+            (*env)->DeleteLocalRef(env, framesPerBufferString);
+        }
+    }
+
+    return result;
+}
+
+#endif
 
 static SLuint32 GetChannelMask(enum DevFmtChannels chans)
 {
@@ -175,12 +353,19 @@ static void opensl_callback(SLAndroidSimpleBufferQueueItf bq, void *context)
 {
     ALCdevice *Device = context;
     osl_data *data = Device->ExtraData;
+    ALvoid *buf;
     SLresult result;
 
-    aluMixData(Device, data->buffer, data->bufferSize/data->frameSize);
+    if(data->buffer != NULL)
+    {
+        buf = (ALbyte*)data->buffer + data->curBuffer*data->bufferSize;
+        aluMixData(Device, buf, data->bufferSize/data->frameSize);
 
-    result = (*bq)->Enqueue(bq, data->buffer, data->bufferSize);
-    PRINTERR(result, "bq->Enqueue");
+        result = (*bq)->Enqueue(bq, buf, data->bufferSize);
+        PRINTERR(result, "bq->Enqueue");
+
+        data->curBuffer = (data->curBuffer+1) % Device->NumUpdates;
+    }
 }
 
 
@@ -263,6 +448,31 @@ static void opensl_close_playback(ALCdevice *Device)
     Device->ExtraData = NULL;
 }
 
+static SLuint32 convertSampleRate(SLuint32 sr)
+{
+    switch(sr){
+    case 8000:
+        return SL_SAMPLINGRATE_8;
+    case 11025:
+        return SL_SAMPLINGRATE_11_025;
+    case 12000:
+        return SL_SAMPLINGRATE_12;
+    case 16000:
+        return SL_SAMPLINGRATE_16;
+    case 22050:
+        return SL_SAMPLINGRATE_22_05;
+    case 24000:
+        return SL_SAMPLINGRATE_24;
+    case 32000:
+        return SL_SAMPLINGRATE_32;
+    case 44100:
+        return SL_SAMPLINGRATE_44_1;
+    case 48000:
+        return SL_SAMPLINGRATE_48;
+  }
+  return -1;
+}
+
 static ALCboolean opensl_reset_playback(ALCdevice *Device)
 {
     osl_data *data = Device->ExtraData;
@@ -274,15 +484,28 @@ static ALCboolean opensl_reset_playback(ALCdevice *Device)
     SLInterfaceID id;
     SLboolean req;
     SLresult result;
+    SLuint32 sampleRate;
 
 
-    Device->UpdateSize = (ALuint64)Device->UpdateSize * 44100 / Device->Frequency;
-    Device->UpdateSize = Device->UpdateSize * Device->NumUpdates / 2;
-    Device->NumUpdates = 2;
-
-    Device->Frequency = 44100;
     Device->FmtChans = DevFmtStereo;
     Device->FmtType = DevFmtShort;
+
+#ifdef ANDROID
+
+    /* try to enable low-latency */
+    if(HasFeatureAudioLowLatency()) {
+        Device->Frequency = GetFrequency(Device->Frequency);
+        Device->UpdateSize = GetBufferSize(Device->UpdateSize);
+    }
+
+#endif
+
+    sampleRate = convertSampleRate(Device->Frequency);
+    if(sampleRate == -1)
+    {
+        sampleRate = SL_SAMPLINGRATE_44_1;
+        Device->Frequency = 44100;
+    }
 
     SetDefaultWFXChannelOrder(Device);
 
@@ -295,7 +518,7 @@ static ALCboolean opensl_reset_playback(ALCdevice *Device)
 
     format_pcm.formatType = SL_DATAFORMAT_PCM;
     format_pcm.numChannels = ChannelsFromDevFmt(Device->FmtChans);
-    format_pcm.samplesPerSec = Device->Frequency * 1000;
+    format_pcm.samplesPerSec = sampleRate;
     format_pcm.bitsPerSample = BytesFromDevFmt(Device->FmtType) * 8;
     format_pcm.containerSize = format_pcm.bitsPerSample;
     format_pcm.channelMask = GetChannelMask(Device->FmtChans);
@@ -345,31 +568,42 @@ static ALCboolean opensl_start_playback(ALCdevice *Device)
 
     result = SLObjectItf_GetInterface(data->bufferQueueObject, SL_IID_BUFFERQUEUE, &bufferQueue);
     PRINTERR(result, "bufferQueue->GetInterface");
+
     if(SL_RESULT_SUCCESS == result)
     {
         result = (*bufferQueue)->RegisterCallback(bufferQueue, opensl_callback, Device);
         PRINTERR(result, "bufferQueue->RegisterCallback");
     }
+
     if(SL_RESULT_SUCCESS == result)
     {
         data->frameSize = FrameSizeFromDevFmt(Device->FmtChans, Device->FmtType);
         data->bufferSize = Device->UpdateSize * data->frameSize;
-        data->buffer = calloc(1, data->bufferSize);
+        data->buffer = calloc(Device->NumUpdates, data->bufferSize);
         if(!data->buffer)
         {
             result = SL_RESULT_MEMORY_FAILURE;
             PRINTERR(result, "calloc");
         }
     }
+
+    if(SL_RESULT_SUCCESS == result)
+    {
+        result = VCALL0(bufferQueue,Clear)();
+        PRINTERR(result, "bufferQueue->Clear");
+    }
+
     /* enqueue the first buffer to kick off the callbacks */
     for(i = 0;i < Device->NumUpdates;i++)
     {
         if(SL_RESULT_SUCCESS == result)
         {
-            result = (*bufferQueue)->Enqueue(bufferQueue, data->buffer, data->bufferSize);
+            ALvoid *buf = (ALbyte*)data->buffer + i*data->bufferSize;
+            result = (*bufferQueue)->Enqueue(bufferQueue, buf, data->bufferSize);
             PRINTERR(result, "bufferQueue->Enqueue");
         }
     }
+    data->curBuffer = 0;
     if(SL_RESULT_SUCCESS == result)
     {
         result = SLObjectItf_GetInterface(data->bufferQueueObject, SL_IID_PLAY, &player);
@@ -401,6 +635,17 @@ static ALCboolean opensl_start_playback(ALCdevice *Device)
 static void opensl_stop_playback(ALCdevice *Device)
 {
     osl_data *data = Device->ExtraData;
+    SLPlayItf player;
+    SLresult result;
+
+    result = VCALL(data->bufferQueueObject,GetInterface)(SL_IID_PLAY, &player);
+    PRINTERR(result, "bufferQueue->GetInterface");
+
+    if(SL_RESULT_SUCCESS == result)
+    {
+        result = VCALL(player,SetPlayState)(SL_PLAYSTATE_STOPPED);
+        PRINTERR(result, "player->SetPlayState");
+    }
 
     free(data->buffer);
     data->buffer = NULL;
@@ -420,8 +665,6 @@ static const BackendFuncs opensl_funcs = {
     NULL,
     NULL,
     NULL,
-    ALCdevice_LockDefault,
-    ALCdevice_UnlockDefault,
     ALCdevice_GetLatencyDefault
 };
 
