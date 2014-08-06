@@ -3108,7 +3108,7 @@ static stbi_uc *bmp_load(stbi *s, int *x, int *y, int *comp, int req_comp)
             }
          } else {
             for (i=0; i < (int) s->img_x; ++i) {
-               uint32 v = (bpp == 16 ? get16le(s) : get32le(s));
+               uint32 v = (bpp == 16 ? (uint32)get16le(s) : get32le(s));
                int a;
                out[z++] = (uint8) shiftsigned(v & mr, rshift, rcount);
                out[z++] = (uint8) shiftsigned(v & mg, gshift, gcount);
