@@ -135,7 +135,8 @@ int _glfwPlatformInit( void )
     [thread start];
     [thread release];
 
-    changeToResourcesDirectory();
+    //! ORX
+    // changeToResourcesDirectory();
 
     _glfwPlatformGetDesktopMode( &_glfwLibrary.desktopMode );
 

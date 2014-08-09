@@ -153,7 +153,11 @@ static int outfile(char const *filename, int rgb_dir, int vdir, int x, int y, in
 {
    FILE *f;
    if (y < 0 || x < 0) return 0;
+   #ifdef __orxMSVC__
+   fopen_s(&f, filename, "wb");
+   #else // __orxMSVC__
    f = fopen(filename, "wb");
+   #endif // __orxMSVC__
    if (f) {
       va_list v;
       va_start(v, fmt);
@@ -492,7 +496,11 @@ int stbi_write_png(char const *filename, int x, int y, int comp, const void *dat
    int len;
    unsigned char *png = stbi_write_png_to_mem((unsigned char *) data, stride_bytes, x, y, comp, &len);
    if (!png) return 0;
+   #ifdef __orxMSVC__
+   fopen_s(&f, filename, "wb");
+   #else // __orxMSVC__
    f = fopen(filename, "wb");
+   #endif // __orxMSVC__
    if (!f) { free(png); return 0; }
    fwrite(png, 1, len, f);
    fclose(f);
