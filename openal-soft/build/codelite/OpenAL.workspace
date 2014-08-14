@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<CodeLite_Workspace Name="OpenAL" Database=".\OpenAL.tags">
-  <Project Name="OpenAL" Path="OpenAL.project" Active="Yes"/>
-  <BuildMatrix>
-    <WorkspaceConfiguration Name="Win32 Release" Selected="yes">
-      <Project Name="OpenAL" ConfigName="Win32 Release"/>
-    </WorkspaceConfiguration>
-  </BuildMatrix>
-</CodeLite_Workspace>
