@@ -24,7 +24,7 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 
     private SurfaceView mSurface;
     private OrxThreadFragment mOrxThreadFragment;
-    
+
     @Override
     protected void onCreate(Bundle arg0) {
     	super.onCreate(arg0);
@@ -145,18 +145,18 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
         int pointerFingerId = event.getPointerId(actionPointerIndex);
         int action = event.getActionMasked();
 
-        float x = event.getX(actionPointerIndex);
-        float y = event.getY(actionPointerIndex);
-        float p = event.getPressure(actionPointerIndex);
+        int x = (int) event.getX(actionPointerIndex);
+        int y = (int) event.getY(actionPointerIndex);
+        int p = (int) event.getPressure(actionPointerIndex);
 
         if (action == MotionEvent.ACTION_MOVE && pointerCount > 1) {
             // TODO send motion to every pointer if its position has
             // changed since prev event.
             for (int i = 0; i < pointerCount; i++) {
                 pointerFingerId = event.getPointerId(i);
-                x = event.getX(i);
-                y = event.getY(i);
-                p = event.getPressure(i);
+                x = (int) event.getX(i);
+                y = (int) event.getY(i);
+                p = (int) event.getPressure(i);
                 nativeOnTouch(touchDevId, pointerFingerId, action, x, y, p);
             }
         } else {
@@ -172,8 +172,8 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     native void nativeOnKeyDown(int keycode, int unicode);
     native void nativeOnKeyUp(int keycode);
     native void nativeOnTouch(int touchDevId, int pointerFingerId,
-                                            int action, float x, 
-                                            float y, float p);
+                                            int action, int x, 
+                                            int y, int p);
     native void nativeOnFocusChanged(boolean hasFocus);
 
     // Java functions called from C
