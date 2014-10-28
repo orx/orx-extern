@@ -5,6 +5,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -12,18 +13,20 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+
+import org.orx.lib.inputmanagercompat.InputManagerCompat;
 
 /**
     Orx Activity
 */
 public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callback,
-    View.OnKeyListener, View.OnTouchListener {
+    View.OnKeyListener, View.OnTouchListener, InputManagerCompat.InputDeviceListener {
 
     private SurfaceView mSurface;
     private OrxThreadFragment mOrxThreadFragment;
+    private InputManagerCompat mInputManager;
 
     @Override
     protected void onCreate(Bundle arg0) {
@@ -34,7 +37,10 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
         if (mOrxThreadFragment == null) {
             mOrxThreadFragment = new OrxThreadFragment();
             fm.beginTransaction().add(mOrxThreadFragment, OrxThreadFragment.TAG).commit();
-        }    	
+        }
+
+        mInputManager = InputManagerCompat.Factory.getInputManager(this);
+        mInputManager.registerInputDeviceListener(this, null);
     }
     
     @Override
@@ -42,35 +48,44 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     	super.onStart();
     	
     	if(mSurface == null) {
-    		ViewGroup root = (ViewGroup) findViewById(android.R.id.content);
-    		
-    		if(root.getChildCount() == 0) {
-    			mSurface = new SurfaceView(getApplication());
-        		setContentView(mSurface);
-    		} else {
-            	int surfaceId = getResources().getIdentifier("id/orxSurfaceView", null, getPackageName());
-            	
-            	if(surfaceId != 0) {
-            		mSurface = (SurfaceView) root.findViewById(surfaceId);
-            		
-            		if(mSurface == null) {
-            			throw new RuntimeException("SurfaceView with identifier orxSurfaceView not found in layout.");
-            		}
-            	} else {
-            		throw new RuntimeException("No identifier orxSurfaceView found. Define a SurfaceView with android:id=\"@+id/orxSurfaceView\" in your layout.");
-            	}
-    		}
+            int surfaceId = getResources().getIdentifier("id/orxSurfaceView", null, getPackageName());
+
+            if(surfaceId != 0) {
+                mSurface = (SurfaceView) findViewById(surfaceId);
+
+                if(mSurface == null) {
+                    Log.d("OrxActivity", "SurfaceView with identifier orxSurfaceView not found in layout.");
+                    mSurface = new SurfaceView(getApplication());
+                    setContentView(mSurface);
+                }
+            } else {
+                Log.d("OrxActivity", "No identifier orxSurfaceView found.");
+                mSurface = new SurfaceView(getApplication());
+                setContentView(mSurface);
+            }
     		
         	mSurface.getHolder().addCallback(this);
         	mSurface.setFocusable(true);
         	mSurface.setFocusableInTouchMode(true);
         	mSurface.requestFocus();
         	mSurface.setOnKeyListener(this);
-        	mSurface.setOnTouchListener(this);    		
+        	mSurface.setOnTouchListener(this);
     	}
     }
 
-	// Called when we have a valid drawing surface
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mInputManager.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mInputManager.onResume();
+    }
+
+    // Called when we have a valid drawing surface
 	@SuppressLint("NewApi")
 	public void surfaceCreated(SurfaceHolder holder) {
         Surface s = holder.getSurface();
@@ -164,6 +179,21 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
         }
         return true;
 	}
+
+    @Override
+    public void onInputDeviceAdded(int deviceId) {
+
+    }
+
+    @Override
+    public void onInputDeviceChanged(int deviceId) {
+
+    }
+
+    @Override
+    public void onInputDeviceRemoved(int deviceId) {
+
+    }
 
     // C functions we call
     native void nativeOnSurfaceCreated(Surface surface);
