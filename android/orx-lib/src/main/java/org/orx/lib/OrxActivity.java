@@ -67,7 +67,6 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
         	mSurface.getHolder().addCallback(this);
         	mSurface.setFocusable(true);
         	mSurface.setFocusableInTouchMode(true);
-        	mSurface.requestFocus();
         	mSurface.setOnKeyListener(this);
         	mSurface.setOnTouchListener(this);
 
@@ -119,12 +118,12 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 		case KeyEvent.ACTION_UP:
 			nativeOnKeyUp(keyCode);
 			break;
-			
+
 		case KeyEvent.ACTION_MULTIPLE:
 			if(keyCode == KeyEvent.KEYCODE_UNKNOWN) {
 				final KeyCharacterMap m = KeyCharacterMap.load(event.getDeviceId());
                 final KeyEvent[] es = m.getEvents(event.getCharacters().toCharArray());
-                
+
                 if (es != null) {
                 	for (KeyEvent s : es) {
                 		switch(s.getAction()) {
@@ -137,7 +136,7 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
                 		}
                 	}
                 }
-                
+
                 return true;
 			}
 		}
@@ -152,6 +151,7 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
+        mSurface.requestFocus();
         nativeOnFocusChanged(hasFocus);
     }
 
