@@ -70,6 +70,10 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
         	mSurface.requestFocus();
         	mSurface.setOnKeyListener(this);
         	mSurface.setOnTouchListener(this);
+
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+                mSurface.setOnGenericMotionListener(new OrxOnGenericMotionListener(this, mInputManager));
+            }
     	}
     }
 
@@ -182,17 +186,17 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 
     @Override
     public void onInputDeviceAdded(int deviceId) {
-
+        nativeOnInputDeviceAdded(deviceId);
     }
 
     @Override
     public void onInputDeviceChanged(int deviceId) {
-
+        nativeOnInputDeviceChanged(deviceId);
     }
 
     @Override
     public void onInputDeviceRemoved(int deviceId) {
-
+        nativeOnInputDeviceRemoved(deviceId);
     }
 
     // C functions we call
@@ -205,6 +209,10 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
                                             int action, int x, 
                                             int y, int p);
     native void nativeOnFocusChanged(boolean hasFocus);
+
+    native void nativeOnInputDeviceAdded(int deviceId);
+    native void nativeOnInputDeviceChanged(int deviceId);
+    native void nativeOnInputDeviceRemoved(int deviceId);
 
     // Java functions called from C
     
