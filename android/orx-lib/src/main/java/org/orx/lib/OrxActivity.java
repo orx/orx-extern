@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -111,39 +112,67 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 
 	// Key events
 	public boolean onKey(View v, int keyCode, KeyEvent event) {
-		switch (event.getAction()) {
-		case KeyEvent.ACTION_DOWN:
-			nativeOnKeyDown(keyCode, event.getUnicodeChar() & KeyCharacterMap.COMBINING_ACCENT_MASK);
-			break;
-		case KeyEvent.ACTION_UP:
-			nativeOnKeyUp(keyCode);
-			break;
+        int source = event.getSource();
 
-		case KeyEvent.ACTION_MULTIPLE:
-			if(keyCode == KeyEvent.KEYCODE_UNKNOWN) {
-				final KeyCharacterMap m = KeyCharacterMap.load(event.getDeviceId());
-                final KeyEvent[] es = m.getEvents(event.getCharacters().toCharArray());
 
-                if (es != null) {
-                	for (KeyEvent s : es) {
-                		switch(s.getAction()) {
-                		case KeyEvent.ACTION_DOWN:
-                    		nativeOnKeyDown(s.getKeyCode(), event.getUnicodeChar() & KeyCharacterMap.COMBINING_ACCENT_MASK);
-                			break;
-                		case KeyEvent.ACTION_UP:
-                			nativeOnKeyUp(s.getKeyCode());
-                			break;
-                		}
-                	}
+        if(source == InputDevice.SOURCE_KEYBOARD) {
+            switch (event.getAction()) {
+                case KeyEvent.ACTION_DOWN:
+                    nativeOnKeyDown(keyCode, event.getUnicodeChar() & KeyCharacterMap.COMBINING_ACCENT_MASK);
+                    break;
+
+                case KeyEvent.ACTION_UP:
+                    nativeOnKeyUp(keyCode);
+                    break;
+
+                case KeyEvent.ACTION_MULTIPLE:
+                    if(keyCode == KeyEvent.KEYCODE_UNKNOWN) {
+                        final KeyCharacterMap m = KeyCharacterMap.load(event.getDeviceId());
+                        final KeyEvent[] es = m.getEvents(event.getCharacters().toCharArray());
+
+                        if (es != null) {
+                            for (KeyEvent s : es) {
+                                switch(s.getAction()) {
+                                    case KeyEvent.ACTION_DOWN:
+                                        nativeOnKeyDown(s.getKeyCode(), event.getUnicodeChar() & KeyCharacterMap.COMBINING_ACCENT_MASK);
+                                        break;
+                                    case KeyEvent.ACTION_UP:
+                                        nativeOnKeyUp(s.getKeyCode());
+                                        break;
+                                }
+                            }
+                        }
+
+                        return true;
+                    }
+            }
+
+            if (keyCode != KeyEvent.KEYCODE_VOLUME_UP
+                    && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN)
+                return true;
+        }
+
+        if((source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK ||
+                (source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+
+            if(event.getRepeatCount() == 0) {
+                int deviceId = event.getDeviceId();
+
+                switch (event.getAction()) {
+                    case KeyEvent.ACTION_DOWN:
+                        nativeOnJoystickDown(deviceId, keyCode);
+                        break;
+
+                    case KeyEvent.ACTION_UP:
+                        nativeOnJoystickUp(deviceId, keyCode);
+                        break;
                 }
 
-                return true;
-			}
-		}
-
-		if (keyCode != KeyEvent.KEYCODE_VOLUME_UP
-				&& keyCode != KeyEvent.KEYCODE_VOLUME_DOWN)
-			return true;
+                if (keyCode != KeyEvent.KEYCODE_VOLUME_UP
+                        && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN)
+                    return true;
+            }
+        }
 
 		return false;
 	}
@@ -169,8 +198,6 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
         int p = (int) event.getPressure(actionPointerIndex);
 
         if (action == MotionEvent.ACTION_MOVE && pointerCount > 1) {
-            // TODO send motion to every pointer if its position has
-            // changed since prev event.
             for (int i = 0; i < pointerCount; i++) {
                 pointerFingerId = event.getPointerId(i);
                 x = (int) event.getX(i);
@@ -200,6 +227,7 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     }
 
     // C functions we call
+
     native void nativeOnSurfaceCreated(Surface surface);
     native void nativeOnSurfaceDestroyed();
     native void nativeOnSurfaceChanged(int width, int height);
@@ -209,19 +237,22 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
                                             int action, int x, 
                                             int y, int p);
     native void nativeOnFocusChanged(boolean hasFocus);
-
     native void nativeOnInputDeviceAdded(int deviceId);
     native void nativeOnInputDeviceChanged(int deviceId);
     native void nativeOnInputDeviceRemoved(int deviceId);
+    native void nativeOnJoystickMove(int deviceId, float[] axis);
+    native void nativeOnJoystickDown(int deviceId, int keycode);
+    native void nativeOnJoystickUp(int deviceId, int keycode);
 
     // Java functions called from C
     
+    @SuppressWarnings("UnusedDeclaration")
     public int getRotation() {
     	WindowManager windowMgr = (WindowManager) getSystemService(WINDOW_SERVICE);
-    	int rotationIndex = windowMgr.getDefaultDisplay().getRotation();
-    	return rotationIndex;
+    	return windowMgr.getDefaultDisplay().getRotation();
     }
     
+    @SuppressWarnings("UnusedDeclaration")
     public void setWindowFormat(final int format) {
         runOnUiThread(new Runnable() {
             @Override
@@ -231,6 +262,7 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
         });
     }
     
+    @SuppressWarnings("UnusedDeclaration")
     public void showKeyboard(final boolean show) {
     	runOnUiThread(new Runnable() {
 			
@@ -245,6 +277,26 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 		        }
 			}
 		});
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public int[] getDeviceIds() {
+        int deviceIds[] = mInputManager.getInputDeviceIds();
+        int result[] = new int[4];
+        int i = 0;
+
+        for (int deviceId : deviceIds) {
+            InputDevice dev = mInputManager.getInputDevice(deviceId);
+            int sources = dev.getSources();
+            // if the device is a gamepad/joystick
+            if ((((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) ||
+                    ((sources & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK)) &&
+                    i < 4 ) {
+                result[i++] = deviceId;
+            }
+        }
+
+        return result;
     }
 }
 

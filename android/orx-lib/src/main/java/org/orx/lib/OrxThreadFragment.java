@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Created by philippe on 10/31/13.
  */
@@ -11,7 +13,7 @@ public class OrxThreadFragment extends Fragment {
 
     public static final String TAG = "OrxThreadFragment";
 
-    private boolean mRunning = false;
+    private AtomicBoolean mRunning = new AtomicBoolean(false);
 
     private native void startOrx(Fragment fragment);
     private native void nativeOnPause();
@@ -23,6 +25,7 @@ public class OrxThreadFragment extends Fragment {
         @Override
         public void run() {
             startOrx(OrxThreadFragment.this);
+            mRunning.set(false);
 
             Activity a = getActivity();
             if(a != null) {
@@ -43,9 +46,8 @@ public class OrxThreadFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        if(!mRunning) {
+        if(!mRunning.getAndSet(true)) {
             mOrxThread.start();
-            mRunning = true;
         } else {
             nativeOnResume();
         }
@@ -55,7 +57,7 @@ public class OrxThreadFragment extends Fragment {
     public void onPause() {
         super.onPause();
 
-        if(mRunning) {
+        if(mRunning.get()) {
             nativeOnPause();
         }
     }
@@ -64,9 +66,8 @@ public class OrxThreadFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
 
-        if(mRunning) {
+        if(mRunning.get()) {
             stopOrx();
-            mRunning = false;
         }
     }
 }

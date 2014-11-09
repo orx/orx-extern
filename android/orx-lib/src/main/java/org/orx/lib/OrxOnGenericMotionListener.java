@@ -31,14 +31,6 @@ public class OrxOnGenericMotionListener implements View.OnGenericMotionListener 
                 ((eventSource & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK))
                 && motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
 
-            // int id = motionEvent.getDeviceId();
-
-            // Process all historical movement samples in the batch.
-            final int historySize = motionEvent.getHistorySize();
-            for (int i = 0; i < historySize; i++) {
-                processJoystickInput(motionEvent, i);
-            }
-
             // Process the current movement sample in the batch.
             processJoystickInput(motionEvent, -1);
 
@@ -48,29 +40,20 @@ public class OrxOnGenericMotionListener implements View.OnGenericMotionListener 
         return view.onGenericMotionEvent(motionEvent);
     }
 
+    static float axis[] = new float[8];
     private void processJoystickInput(MotionEvent event, int historyPos) {
-        // Get joystick position.
-        // Many game pads with two joysticks report the position of the
-        // second joystick
-        // using the Z and RZ axes so we also handle those.
-
         InputDevice device = event.getDevice();
 
-        float x = getCenteredAxis(event, device, MotionEvent.AXIS_X, historyPos);
-        if (x == 0) {
-            x = getCenteredAxis(event, device, MotionEvent.AXIS_HAT_X, historyPos);
-        }
-        if (x == 0) {
-            x = getCenteredAxis(event, device, MotionEvent.AXIS_Z, historyPos);
-        }
+        axis[0] = getCenteredAxis(event, device, MotionEvent.AXIS_X, historyPos);
+        axis[1] = getCenteredAxis(event, device, MotionEvent.AXIS_Y, historyPos);
+        axis[2] = getCenteredAxis(event, device, MotionEvent.AXIS_Z, historyPos);
+        axis[3] = getCenteredAxis(event, device, MotionEvent.AXIS_RZ, historyPos);
+        axis[4] = getCenteredAxis(event, device, MotionEvent.AXIS_RTRIGGER, historyPos);
+        axis[5] = getCenteredAxis(event, device, MotionEvent.AXIS_LTRIGGER, historyPos);
+        axis[6] = getCenteredAxis(event, device, MotionEvent.AXIS_HAT_X, historyPos);
+        axis[7] = getCenteredAxis(event, device, MotionEvent.AXIS_HAT_Y, historyPos);
 
-        float y = getCenteredAxis(event, device, MotionEvent.AXIS_Y, historyPos);
-        if (y == 0) {
-            y = getCenteredAxis(event, device, MotionEvent.AXIS_HAT_Y, historyPos);
-        }
-        if (y == 0) {
-            y = getCenteredAxis(event, device, MotionEvent.AXIS_RZ, historyPos);
-        }
+        mOrxActivity.nativeOnJoystickMove(event.getDeviceId(), axis);
     }
 
     private static float getCenteredAxis(MotionEvent event, InputDevice device,
