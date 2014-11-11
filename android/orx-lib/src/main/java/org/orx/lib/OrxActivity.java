@@ -253,16 +253,6 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     }
     
     @SuppressWarnings("UnusedDeclaration")
-    public void setWindowFormat(final int format) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                getWindow().setFormat(format);
-            }
-        });
-    }
-    
-    @SuppressWarnings("UnusedDeclaration")
     public void showKeyboard(final boolean show) {
     	runOnUiThread(new Runnable() {
 			
