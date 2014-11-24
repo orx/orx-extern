@@ -114,8 +114,8 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 	public boolean onKey(View v, int keyCode, KeyEvent event) {
         int source = event.getSource();
 
-
-        if(source == InputDevice.SOURCE_KEYBOARD) {
+        if((source & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD ||
+                (source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD) {
             switch (event.getAction()) {
                 case KeyEvent.ACTION_DOWN:
                     nativeOnKeyDown(keyCode, event.getUnicodeChar() & KeyCharacterMap.COMBINING_ACCENT_MASK);
