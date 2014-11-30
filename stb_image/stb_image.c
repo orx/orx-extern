@@ -469,6 +469,11 @@ static void stbi_rewind(stbi *s)
    s->img_buffer = s->img_buffer_original;
 }
 
+#ifdef WEBP_DECODER_ABI_VERSION
+static int      stbi_webp_test(stbi *s);
+static stbi_uc *stbi_webp_load(stbi *s, int *x, int *y, int *comp, int req_comp);
+static int      stbi_webp_info(stbi *s, int *x, int *y, int *comp);
+#endif
 static int      stbi_jpeg_test(stbi *s);
 static stbi_uc *stbi_jpeg_load(stbi *s, int *x, int *y, int *comp, int req_comp);
 static int      stbi_jpeg_info(stbi *s, int *x, int *y, int *comp);
@@ -532,6 +537,9 @@ static stbi_uc *hdr_to_ldr(float   *data, int x, int y, int comp);
 
 static unsigned char *stbi_load_main(stbi *s, int *x, int *y, int *comp, int req_comp)
 {
+#ifdef WEBP_DECODER_ABI_VERSION
+   if (stbi_webp_test(s))  return stbi_webp_load(s,x,y,comp,req_comp);
+#endif
    if (stbi_png_test(s))  return stbi_png_load(s,x,y,comp,req_comp);
    if (stbi_jpeg_test(s)) return stbi_jpeg_load(s,x,y,comp,req_comp);
    if (stbi_bmp_test(s))  return stbi_bmp_load(s,x,y,comp,req_comp);
@@ -2883,6 +2891,66 @@ static int      stbi_png_info(stbi *s, int *x, int *y, int *comp)
    return stbi_png_info_raw(&p, x, y, comp);
 }
 
+#ifdef WEBP_DECODER_ABI_VERSION
+
+// WebP image
+
+static unsigned char *stbi_webp_load(stbi *s, int *x, int *y, int *comp, int req_comp)
+{
+  if (s->read_from_callbacks == 1) {
+     return epuc("webp loading only from memory", "Internal error");
+  }
+
+  size_t data_size = s->img_buffer_end - s->img_buffer;
+
+  if (req_comp == 3) {
+     *comp = req_comp;
+     return WebPDecodeRGB(s->img_buffer, data_size, x, y);
+  }
+
+  if (req_comp == 4) {
+     *comp = req_comp;
+     return WebPDecodeRGBA(s->img_buffer, data_size, x, y);
+  }
+
+  return NULL;
+}
+
+
+
+static int stbi_webp_test(stbi *s)
+{
+   int r;
+   r = stbi_webp_info(s, NULL, NULL, NULL);
+   stbi_rewind(s);
+   return r;
+}
+
+static int      stbi_webp_info(stbi *s, int *x, int *y, int *comp)
+{
+   WebPBitstreamFeatures features;
+   static uint8 data[64];
+
+   if(!getn(s, data, 64)) {
+     stbi_rewind( s );
+     return 0;
+   }
+
+   VP8StatusCode status = WebPGetFeatures(data, 64, &features);
+   if (status != VP8_STATUS_OK) {
+      stbi_rewind( s );
+      return 0;
+   }
+
+   if (x) *x = features.width;
+   if (y) *y = features.height;
+   if (comp) *comp = features.has_alpha ? 4 : 3;
+
+   return 1;
+}
+
+#endif
+
 // Microsoft/Windows BMP image
 
 static int bmp_test(stbi *s)
@@ -4523,6 +4591,10 @@ static int stbi_pic_info(stbi *s, int *x, int *y, int *comp)
 
 static int stbi_info_main(stbi *s, int *x, int *y, int *comp)
 {
+#ifdef WEBP_DECODER_ABI_VERSION
+   if (stbi_webp_info(s, x, y, comp))
+       return 1;
+#endif
    if (stbi_png_info(s, x, y, comp))
        return 1;
    if (stbi_jpeg_info(s, x, y, comp))
