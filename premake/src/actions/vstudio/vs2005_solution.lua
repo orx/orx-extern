@@ -10,6 +10,7 @@
 
 
 	function sln2005.generate(sln)
+		io.indent = nil -- back to default
 		io.eol = '\r\n'
 
 		-- Precompute Visual Studio configurations
@@ -86,7 +87,16 @@
 		_p('\tEndGlobalSection')
 	end
 
+--
+-- Write a single solution to project mapping (ActiveCfg and Build.0 lines)
+--
 
+	function sln2005.project_platforms_sln2prj_mapping(sln, prj, cfg, mapped)
+		_p('\t\t{%s}.%s.ActiveCfg = %s|%s', prj.uuid, cfg.name, cfg.buildcfg, mapped)
+		if mapped == cfg.platform or cfg.platform == "Mixed Platforms" then
+			_p('\t\t{%s}.%s.Build.0 = %s|%s',  prj.uuid, cfg.name, cfg.buildcfg, mapped)
+		end
+	end
 
 --
 -- Write out the contents of the ProjectConfigurationPlatforms section, which maps
@@ -111,11 +121,7 @@
 						mapped = cfg.platform
 					end
 				end
-
-				_p('\t\t{%s}.%s.ActiveCfg = %s|%s', prj.uuid, cfg.name, cfg.buildcfg, mapped)
-				if mapped == cfg.platform or cfg.platform == "Mixed Platforms" then
-					_p('\t\t{%s}.%s.Build.0 = %s|%s',  prj.uuid, cfg.name, cfg.buildcfg, mapped)
-				end
+				sln2005.project_platforms_sln2prj_mapping(sln, prj, cfg, mapped)
 			end
 		end
 		_p('\tEndGlobalSection')
