@@ -180,7 +180,7 @@
 		E027C49412C5EA4D0071528A /* b2RevoluteJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = sourcecode.cpp.cpp; path = b2RevoluteJoint.cpp; sourceTree = "<group>"; };
 		E027C49512C5EA4D0071528A /* b2RopeJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = sourcecode.cpp.cpp; path = b2RopeJoint.cpp; sourceTree = "<group>"; };
 		E027C49612C5EA4D0071528A /* b2WeldJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = sourcecode.cpp.cpp; path = b2WeldJoint.cpp; sourceTree = "<group>"; };
-		E052D1D1110BE353007BFBF0 /* libBox2Dd.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libBox2Dd.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E052D1D1110BE353007BFBF0 /* libBox2D.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libBox2Dd.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -197,7 +197,7 @@
 		034768DDFF38A45A11DB9C8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E052D1D1110BE353007BFBF0 /* libBox2Dd.a */,
+				E052D1D1110BE353007BFBF0 /* libBox2D.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -487,7 +487,7 @@
 			);
 			name = Box2D;
 			productName = Box2D;
-			productReference = E052D1D1110BE353007BFBF0 /* libBox2Dd.a */;
+			productReference = E052D1D1110BE353007BFBF0 /* libBox2D.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
