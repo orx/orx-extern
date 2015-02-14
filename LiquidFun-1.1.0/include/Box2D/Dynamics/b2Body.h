@@ -68,6 +68,9 @@ struct b2BodyDef
 		type = b2_staticBody;
 		active = true;
 		gravityScale = 1.0f;
+		//! Orx modification
+		canSlide = true;
+		//! End of Orx modification
 	}
 
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
@@ -111,6 +114,10 @@ struct b2BodyDef
 
 	/// Should this body be prevented from rotating? Useful for characters.
 	bool fixedRotation;
+
+	//! Orx modification
+	bool canSlide;
+	//! End of Orx modification
 
 	/// Is this a fast moving body that should be prevented from tunneling through
 	/// other moving bodies? Note that all bodies are prevented from tunneling through
@@ -358,6 +365,14 @@ public:
 	/// Does this body have fixed rotation?
 	bool IsFixedRotation() const;
 
+	//! Orx modification
+	/// Can slide?
+	bool CanSlide() const;
+  
+	/// Sets slide
+	void SetSlide(bool canSlide);
+	//! End of Orx modification
+
 	/// Get the list of all fixtures attached to this body.
 	b2Fixture* GetFixtureList();
 	const b2Fixture* GetFixtureList() const;
@@ -433,7 +448,10 @@ private:
 		e_bulletFlag		= 0x0008,
 		e_fixedRotationFlag	= 0x0010,
 		e_activeFlag		= 0x0020,
-		e_toiFlag			= 0x0040
+		e_toiFlag			= 0x0040,
+		//! Orx modification
+		e_canSlide          = 0x8000
+		//! End of Orx modification
 	};
 
 	b2Body(const b2BodyDef* bd, b2World* world);
@@ -687,6 +705,25 @@ inline bool b2Body::IsFixedRotation() const
 {
 	return (m_flags & e_fixedRotationFlag) == e_fixedRotationFlag;
 }
+
+//! Orx modification
+inline bool b2Body::CanSlide() const
+{
+	return (m_flags & e_canSlide) == e_canSlide;
+}
+
+inline void b2Body::SetSlide(bool canSlide)
+{
+	if(canSlide)
+	{
+		m_flags |= e_canSlide;
+	}
+	else
+	{
+		m_flags &= e_canSlide;
+	}
+}
+//! End of Orx modification
 
 inline void b2Body::SetSleepingAllowed(bool flag)
 {
