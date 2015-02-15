@@ -371,6 +371,15 @@ public:
   
 	/// Sets slide
 	void SetSlide(bool canSlide);
+
+	/// Has custom gravity?
+	bool HasCustomGravity() const;
+  
+	/// Gets custom gravity
+	const b2Vec2 *GetCustomGravity() const;
+  
+	/// Sets custom gravity
+	void SetCustomGravity(const b2Vec2 *customGravity);
 	//! End of Orx modification
 
 	/// Get the list of all fixtures attached to this body.
@@ -450,7 +459,8 @@ private:
 		e_activeFlag		= 0x0020,
 		e_toiFlag			= 0x0040,
 		//! Orx modification
-		e_canSlide          = 0x8000
+		e_canSlide          = 0x8000,
+		e_customGravityFlag = 0x4000
 		//! End of Orx modification
 	};
 
@@ -502,6 +512,10 @@ private:
 	float32 m_gravityScale;
 
 	float32 m_sleepTime;
+
+	//! Orx modification
+	b2Vec2 m_customGravity;
+	//! End of Orx modification
 
 	void* m_userData;
 };
@@ -721,6 +735,29 @@ inline void b2Body::SetSlide(bool canSlide)
 	else
 	{
 		m_flags &= e_canSlide;
+	}
+}
+
+inline bool b2Body::HasCustomGravity() const
+{
+	return (m_flags & e_customGravityFlag) == e_customGravityFlag;
+}
+
+inline const b2Vec2 *b2Body::GetCustomGravity() const
+{
+	return HasCustomGravity() ? &m_customGravity : NULL;
+}
+
+inline void b2Body::SetCustomGravity(const b2Vec2 *customGravity)
+{
+	if(customGravity)
+	{
+		m_flags |= e_customGravityFlag;
+		m_customGravity = *customGravity;
+	}
+	else
+	{
+		m_flags &= ~e_customGravityFlag;
 	}
 }
 //! End of Orx modification
