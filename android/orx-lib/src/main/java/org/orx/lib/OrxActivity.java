@@ -32,6 +32,8 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     @Override
     protected void onCreate(Bundle arg0) {
     	super.onCreate(arg0);
+
+        nativeOnCreate();
     	
         FragmentManager fm = getSupportFragmentManager();
         mOrxThreadFragment = (OrxThreadFragment) fm.findFragmentByTag(OrxThreadFragment.TAG);
@@ -228,6 +230,7 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 
     // C functions we call
 
+    native void nativeOnCreate();
     native void nativeOnSurfaceCreated(Surface surface);
     native void nativeOnSurfaceDestroyed();
     native void nativeOnSurfaceChanged(int width, int height);

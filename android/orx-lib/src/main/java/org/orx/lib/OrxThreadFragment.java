@@ -18,7 +18,6 @@ public class OrxThreadFragment extends Fragment {
     private native void startOrx(Fragment fragment);
     private native void nativeOnPause();
     private native void nativeOnResume();
-    private native void nativeOnCreate();
     private native void stopOrx();
 
     private final Thread mOrxThread = new Thread("OrxThread") {
@@ -37,9 +36,7 @@ public class OrxThreadFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setRetainInstance(true);
-        nativeOnCreate();
     }
 
     @Override
