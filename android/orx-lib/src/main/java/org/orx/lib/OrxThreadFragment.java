@@ -1,6 +1,5 @@
 package org.orx.lib;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
@@ -25,11 +24,6 @@ public class OrxThreadFragment extends Fragment {
         public void run() {
             startOrx(OrxThreadFragment.this);
             mRunning.set(false);
-
-            Activity a = getActivity();
-            if(a != null) {
-                a.finish();
-            }
         }
     };
 
