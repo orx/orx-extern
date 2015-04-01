@@ -43,14 +43,15 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
         }
 
         mInputManager = InputManagerCompat.Factory.getInputManager(this);
-        mInputManager.registerInputDeviceListener(this, null);
     }
     
     @Override
     protected void onStart() {
     	super.onStart();
-    	
-    	if(mSurface == null) {
+
+        mInputManager.registerInputDeviceListener(this, null);
+
+        if(mSurface == null) {
             int surfaceId = getResources().getIdentifier("id/orxSurfaceView", null, getPackageName());
 
             if(surfaceId != 0) {
@@ -77,6 +78,12 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
                 mSurface.setOnGenericMotionListener(new OrxOnGenericMotionListener(this, mInputManager));
             }
     	}
+    }
+
+    @Override
+    protected void onStop() {
+        mInputManager.unregisterInputDeviceListener(this);
+        super.onStop();
     }
 
     @Override
@@ -116,6 +123,31 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 	public boolean onKey(View v, int keyCode, KeyEvent event) {
         int source = event.getSource();
 
+        if(keyCode != KeyEvent.KEYCODE_BACK && // BACK is a keyboard event
+                ((source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK ||
+                 (source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD)) {
+
+            if(event.getRepeatCount() == 0) {
+                int deviceId = event.getDeviceId();
+
+                switch (event.getAction()) {
+                    case KeyEvent.ACTION_DOWN:
+                        nativeOnJoystickDown(deviceId, keyCode);
+                        break;
+
+                    case KeyEvent.ACTION_UP:
+                        nativeOnJoystickUp(deviceId, keyCode);
+                        break;
+                }
+
+                if (keyCode != KeyEvent.KEYCODE_VOLUME_UP
+                        && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN)
+                    return true;
+            }
+
+            return false;
+        }
+
         if((source & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD ||
                 (source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD) {
             switch (event.getAction()) {
@@ -152,28 +184,8 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
             if (keyCode != KeyEvent.KEYCODE_VOLUME_UP
                     && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN)
                 return true;
-        }
 
-        if((source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK ||
-                (source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
-
-            if(event.getRepeatCount() == 0) {
-                int deviceId = event.getDeviceId();
-
-                switch (event.getAction()) {
-                    case KeyEvent.ACTION_DOWN:
-                        nativeOnJoystickDown(deviceId, keyCode);
-                        break;
-
-                    case KeyEvent.ACTION_UP:
-                        nativeOnJoystickUp(deviceId, keyCode);
-                        break;
-                }
-
-                if (keyCode != KeyEvent.KEYCODE_VOLUME_UP
-                        && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN)
-                    return true;
-            }
+            return false;
         }
 
 		return false;
