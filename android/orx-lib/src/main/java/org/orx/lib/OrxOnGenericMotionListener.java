@@ -48,10 +48,10 @@ public class OrxOnGenericMotionListener implements View.OnGenericMotionListener 
         axis[1] = getCenteredAxis(event, device, MotionEvent.AXIS_Y, historyPos);
         axis[2] = getCenteredAxis(event, device, MotionEvent.AXIS_Z, historyPos);
         axis[3] = getCenteredAxis(event, device, MotionEvent.AXIS_RZ, historyPos);
-        axis[4] = getCenteredAxis(event, device, MotionEvent.AXIS_RTRIGGER, historyPos);
-        axis[5] = getCenteredAxis(event, device, MotionEvent.AXIS_LTRIGGER, historyPos);
-        axis[6] = getCenteredAxis(event, device, MotionEvent.AXIS_HAT_X, historyPos);
-        axis[7] = getCenteredAxis(event, device, MotionEvent.AXIS_HAT_Y, historyPos);
+        axis[4] = getCenteredAxis(event, device, MotionEvent.AXIS_HAT_X, historyPos);
+        axis[5] = getCenteredAxis(event, device, MotionEvent.AXIS_HAT_Y, historyPos);
+        axis[6] = getCenteredAxis(event, device, MotionEvent.AXIS_RTRIGGER, historyPos);
+        axis[7] = getCenteredAxis(event, device, MotionEvent.AXIS_LTRIGGER, historyPos);
 
         mOrxActivity.nativeOnJoystickMove(event.getDeviceId(), axis);
     }
