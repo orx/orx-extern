@@ -1,10 +1,10 @@
 package org.orx.lib;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
@@ -19,6 +19,8 @@ import android.view.inputmethod.InputMethodManager;
 
 import org.orx.lib.inputmanagercompat.InputManagerCompat;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
     Orx Activity
 */
@@ -26,22 +28,15 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     View.OnKeyListener, View.OnTouchListener, InputManagerCompat.InputDeviceListener {
 
     private SurfaceView mSurface;
-    private OrxThreadFragment mOrxThreadFragment;
     private InputManagerCompat mInputManager;
+
+    private AtomicBoolean mRunning = new AtomicBoolean(false);
 
     @Override
     protected void onCreate(Bundle arg0) {
     	super.onCreate(arg0);
 
         nativeOnCreate();
-    	
-        FragmentManager fm = getSupportFragmentManager();
-        mOrxThreadFragment = (OrxThreadFragment) fm.findFragmentByTag(OrxThreadFragment.TAG);
-        if (mOrxThreadFragment == null) {
-            mOrxThreadFragment = new OrxThreadFragment();
-            fm.beginTransaction().add(mOrxThreadFragment, OrxThreadFragment.TAG).commit();
-        }
-
         mInputManager = InputManagerCompat.Factory.getInputManager(this);
     }
     
@@ -90,12 +85,38 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     protected void onPause() {
         super.onPause();
         mInputManager.onPause();
+
+        if(mRunning.get()) {
+            nativeOnPause();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         mInputManager.onResume();
+
+        if(!mRunning.getAndSet(true)) {
+            Thread orxThread = new Thread("OrxThread") {
+                @Override
+                public void run() {
+                    startOrx(OrxActivity.this);
+                    mRunning.set(false);
+                }
+            };
+            orxThread.start();
+        } else {
+            nativeOnResume();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if(mRunning.get()) {
+            stopOrx();
+        }
+
+        super.onDestroy();
     }
 
     // Called when we have a valid drawing surface
@@ -241,6 +262,11 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     }
 
     // C functions we call
+
+    private native void startOrx(Activity activity);
+    private native void nativeOnPause();
+    private native void nativeOnResume();
+    private native void stopOrx();
 
     native void nativeOnCreate();
     native void nativeOnSurfaceCreated(Surface surface);
