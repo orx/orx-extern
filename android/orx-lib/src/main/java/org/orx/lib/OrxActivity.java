@@ -27,10 +27,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callback,
     View.OnKeyListener, View.OnTouchListener, InputManagerCompat.InputDeviceListener {
 
+    private SurfaceHolder mCurSurfaceHolder;
     private SurfaceView mSurface;
     private InputManagerCompat mInputManager;
 
     private AtomicBoolean mRunning = new AtomicBoolean(false);
+    private Thread mOrxThread;
+    private boolean mDestroyed;
 
     @Override
     protected void onCreate(Bundle arg0) {
@@ -38,6 +41,13 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 
         nativeOnCreate();
         mInputManager = InputManagerCompat.Factory.getInputManager(this);
+        mOrxThread = new Thread("OrxThread") {
+            @Override
+            public void run() {
+                startOrx(OrxActivity.this);
+                mRunning.set(false);
+            }
+        };
     }
     
     @Override
@@ -73,6 +83,10 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
                 mSurface.setOnGenericMotionListener(new OrxOnGenericMotionListener(this, mInputManager));
             }
     	}
+
+        if(!mRunning.getAndSet(true)) {
+            mOrxThread.start();
+        }
     }
 
     @Override
@@ -96,22 +110,20 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
         super.onResume();
         mInputManager.onResume();
 
-        if(!mRunning.getAndSet(true)) {
-            Thread orxThread = new Thread("OrxThread") {
-                @Override
-                public void run() {
-                    startOrx(OrxActivity.this);
-                    mRunning.set(false);
-                }
-            };
-            orxThread.start();
-        } else {
+        if(mRunning.get()) {
             nativeOnResume();
         }
     }
 
     @Override
     protected void onDestroy() {
+        mDestroyed = true;
+
+        if(mCurSurfaceHolder != null) {
+            nativeOnSurfaceDestroyed();
+            mCurSurfaceHolder = null;
+        }
+
         if(mRunning.get()) {
             stopOrx();
         }
@@ -122,22 +134,25 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     // Called when we have a valid drawing surface
 	@SuppressLint("NewApi")
 	public void surfaceCreated(SurfaceHolder holder) {
-        Surface s = holder.getSurface();
-		nativeOnSurfaceCreated(s);
-		
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-			s.release();
-		}
+        if(!mDestroyed) {
+            mCurSurfaceHolder = holder;
+            nativeOnSurfaceCreated(holder.getSurface());
+        }
 	}
 
 	// Called when we lose the surface
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		nativeOnSurfaceDestroyed();
+        mCurSurfaceHolder = null;
+        if(!mDestroyed) {
+            nativeOnSurfaceDestroyed();
+        }
 	}
 
 	// Called when the surface is resized
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,	int height) {
-		nativeOnSurfaceChanged(width, height);
+        if(!mDestroyed) {
+            nativeOnSurfaceChanged(width, height);
+        }
 	}
 
 	// Key events
