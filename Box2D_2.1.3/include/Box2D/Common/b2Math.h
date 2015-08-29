@@ -95,7 +95,7 @@ inline float32 b2Abs(float32 a)
 struct b2Vec2
 {
 	/// Default constructor does nothing (for performance).
-	b2Vec2() {}
+	b2Vec2() : x(0.0f), y(0.0f) {}
 
 	/// Construct using coordinates.
 	b2Vec2(float32 x, float32 y) : x(x), y(y) {}

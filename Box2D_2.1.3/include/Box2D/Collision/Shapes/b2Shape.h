@@ -53,7 +53,7 @@ public:
 		e_typeCount = 4,
 	};
 
-	b2Shape() { m_type = e_unknown; }
+	b2Shape() { m_type = e_unknown; m_radius = 0.0f; }
 	virtual ~b2Shape() {}
 
 	/// Clone the concrete shape using the provided allocator.

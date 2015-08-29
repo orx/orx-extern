@@ -1,10 +1,10 @@
 package org.orx.lib;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
@@ -19,36 +19,44 @@ import android.view.inputmethod.InputMethodManager;
 
 import org.orx.lib.inputmanagercompat.InputManagerCompat;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
     Orx Activity
 */
 public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callback,
     View.OnKeyListener, View.OnTouchListener, InputManagerCompat.InputDeviceListener {
 
+    private SurfaceHolder mCurSurfaceHolder;
     private SurfaceView mSurface;
-    private OrxThreadFragment mOrxThreadFragment;
     private InputManagerCompat mInputManager;
+
+    private AtomicBoolean mRunning = new AtomicBoolean(false);
+    private Thread mOrxThread;
+    private boolean mDestroyed;
 
     @Override
     protected void onCreate(Bundle arg0) {
     	super.onCreate(arg0);
-    	
-        FragmentManager fm = getSupportFragmentManager();
-        mOrxThreadFragment = (OrxThreadFragment) fm.findFragmentByTag(OrxThreadFragment.TAG);
-        if (mOrxThreadFragment == null) {
-            mOrxThreadFragment = new OrxThreadFragment();
-            fm.beginTransaction().add(mOrxThreadFragment, OrxThreadFragment.TAG).commit();
-        }
 
+        nativeOnCreate();
         mInputManager = InputManagerCompat.Factory.getInputManager(this);
-        mInputManager.registerInputDeviceListener(this, null);
+        mOrxThread = new Thread("OrxThread") {
+            @Override
+            public void run() {
+                startOrx(OrxActivity.this);
+                mRunning.set(false);
+            }
+        };
     }
     
     @Override
     protected void onStart() {
     	super.onStart();
-    	
-    	if(mSurface == null) {
+
+        mInputManager.registerInputDeviceListener(this, null);
+
+        if(mSurface == null) {
             int surfaceId = getResources().getIdentifier("id/orxSurfaceView", null, getPackageName());
 
             if(surfaceId != 0) {
@@ -75,44 +83,106 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
                 mSurface.setOnGenericMotionListener(new OrxOnGenericMotionListener(this, mInputManager));
             }
     	}
+
+        if(!mRunning.getAndSet(true)) {
+            mOrxThread.start();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        mInputManager.unregisterInputDeviceListener(this);
+        super.onStop();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         mInputManager.onPause();
+
+        if(mRunning.get()) {
+            nativeOnPause();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         mInputManager.onResume();
+
+        if(mRunning.get()) {
+            nativeOnResume();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        mDestroyed = true;
+
+        if(mCurSurfaceHolder != null) {
+            nativeOnSurfaceDestroyed();
+            mCurSurfaceHolder = null;
+        }
+
+        if(mRunning.get()) {
+            stopOrx();
+        }
+
+        super.onDestroy();
     }
 
     // Called when we have a valid drawing surface
 	@SuppressLint("NewApi")
 	public void surfaceCreated(SurfaceHolder holder) {
-        Surface s = holder.getSurface();
-		nativeOnSurfaceCreated(s);
-		
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-			s.release();
-		}
+        if(!mDestroyed) {
+            mCurSurfaceHolder = holder;
+            nativeOnSurfaceCreated(holder.getSurface());
+        }
 	}
 
 	// Called when we lose the surface
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		nativeOnSurfaceDestroyed();
+        mCurSurfaceHolder = null;
+        if(!mDestroyed) {
+            nativeOnSurfaceDestroyed();
+        }
 	}
 
 	// Called when the surface is resized
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,	int height) {
-		nativeOnSurfaceChanged(width, height);
+        if(!mDestroyed) {
+            nativeOnSurfaceChanged(width, height);
+        }
 	}
 
 	// Key events
 	public boolean onKey(View v, int keyCode, KeyEvent event) {
         int source = event.getSource();
+
+        if(keyCode != KeyEvent.KEYCODE_BACK && // BACK is a keyboard event
+                ((source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK ||
+                 (source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD)) {
+
+            if(event.getRepeatCount() == 0) {
+                int deviceId = event.getDeviceId();
+
+                switch (event.getAction()) {
+                    case KeyEvent.ACTION_DOWN:
+                        nativeOnJoystickDown(deviceId, keyCode);
+                        break;
+
+                    case KeyEvent.ACTION_UP:
+                        nativeOnJoystickUp(deviceId, keyCode);
+                        break;
+                }
+
+                if (keyCode != KeyEvent.KEYCODE_VOLUME_UP
+                        && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN)
+                    return true;
+            }
+
+            return false;
+        }
 
         if((source & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD ||
                 (source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD) {
@@ -150,28 +220,8 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
             if (keyCode != KeyEvent.KEYCODE_VOLUME_UP
                     && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN)
                 return true;
-        }
 
-        if((source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK ||
-                (source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
-
-            if(event.getRepeatCount() == 0) {
-                int deviceId = event.getDeviceId();
-
-                switch (event.getAction()) {
-                    case KeyEvent.ACTION_DOWN:
-                        nativeOnJoystickDown(deviceId, keyCode);
-                        break;
-
-                    case KeyEvent.ACTION_UP:
-                        nativeOnJoystickUp(deviceId, keyCode);
-                        break;
-                }
-
-                if (keyCode != KeyEvent.KEYCODE_VOLUME_UP
-                        && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN)
-                    return true;
-            }
+            return false;
         }
 
 		return false;
@@ -228,6 +278,12 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
 
     // C functions we call
 
+    private native void startOrx(Activity activity);
+    private native void nativeOnPause();
+    private native void nativeOnResume();
+    private native void stopOrx();
+
+    native void nativeOnCreate();
     native void nativeOnSurfaceCreated(Surface surface);
     native void nativeOnSurfaceDestroyed();
     native void nativeOnSurfaceChanged(int width, int height);
