@@ -18,34 +18,9 @@ LOCAL_SRC_FILES = \
         res012.c       \
         vorbisfile.c
 
-LOCAL_CFLAGS := -DANDROID -DUSE_MEMORY_H -DHAVE_ALLOCA_H -D_LOW_ACCURACY_
-
-ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
-    LOCAL_SRC_FILES += \
-           bitwiseARM.S   \
-           dpen.S         \
-           floor1LARM.S   \
-           mdctLARM.S
-
-    LOCAL_CFLAGS += -D_ARM_ASSEM_
-endif
-
-ifeq ($(TARGET_ARCH_ABI),armeabi)
-    LOCAL_SRC_FILES += \
-           bitwiseARM.S   \
-           dpen.S         \
-           floor1LARM.S   \
-           mdctLARM.S
-
-    LOCAL_CFLAGS += -D_ARM_ASSEM_
-endif
-
-ifeq ($(TARGET_ARCH_ABI),x86)
-    LOCAL_CFLAGS += -DONLY_C
-endif
-
+LOCAL_CFLAGS := -DANDROID -DUSE_MEMORY_H -DHAVE_ALLOCA_H -D_LOW_ACCURACY_ -DONLY_C
 
 LOCAL_ARM_MODE := arm
-TARGET_PLATFORM = android-9
+TARGET_PLATFORM = android-10
 
 include $(BUILD_STATIC_LIBRARY)
