@@ -5,7 +5,9 @@
 #define __CONFIG_H__
 
 #define inline              __inline
+#if _MSC_VER<1900
 #define snprintf            _snprintf
+#endif
 #define PRId64              "%lld"
 #define PRIx64              "%llx"
 #define __func__            __FUNCTION__
