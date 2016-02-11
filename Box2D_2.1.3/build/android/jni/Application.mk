@@ -1,3 +1,0 @@
-APP_ABI := armeabi-v7a-hard x86
-APP_MODULES := Box2D
-NDK_TOOLCHAIN_VERSION := 4.9
