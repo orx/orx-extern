@@ -3,13 +3,13 @@
 #define ALC_API __attribute__((visibility("protected")))
 
 /* Define to the library version */
-#define ALSOFT_VERSION "1.16.0"
+#define ALSOFT_VERSION "1.17.2"
 
 #ifdef IN_IDE_PARSER
 /* KDevelop's parser doesn't recognize the C99-standard restrict keyword, but
  * recent versions (at least 4.5.1) do recognize GCC's __restrict. */
 #define restrict __restrict
-#endif 
+#endif
 
 /* Define any available alignment declaration */
 #define ALIGN(x) __attribute__((aligned(x)))
@@ -136,11 +136,8 @@
 /* Define if we have malloc.h */
 #define HAVE_MALLOC_H
 
-/* Define if we have ftw.h */
-#define HAVE_FTW_H
-
-/* Define if we have io.h */
-/* #undef HAVE_IO_H */
+/* Define if we have dirent.h */
+#define HAVE_DIRENT_H
 
 /* Define if we have strings.h */
 #define HAVE_STRINGS_H
@@ -180,12 +177,6 @@
 
 /* Define if we have __control87_2() */
 /* #undef HAVE___CONTROL87_2 */
-
-/* Define if we have ftw() */
-#define HAVE_FTW
-
-/* Define if we have _wfindfirst() */
-/* #undef HAVE__WFINDFIRST */
 
 /* Define if we have pthread_setschedparam() */
 //#define HAVE_PTHREAD_SETSCHEDPARAM

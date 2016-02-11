@@ -9,14 +9,16 @@
 #
 
 find_path(DSOUND_INCLUDE_DIR
-          PATHS "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)/Include"
           NAMES dsound.h
+          PATHS "${DXSDK_DIR}"
+          PATH_SUFFIXES include
           DOC "The DirectSound include directory"
 )
 
 find_library(DSOUND_LIBRARY
-             PATHS "${DXSDK_DIR}/Lib/x86"
              NAMES dsound
+             PATHS "${DXSDK_DIR}"
+             PATH_SUFFIXES lib lib/x86 lib/x64
              DOC "The DirectSound library"
 )
 

@@ -6,17 +6,6 @@
     </Plugin>
   </Plugins>
   <VirtualDirectory Name="Source">
-    <File Name="../../Alc/ALc.c"/>
-    <File Name="../../Alc/alcConfig.c"/>
-    <File Name="../../Alc/alcRing.c"/>
-    <File Name="../../Alc/ALu.c"/>
-    <File Name="../../Alc/bs2b.c"/>
-    <File Name="../../Alc/hrtf.c"/>
-    <File Name="../../Alc/mixer.c"/>
-    <File Name="../../Alc/mixer_c.c"/>
-    <File Name="../../Alc/mixer_sse.c"/>
-    <File Name="../../Alc/panning.c"/>
-    <File Name="../../Alc/threads.c"/>
     <File Name="../../Alc/backends/base.c"/>
     <File Name="../../Alc/backends/dsound.c"/>
     <File Name="../../Alc/backends/loopback.c"/>
@@ -34,25 +23,29 @@
     <File Name="../../Alc/effects/modulator.c"/>
     <File Name="../../Alc/effects/null.c"/>
     <File Name="../../Alc/effects/reverb.c"/>
-    <File Name="../../Alc/midi/base.c"/>
-    <File Name="../../Alc/midi/dummy.c"/>
-    <File Name="../../Alc/midi/fluidsynth.c"/>
-    <File Name="../../Alc/midi/sf2load.c"/>
+    <File Name="../../Alc/ALc.c"/>
+    <File Name="../../Alc/alcConfig.c"/>
+    <File Name="../../Alc/alcRing.c"/>
+    <File Name="../../Alc/ALu.c"/>
+    <File Name="../../Alc/bs2b.c"/>
+    <File Name="../../Alc/bsinc.c"/>
+    <File Name="../../Alc/helpers.c"/>
+    <File Name="../../Alc/hrtf.c"/>
+    <File Name="../../Alc/mixer.c"/>
+    <File Name="../../Alc/mixer_c.c"/>
+    <File Name="../../Alc/mixer_sse.c"/>
+    <File Name="../../Alc/mixer_sse2.c"/>
+    <File Name="../../Alc/panning.c"/>
     <File Name="../../OpenAL32/alAuxEffectSlot.c"/>
     <File Name="../../OpenAL32/alBuffer.c"/>
     <File Name="../../OpenAL32/alEffect.c"/>
     <File Name="../../OpenAL32/alError.c"/>
     <File Name="../../OpenAL32/alExtension.c"/>
     <File Name="../../OpenAL32/alFilter.c"/>
-    <File Name="../../OpenAL32/alFontsound.c"/>
     <File Name="../../OpenAL32/alListener.c"/>
-    <File Name="../../OpenAL32/alMidi.c"/>
-    <File Name="../../OpenAL32/alPreset.c"/>
-    <File Name="../../OpenAL32/alSoundfont.c"/>
     <File Name="../../OpenAL32/alSource.c"/>
     <File Name="../../OpenAL32/alState.c"/>
     <File Name="../../OpenAL32/alThunk.c"/>
-    <File Name="../../Alc/helpers.c"/>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>

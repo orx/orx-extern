@@ -25,7 +25,7 @@
 
 #include "alMain.h"
 #include "alu.h"
-
+#include "threads.h"
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
@@ -252,7 +252,10 @@ static SLuint32 GetChannelMask(enum DevFmtChannels chans)
                                 SL_SPEAKER_BACK_LEFT|SL_SPEAKER_BACK_RIGHT;
         case DevFmtX51: return SL_SPEAKER_FRONT_LEFT|SL_SPEAKER_FRONT_RIGHT|
                                SL_SPEAKER_FRONT_CENTER|SL_SPEAKER_LOW_FREQUENCY|
-                               SL_SPEAKER_BACK_LEFT|SL_SPEAKER_BACK_RIGHT;
+                               SL_SPEAKER_SIDE_LEFT|SL_SPEAKER_SIDE_RIGHT;
+        case DevFmtX51Rear: return SL_SPEAKER_FRONT_LEFT|SL_SPEAKER_FRONT_RIGHT|
+                                   SL_SPEAKER_FRONT_CENTER|SL_SPEAKER_LOW_FREQUENCY|
+                                   SL_SPEAKER_BACK_LEFT|SL_SPEAKER_BACK_RIGHT;
         case DevFmtX61: return SL_SPEAKER_FRONT_LEFT|SL_SPEAKER_FRONT_RIGHT|
                                SL_SPEAKER_FRONT_CENTER|SL_SPEAKER_LOW_FREQUENCY|
                                SL_SPEAKER_BACK_CENTER|
@@ -261,9 +264,7 @@ static SLuint32 GetChannelMask(enum DevFmtChannels chans)
                                SL_SPEAKER_FRONT_CENTER|SL_SPEAKER_LOW_FREQUENCY|
                                SL_SPEAKER_BACK_LEFT|SL_SPEAKER_BACK_RIGHT|
                                SL_SPEAKER_SIDE_LEFT|SL_SPEAKER_SIDE_RIGHT;
-        case DevFmtX51Side: return SL_SPEAKER_FRONT_LEFT|SL_SPEAKER_FRONT_RIGHT|
-                                   SL_SPEAKER_FRONT_CENTER|SL_SPEAKER_LOW_FREQUENCY|
-                                   SL_SPEAKER_SIDE_LEFT|SL_SPEAKER_SIDE_RIGHT;
+        case DevFmtBFormat3D: break;
     }
     return 0;
 }
@@ -315,16 +316,13 @@ static void opensl_callback(SLAndroidSimpleBufferQueueItf bq, void *context)
     ALvoid *buf;
     SLresult result;
 
-    if(data->buffer != NULL)
-    {
-        buf = (ALbyte*)data->buffer + data->curBuffer*data->bufferSize;
-        aluMixData(Device, buf, data->bufferSize/data->frameSize);
+    buf = (ALbyte*)data->buffer + data->curBuffer*data->bufferSize;
+    aluMixData(Device, buf, data->bufferSize/data->frameSize);
 
-        result = VCALL(bq,Enqueue)(buf, data->bufferSize);
-        PRINTERR(result, "bq->Enqueue");
+    result = VCALL(bq,Enqueue)(buf, data->bufferSize);
+    PRINTERR(result, "bq->Enqueue");
 
-        data->curBuffer = (data->curBuffer+1) % Device->NumUpdates;
-    }
+    data->curBuffer = (data->curBuffer+1) % Device->NumUpdates;
 }
 
 
@@ -545,13 +543,6 @@ static ALCboolean opensl_start_playback(ALCdevice *Device)
             PRINTERR(result, "calloc");
         }
     }
-
-    if(SL_RESULT_SUCCESS == result)
-    {
-        result = VCALL0(bufferQueue,Clear)();
-        PRINTERR(result, "bufferQueue->Clear");
-    }
-
     /* enqueue the first buffer to kick off the callbacks */
     for(i = 0;i < Device->NumUpdates;i++)
     {
@@ -595,6 +586,7 @@ static void opensl_stop_playback(ALCdevice *Device)
 {
     osl_data *data = Device->ExtraData;
     SLPlayItf player;
+    SLAndroidSimpleBufferQueueItf bufferQueue;
     SLresult result;
 
     result = VCALL(data->bufferQueueObject,GetInterface)(SL_IID_PLAY, &player);
@@ -604,6 +596,23 @@ static void opensl_stop_playback(ALCdevice *Device)
     {
         result = VCALL(player,SetPlayState)(SL_PLAYSTATE_STOPPED);
         PRINTERR(result, "player->SetPlayState");
+    }
+
+    result = VCALL(data->bufferQueueObject,GetInterface)(SL_IID_BUFFERQUEUE, &bufferQueue);
+    PRINTERR(result, "bufferQueue->GetInterface");
+    if(SL_RESULT_SUCCESS == result)
+    {
+        result = VCALL0(bufferQueue,Clear)();
+        PRINTERR(result, "bufferQueue->Clear");
+    }
+    if(SL_RESULT_SUCCESS == result)
+    {
+        SLAndroidSimpleBufferQueueState state;
+        do {
+            althrd_yield();
+            result = VCALL(bufferQueue,GetState)(&state);
+        } while(SL_RESULT_SUCCESS == result && state.count > 0);
+        PRINTERR(result, "bufferQueue->GetState");
     }
 
     free(data->buffer);
@@ -623,8 +632,7 @@ static const BackendFuncs opensl_funcs = {
     NULL,
     NULL,
     NULL,
-    NULL,
-    ALCdevice_GetLatencyDefault
+    NULL
 };
 
 
