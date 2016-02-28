@@ -62,42 +62,42 @@ int althrd_sleep(const struct timespec *ts, struct timespec *rem);
 void alcall_once(alonce_flag *once, void (*callback)(void));
 
 
-inline althrd_t althrd_current(void)
+static inline althrd_t althrd_current(void)
 {
     return GetCurrentThreadId();
 }
 
-inline int althrd_equal(althrd_t thr0, althrd_t thr1)
+static inline int althrd_equal(althrd_t thr0, althrd_t thr1)
 {
     return thr0 == thr1;
 }
 
-inline void althrd_exit(int res)
+static inline void althrd_exit(int res)
 {
     ExitThread(res);
 }
 
-inline void althrd_yield(void)
+static inline void althrd_yield(void)
 {
     SwitchToThread();
 }
 
 
-inline int almtx_lock(almtx_t *mtx)
+static inline int almtx_lock(almtx_t *mtx)
 {
     if(!mtx) return althrd_error;
     EnterCriticalSection(mtx);
     return althrd_success;
 }
 
-inline int almtx_unlock(almtx_t *mtx)
+static inline int almtx_unlock(almtx_t *mtx)
 {
     if(!mtx) return althrd_error;
     LeaveCriticalSection(mtx);
     return althrd_success;
 }
 
-inline int almtx_trylock(almtx_t *mtx)
+static inline int almtx_trylock(almtx_t *mtx)
 {
     if(!mtx) return althrd_error;
     if(!TryEnterCriticalSection(mtx))
@@ -106,12 +106,12 @@ inline int almtx_trylock(almtx_t *mtx)
 }
 
 
-inline void *altss_get(altss_t tss_id)
+static inline void *altss_get(altss_t tss_id)
 {
     return TlsGetValue(tss_id);
 }
 
-inline int altss_set(altss_t tss_id, void *val)
+static inline int altss_set(altss_t tss_id, void *val)
 {
     if(TlsSetValue(tss_id, val) == 0)
         return althrd_error;
@@ -134,27 +134,27 @@ typedef pthread_once_t alonce_flag;
 #define AL_ONCE_FLAG_INIT PTHREAD_ONCE_INIT
 
 
-inline althrd_t althrd_current(void)
+static inline althrd_t althrd_current(void)
 {
     return pthread_self();
 }
 
-inline int althrd_equal(althrd_t thr0, althrd_t thr1)
+static inline int althrd_equal(althrd_t thr0, althrd_t thr1)
 {
     return pthread_equal(thr0, thr1);
 }
 
-inline void althrd_exit(int res)
+static inline void althrd_exit(int res)
 {
     pthread_exit((void*)(intptr_t)res);
 }
 
-inline void althrd_yield(void)
+static inline void althrd_yield(void)
 {
     sched_yield();
 }
 
-inline int althrd_sleep(const struct timespec *ts, struct timespec *rem)
+static inline int althrd_sleep(const struct timespec *ts, struct timespec *rem)
 {
     int ret = nanosleep(ts, rem);
     if(ret != 0)
@@ -166,21 +166,21 @@ inline int althrd_sleep(const struct timespec *ts, struct timespec *rem)
 }
 
 
-inline int almtx_lock(almtx_t *mtx)
+static inline int almtx_lock(almtx_t *mtx)
 {
     if(pthread_mutex_lock(mtx) != 0)
         return althrd_error;
     return althrd_success;
 }
 
-inline int almtx_unlock(almtx_t *mtx)
+static inline int almtx_unlock(almtx_t *mtx)
 {
     if(pthread_mutex_unlock(mtx) != 0)
         return althrd_error;
     return althrd_success;
 }
 
-inline int almtx_trylock(almtx_t *mtx)
+static inline int almtx_trylock(almtx_t *mtx)
 {
     int ret = pthread_mutex_trylock(mtx);
     switch(ret)
@@ -192,12 +192,12 @@ inline int almtx_trylock(almtx_t *mtx)
 }
 
 
-inline void *altss_get(altss_t tss_id)
+static inline void *altss_get(altss_t tss_id)
 {
     return pthread_getspecific(tss_id);
 }
 
-inline int altss_set(altss_t tss_id, void *val)
+static inline int altss_set(altss_t tss_id, void *val)
 {
     if(pthread_setspecific(tss_id, val) != 0)
         return althrd_error;
@@ -205,7 +205,7 @@ inline int altss_set(altss_t tss_id, void *val)
 }
 
 
-inline void alcall_once(alonce_flag *once, void (*callback)(void))
+static inline void alcall_once(alonce_flag *once, void (*callback)(void))
 {
     pthread_once(once, callback);
 }

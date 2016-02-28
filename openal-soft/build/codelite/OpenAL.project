@@ -46,6 +46,11 @@
     <File Name="../../OpenAL32/alSource.c"/>
     <File Name="../../OpenAL32/alState.c"/>
     <File Name="../../OpenAL32/alThunk.c"/>
+    <File Name="../../common/atomic.c"/>
+    <File Name="../../common/rwlock.c"/>
+    <File Name="../../common/threads.c"/>
+    <File Name="../../common/uintmap.c"/>
+    <File Name="../../OpenAL32/sample_cvt.c"/>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>

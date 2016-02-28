@@ -37,7 +37,7 @@ void Mix_SSE(const ALfloat *data, ALuint OutChans, ALfloat (*restrict OutBuffer)
              struct MixGains *Gains, ALuint Counter, ALuint OutPos, ALuint BufferSize);
 
 /* SSE resamplers */
-inline void InitiatePositionArrays(ALuint frac, ALuint increment, ALuint *frac_arr, ALuint *pos_arr, ALuint size)
+static inline void InitiatePositionArrays(ALuint frac, ALuint increment, ALuint *frac_arr, ALuint *pos_arr, ALuint size)
 {
     ALuint i;
 

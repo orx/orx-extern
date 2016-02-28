@@ -191,31 +191,31 @@ enum almemory_order {
  * on C99 (damn MSVC).
  */
 
-inline LONG AtomicAdd32(volatile LONG *dest, LONG incr)
+static inline LONG AtomicAdd32(volatile LONG *dest, LONG incr)
 {
     return InterlockedExchangeAdd(dest, incr);
 }
-inline LONG AtomicSub32(volatile LONG *dest, LONG decr)
+static inline LONG AtomicSub32(volatile LONG *dest, LONG decr)
 {
     return InterlockedExchangeAdd(dest, -decr);
 }
 
-inline LONG AtomicSwap32(volatile LONG *dest, LONG newval)
+static inline LONG AtomicSwap32(volatile LONG *dest, LONG newval)
 {
     return InterlockedExchange(dest, newval);
 }
-inline LONGLONG AtomicSwap64(volatile LONGLONG *dest, LONGLONG newval)
+static inline LONGLONG AtomicSwap64(volatile LONGLONG *dest, LONGLONG newval)
 {
     return InterlockedExchange64(dest, newval);
 }
 
-inline bool CompareAndSwap32(volatile LONG *dest, LONG newval, LONG *oldval)
+static inline bool CompareAndSwap32(volatile LONG *dest, LONG newval, LONG *oldval)
 {
     LONG old = *oldval;
     *oldval = InterlockedCompareExchange(dest, newval, *oldval);
     return old == *oldval;
 }
-inline bool CompareAndSwap64(volatile LONGLONG *dest, LONGLONG newval, LONGLONG *oldval)
+static inline bool CompareAndSwap64(volatile LONGLONG *dest, LONGLONG newval, LONGLONG *oldval)
 {
     LONGLONG old = *oldval;
     *oldval = InterlockedCompareExchange64(dest, newval, *oldval);
@@ -295,18 +295,18 @@ int _al_invalid_atomic_size(); /* not defined */
 typedef unsigned int uint;
 typedef ATOMIC(uint) RefCount;
 
-inline void InitRef(RefCount *ptr, uint value)
+static inline void InitRef(RefCount *ptr, uint value)
 { ATOMIC_INIT(ptr, value); }
-inline uint ReadRef(RefCount *ptr)
+static inline uint ReadRef(RefCount *ptr)
 { return ATOMIC_LOAD(ptr); }
-inline uint IncrementRef(RefCount *ptr)
+static inline uint IncrementRef(RefCount *ptr)
 { return ATOMIC_ADD(uint, ptr, 1)+1; }
-inline uint DecrementRef(RefCount *ptr)
+static inline uint DecrementRef(RefCount *ptr)
 { return ATOMIC_SUB(uint, ptr, 1)-1; }
 
 
 /* NOTE: Not atomic! */
-inline int ExchangeInt(volatile int *ptr, int newval)
+static inline int ExchangeInt(volatile int *ptr, int newval)
 {
     int old = *ptr;
     *ptr = newval;
@@ -315,7 +315,7 @@ inline int ExchangeInt(volatile int *ptr, int newval)
 
 typedef void *volatile XchgPtr;
 /* NOTE: Not atomic! */
-inline void *ExchangePtr(XchgPtr *ptr, void *newval)
+static inline void *ExchangePtr(XchgPtr *ptr, void *newval)
 {
     void *old = *ptr;
     *ptr = newval;

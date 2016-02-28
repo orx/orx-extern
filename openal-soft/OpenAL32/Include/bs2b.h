@@ -89,7 +89,7 @@ void bs2b_clear(struct bs2b *bs2b);
  * [0] - first channel, [1] - second channel.
  * Returns crossfided sample by sample pointer.
  */
-inline void bs2b_cross_feed(struct bs2b *bs2b, float *restrict sample)
+static inline void bs2b_cross_feed(struct bs2b *bs2b, float *restrict sample)
 {
 /* Single pole IIR filter.
  * O[n] = a0*I[n] + a1*I[n-1] + b1*O[n-1]

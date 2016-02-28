@@ -55,7 +55,7 @@ typedef struct ALfilterState {
  * 0 < gain
  * 0 < slope <= 1
  */
-inline ALfloat calc_rcpQ_from_slope(ALfloat gain, ALfloat slope)
+static inline ALfloat calc_rcpQ_from_slope(ALfloat gain, ALfloat slope)
 {
     return sqrtf((gain + 1.0f/gain)*(1.0f/slope - 1.0f) + 2.0f);
 }
@@ -63,13 +63,13 @@ inline ALfloat calc_rcpQ_from_slope(ALfloat gain, ALfloat slope)
  * multiple (i.e. ref_freq / sampling_freq) and bandwidth.
  * 0 < freq_mult < 0.5.
  */
-inline ALfloat calc_rcpQ_from_bandwidth(ALfloat freq_mult, ALfloat bandwidth)
+static inline ALfloat calc_rcpQ_from_bandwidth(ALfloat freq_mult, ALfloat bandwidth)
 {
     ALfloat w0 = F_TAU * freq_mult;
     return 2.0f*sinhf(logf(2.0f)/2.0f*bandwidth*w0/sinf(w0));
 }
 
-inline void ALfilterState_clear(ALfilterState *filter)
+static inline void ALfilterState_clear(ALfilterState *filter)
 {
     filter->x[0] = 0.0f;
     filter->x[1] = 0.0f;
@@ -98,7 +98,7 @@ static inline ALfloat ALfilterState_processSingle(ALfilterState *filter, ALfloat
 
 void ALfilterState_processC(ALfilterState *filter, ALfloat *restrict dst, const ALfloat *src, ALuint numsamples);
 
-inline void ALfilterState_processPassthru(ALfilterState *filter, const ALfloat *src, ALuint numsamples)
+static inline void ALfilterState_processPassthru(ALfilterState *filter, const ALfloat *src, ALuint numsamples)
 {
     if(numsamples >= 2)
     {

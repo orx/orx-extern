@@ -65,7 +65,7 @@ typedef union aluVector {
     alignas(16) ALfloat v[4];
 } aluVector;
 
-inline void aluVectorSet(aluVector *vector, ALfloat x, ALfloat y, ALfloat z, ALfloat w)
+static inline void aluVectorSet(aluVector *vector, ALfloat x, ALfloat y, ALfloat z, ALfloat w)
 {
     vector->v[0] = x;
     vector->v[1] = y;
@@ -78,7 +78,7 @@ typedef union aluMatrixf {
     alignas(16) ALfloat m[4][4];
 } aluMatrixf;
 
-inline void aluMatrixfSetRow(aluMatrixf *matrix, ALuint row,
+static inline void aluMatrixfSetRow(aluMatrixf *matrix, ALuint row,
                              ALfloat m0, ALfloat m1, ALfloat m2, ALfloat m3)
 {
     matrix->m[row][0] = m0;
@@ -87,7 +87,7 @@ inline void aluMatrixfSetRow(aluMatrixf *matrix, ALuint row,
     matrix->m[row][3] = m3;
 }
 
-inline void aluMatrixfSet(aluMatrixf *matrix, ALfloat m00, ALfloat m01, ALfloat m02, ALfloat m03,
+static inline void aluMatrixfSet(aluMatrixf *matrix, ALfloat m00, ALfloat m01, ALfloat m02, ALfloat m03,
                                               ALfloat m10, ALfloat m11, ALfloat m12, ALfloat m13,
                                               ALfloat m20, ALfloat m21, ALfloat m22, ALfloat m23,
                                               ALfloat m30, ALfloat m31, ALfloat m32, ALfloat m33)
@@ -103,7 +103,7 @@ typedef union aluMatrixd {
     alignas(16) ALdouble m[4][4];
 } aluMatrixd;
 
-inline void aluMatrixdSetRow(aluMatrixd *matrix, ALuint row,
+static inline void aluMatrixdSetRow(aluMatrixd *matrix, ALuint row,
                              ALdouble m0, ALdouble m1, ALdouble m2, ALdouble m3)
 {
     matrix->m[row][0] = m0;
@@ -112,7 +112,7 @@ inline void aluMatrixdSetRow(aluMatrixd *matrix, ALuint row,
     matrix->m[row][3] = m3;
 }
 
-inline void aluMatrixdSet(aluMatrixd *matrix, ALdouble m00, ALdouble m01, ALdouble m02, ALdouble m03,
+static inline void aluMatrixdSet(aluMatrixd *matrix, ALdouble m00, ALdouble m01, ALdouble m02, ALdouble m03,
                                               ALdouble m10, ALdouble m11, ALdouble m12, ALdouble m13,
                                               ALdouble m20, ALdouble m21, ALdouble m22, ALdouble m23,
                                               ALdouble m30, ALdouble m31, ALdouble m32, ALdouble m33)
@@ -264,7 +264,7 @@ static inline ALfloat resample_fir4(ALfloat val0, ALfloat val1, ALfloat val2, AL
     const ALfloat *k = ResampleCoeffs.FIR4[frac];
     return k[0]*val0 + k[1]*val1 + k[2]*val2 + k[3]*val3;
 }
-inline ALfloat resample_fir8(ALfloat val0, ALfloat val1, ALfloat val2, ALfloat val3, ALfloat val4, ALfloat val5, ALfloat val6, ALfloat val7, ALuint frac)
+static inline ALfloat resample_fir8(ALfloat val0, ALfloat val1, ALfloat val2, ALfloat val3, ALfloat val4, ALfloat val5, ALfloat val6, ALfloat val7, ALuint frac)
 {
     const ALfloat *k = ResampleCoeffs.FIR8[frac];
     return k[0]*val0 + k[1]*val1 + k[2]*val2 + k[3]*val3 +
