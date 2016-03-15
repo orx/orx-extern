@@ -26,7 +26,9 @@ readonly OLDPATH=${PATH}
 
 # Add iPhoneOS-V6 to the list of platforms below if you need armv6 support.
 # Note that iPhoneOS-V6 support is not available with the iOS6 SDK.
-readonly PLATFORMS="iPhoneSimulator iPhoneOS-V7 iPhoneOS-V7s iPhoneOS-V7-arm64"
+PLATFORMS="iPhoneSimulator iPhoneSimulator64"
+PLATFORMS+=" iPhoneOS-V7 iPhoneOS-V7s iPhoneOS-V7-arm64"
+readonly PLATFORMS
 readonly SRCDIR=$(dirname $0)
 readonly TOPDIR=$(pwd)
 readonly BUILDDIR="${TOPDIR}/iosbuild"
@@ -39,6 +41,8 @@ LIBLIST=''
 if [[ -z "${SDK}" ]]; then
   echo "iOS SDK not available"
   exit 1
+elif [[ ${SDK%%.*} -gt 8 ]]; then
+  EXTRA_CFLAGS="-fembed-bitcode"
 elif [[ ${SDK} < 6.0 ]]; then
   echo "You need iOS SDK version 6.0 or above"
   exit 1
@@ -78,6 +82,9 @@ for PLATFORM in ${PLATFORMS}; do
   elif [[ "${PLATFORM}" == "iPhoneOS-V6" ]]; then
     PLATFORM="iPhoneOS"
     ARCH="armv6"
+  elif [[ "${PLATFORM}" == "iPhoneSimulator64" ]]; then
+    PLATFORM="iPhoneSimulator"
+    ARCH="x86_64"
   else
     ARCH="i386"
   fi
@@ -89,7 +96,7 @@ for PLATFORM in ${PLATFORMS}; do
   SDKROOT="${PLATFORMSROOT}/"
   SDKROOT+="${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDK}.sdk/"
   CFLAGS="-arch ${ARCH2:-${ARCH}} -pipe -isysroot ${SDKROOT} -O3 -DNDEBUG"
-  CFLAGS+=" -miphoneos-version-min=6.0"
+  CFLAGS+=" -miphoneos-version-min=6.0 ${EXTRA_CFLAGS}"
 
   set -x
   export PATH="${DEVROOT}/usr/bin:${OLDPATH}"

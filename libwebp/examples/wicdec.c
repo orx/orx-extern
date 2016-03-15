@@ -15,7 +15,9 @@
 #include "webp/config.h"
 #endif
 
+#include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifdef HAVE_WINCODEC_H
 #ifdef __MINGW32__
@@ -25,11 +27,13 @@
 #define COBJMACROS
 #define _WIN32_IE 0x500  // Workaround bug in shlwapi.h when compiling C++
                          // code with COBJMACROS.
+#include <ole2.h>  // CreateStreamOnHGlobal()
 #include <shlwapi.h>
 #include <windows.h>
 #include <wincodec.h>
 
 #include "webp/encode.h"
+#include "./example_util.h"
 #include "./metadata.h"
 
 #define IFS(fn)                                                     \
@@ -72,10 +76,41 @@ WEBP_DEFINE_GUID(GUID_WICPixelFormat32bppBGRA_,
 WEBP_DEFINE_GUID(GUID_WICPixelFormat32bppRGBA_,
                  0xf5c7ad2d, 0x6a8d, 0x43dd,
                  0xa7, 0xa8, 0xa2, 0x99, 0x35, 0x26, 0x1a, 0xe9);
+WEBP_DEFINE_GUID(GUID_WICPixelFormat64bppBGRA_,
+                 0x1562ff7c, 0xd352, 0x46f9,
+                 0x97, 0x9e, 0x42, 0x97, 0x6b, 0x79, 0x22, 0x46);
+WEBP_DEFINE_GUID(GUID_WICPixelFormat64bppRGBA_,
+                 0x6fddc324, 0x4e03, 0x4bfe,
+                 0xb1, 0x85, 0x3d, 0x77, 0x76, 0x8d, 0xc9, 0x16);
 
 static HRESULT OpenInputStream(const char* filename, IStream** stream) {
   HRESULT hr = S_OK;
-  IFS(SHCreateStreamOnFileA(filename, STGM_READ, stream));
+  if (!strcmp(filename, "-")) {
+    const uint8_t* data = NULL;
+    size_t data_size = 0;
+    const int ok = ExUtilReadFile(filename, &data, &data_size);
+    if (ok) {
+      HGLOBAL image = GlobalAlloc(GMEM_MOVEABLE, data_size);
+      if (image != NULL) {
+        void* const image_mem = GlobalLock(image);
+        if (image_mem != NULL) {
+          memcpy(image_mem, data, data_size);
+          GlobalUnlock(image);
+          IFS(CreateStreamOnHGlobal(image, TRUE, stream));
+        } else {
+          hr = E_FAIL;
+        }
+      } else {
+        hr = E_OUTOFMEMORY;
+      }
+      free((void*)data);
+    } else {
+      hr = E_FAIL;
+    }
+  } else {
+    IFS(SHCreateStreamOnFileA(filename, STGM_READ, stream));
+  }
+
   if (FAILED(hr)) {
     fprintf(stderr, "Error opening input file %s (%08lx)\n", filename, hr);
   }
@@ -109,6 +144,7 @@ static HRESULT ExtractICCP(IWICImagingFactory* const factory,
     IFS(IWICBitmapFrameDecode_GetColorContexts(frame,
                                                count, color_contexts,
                                                &num_color_contexts));
+    assert(FAILED(hr) || num_color_contexts <= count);
     for (i = 0; SUCCEEDED(hr) && i < num_color_contexts; ++i) {
       WICColorContextType type;
       IFS(IWICColorContext_GetType(color_contexts[i], &type));
@@ -116,7 +152,7 @@ static HRESULT ExtractICCP(IWICImagingFactory* const factory,
         UINT size;
         IFS(IWICColorContext_GetProfileBytes(color_contexts[i],
                                              0, NULL, &size));
-        if (size > 0) {
+        if (SUCCEEDED(hr) && size > 0) {
           iccp->bytes = (uint8_t*)malloc(size);
           if (iccp->bytes == NULL) {
             hr = E_OUTOFMEMORY;
@@ -194,7 +230,11 @@ static int HasAlpha(IWICImagingFactory* const factory,
     has_alpha = IsEqualGUID(MAKE_REFGUID(pixel_format),
                             MAKE_REFGUID(GUID_WICPixelFormat32bppRGBA_)) ||
                 IsEqualGUID(MAKE_REFGUID(pixel_format),
-                            MAKE_REFGUID(GUID_WICPixelFormat32bppBGRA_));
+                            MAKE_REFGUID(GUID_WICPixelFormat32bppBGRA_)) ||
+                IsEqualGUID(MAKE_REFGUID(pixel_format),
+                            MAKE_REFGUID(GUID_WICPixelFormat64bppRGBA_)) ||
+                IsEqualGUID(MAKE_REFGUID(pixel_format),
+                            MAKE_REFGUID(GUID_WICPixelFormat64bppBGRA_));
   }
   return has_alpha;
 }
@@ -261,7 +301,7 @@ int ReadPictureWithWIC(const char* const filename,
   IFS(IWICBitmapFrameDecode_GetPixelFormat(frame, &src_pixel_format));
   IFS(IWICBitmapDecoder_GetContainerFormat(decoder, &src_container_format));
 
-  if (keep_alpha) {
+  if (SUCCEEDED(hr) && keep_alpha) {
     const GUID** guid;
     for (guid = kAlphaContainers; *guid != NULL; ++guid) {
       if (IsEqualGUID(MAKE_REFGUID(src_container_format),
@@ -308,7 +348,7 @@ int ReadPictureWithWIC(const char* const filename,
     int ok;
     pic->width = width;
     pic->height = height;
-    pic->use_argb = 1;
+    pic->use_argb = 1;    // For WIC, we always force to argb
     ok = importer->import(pic, rgb, stride);
     if (!ok) hr = E_FAIL;
   }
