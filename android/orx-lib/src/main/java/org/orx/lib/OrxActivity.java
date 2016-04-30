@@ -255,6 +255,14 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
                 p = (int) event.getPressure(i);
                 nativeOnTouch(touchDevId, pointerFingerId, action, x, y, p);
             }
+        } else if(action == MotionEvent.ACTION_CANCEL) {
+            for (int i = 0; i < pointerCount; i++) {
+                pointerFingerId = event.getPointerId(i);
+                x = (int) event.getX(i);
+                y = (int) event.getY(i);
+                p = (int) event.getPressure(i);
+                nativeOnTouch(touchDevId, pointerFingerId, MotionEvent.ACTION_UP, x, y, p);
+            }
         } else {
             nativeOnTouch(touchDevId, pointerFingerId, action, x, y, p);
         }
