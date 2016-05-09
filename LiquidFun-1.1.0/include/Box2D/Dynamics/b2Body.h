@@ -68,9 +68,6 @@ struct b2BodyDef
 		type = b2_staticBody;
 		active = true;
 		gravityScale = 1.0f;
-		//! Orx modification
-		canSlide = true;
-		//! End of Orx modification
 	}
 
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
@@ -114,10 +111,6 @@ struct b2BodyDef
 
 	/// Should this body be prevented from rotating? Useful for characters.
 	bool fixedRotation;
-
-	//! Orx modification
-	bool canSlide;
-	//! End of Orx modification
 
 	/// Is this a fast moving body that should be prevented from tunneling through
 	/// other moving bodies? Note that all bodies are prevented from tunneling through
@@ -366,12 +359,6 @@ public:
 	bool IsFixedRotation() const;
 
 	//! Orx modification
-	/// Can slide?
-	bool CanSlide() const;
-  
-	/// Sets slide
-	void SetSlide(bool canSlide);
-
 	/// Has custom gravity?
 	bool HasCustomGravity() const;
   
@@ -459,7 +446,6 @@ private:
 		e_activeFlag		= 0x0020,
 		e_toiFlag			= 0x0040,
 		//! Orx modification
-		e_canSlide          = 0x8000,
 		e_customGravityFlag = 0x4000
 		//! End of Orx modification
 	};
@@ -721,23 +707,6 @@ inline bool b2Body::IsFixedRotation() const
 }
 
 //! Orx modification
-inline bool b2Body::CanSlide() const
-{
-	return (m_flags & e_canSlide) == e_canSlide;
-}
-
-inline void b2Body::SetSlide(bool canSlide)
-{
-	if(canSlide)
-	{
-		m_flags |= e_canSlide;
-	}
-	else
-	{
-		m_flags &= e_canSlide;
-	}
-}
-
 inline bool b2Body::HasCustomGravity() const
 {
 	return (m_flags & e_customGravityFlag) == e_customGravityFlag;

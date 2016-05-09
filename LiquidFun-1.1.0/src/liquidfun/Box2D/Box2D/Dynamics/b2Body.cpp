@@ -42,12 +42,6 @@ b2Body::b2Body(const b2BodyDef* bd, b2World* world)
 	{
 		m_flags |= e_fixedRotationFlag;
 	}
-	//! Orx modification
-	if(bd->canSlide)
-	{
-		m_flags |= e_canSlide;
-	}
-	//! End of Orx modification
 	if (bd->allowSleep)
 	{
 		m_flags |= e_autoSleepFlag;
