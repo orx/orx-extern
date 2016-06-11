@@ -1209,7 +1209,7 @@ static ALboolean DecomposeFormat(ALenum format, enum FmtChannels *chans, enum Fm
         { AL_FORMAT_BFORMAT3D_16,      FmtBFormat3D, FmtShort },
         { AL_FORMAT_BFORMAT3D_FLOAT32, FmtBFormat3D, FmtFloat },
     };
-    ALuint i;
+    volatile ALuint i;
 
     for(i = 0;i < COUNTOF(list);i++)
     {

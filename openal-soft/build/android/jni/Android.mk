@@ -2,7 +2,7 @@ LOCAL_PATH := $(call my-dir)/../../..
 
 include $(CLEAR_VARS)
 
-LOCAL_CFLAGS :=-fvisibility=internal -Wno-psabi -fPIC -DAL_BUILD_LIBRARY -D_GNU_SOURCE=1 -DAL_ALEXT_PROTOTYPES -std=c99
+LOCAL_CFLAGS :=-fvisibility=internal -fPIC -DAL_BUILD_LIBRARY -D_GNU_SOURCE=1 -DAL_ALEXT_PROTOTYPES -std=c99
 LOCAL_MODULE = openal-soft
 LOCAL_SRC_FILES = \
         OpenAL32/alAuxEffectSlot.c \

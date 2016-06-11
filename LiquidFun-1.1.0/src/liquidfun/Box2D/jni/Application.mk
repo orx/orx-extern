@@ -16,7 +16,7 @@
 
 LOCAL_PATH:=$(call my-dir)
 
-NDK_TOOLCHAIN_VERSION := 4.9
+NDK_TOOLCHAIN_VERSION := clang
 APP_PLATFORM:=android-10
 APP_ABI:=armeabi-v7a
 APP_STL:=gnustl_static

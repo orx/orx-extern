@@ -64,8 +64,12 @@ static const uint32 xOffset = xScale * (1u << (xTruncBits - 1u));
 static const uint32 yMask = ((1u << yTruncBits) - 1u) << yShift;
 static const uint32 xMask = ~yMask;
 static const uint32 relativeTagRight = 1u << xShift;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshift-negative-value" 
 static const uint32 relativeTagBottomLeft = (uint32)((1 << yShift) +
                                                     (-1 << xShift));
+#pragma GCC diagnostic pop
 
 static const uint32 relativeTagBottomRight = (1u << yShift) + (1u << xShift);
 
@@ -2766,9 +2770,13 @@ void b2ParticleSystem::RemoveSpuriousBodyContacts()
 				b2ParticleSystem::BodyContactCompare);
 
 	int32 discarded = 0;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
 	std::remove_if(m_bodyContactBuffer.Begin(),
 					m_bodyContactBuffer.End(),
 					b2ParticleBodyContactRemovePredicate(this, &discarded));
+#pragma GCC diagnostic pop
 
 	m_bodyContactBuffer.SetCount(m_bodyContactBuffer.GetCount() - discarded);
 }
