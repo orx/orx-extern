@@ -65,15 +65,15 @@ static const uint32 yMask = ((1u << yTruncBits) - 1u) << yShift;
 static const uint32 xMask = ~yMask;
 static const uint32 relativeTagRight = 1u << xShift;
 
-#if !defined(_WIN32) && !defined(WIN32)
+#if defined(TARGET_OS_ANDROID) || defined(TARGET_OS_ANDROID_NATIVE)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshift-negative-value"
-#endif // !_WIN32 && !WIN32
+#endif // TARGET_OS_ANDROID || TARGET_OS_ANDROID_NATIVE
 static const uint32 relativeTagBottomLeft = (uint32)((1 << yShift) +
                                                     (-1 << xShift));
-#if !defined(_WIN32) && !defined(WIN32)
+#if defined(TARGET_OS_ANDROID) || defined(TARGET_OS_ANDROID_NATIVE)
 #pragma GCC diagnostic pop
-#endif // !_WIN32 && !WIN32
+#endif // TARGET_OS_ANDROID || TARGET_OS_ANDROID_NATIVE
 
 static const uint32 relativeTagBottomRight = (1u << yShift) + (1u << xShift);
 
