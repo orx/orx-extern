@@ -1282,12 +1282,12 @@ static void neighbors(uint16 *x, int n, int *plow, int *phigh)
 typedef struct
 {
    uint16 x,y;
-} Point;
+} stb_point;
 
 static int STBV_CDECL point_compare(const void *p, const void *q)
 {
-   Point *a = (Point *) p;
-   Point *b = (Point *) q;
+   stb_point *a = (stb_point *) p;
+   stb_point *b = (stb_point *) q;
    return a->x < b->x ? -1 : a->x > b->x;
 }
 
@@ -3884,7 +3884,7 @@ static int start_decoder(vorb *f)
             g->book_list[j] = get_bits(f,8);
          return error(f, VORBIS_feature_not_supported);
       } else {
-         Point p[31*8+2];
+         stb_point p[31*8+2];
          Floor1 *g = &f->floor_config[i].floor1;
          int max_class = -1;
          g->partitions = get_bits(f, 5);
