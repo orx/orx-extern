@@ -4665,23 +4665,45 @@ static int stbi__png_info(stbi__context *s, int *x, int *y, int *comp)
 
 static unsigned char *stbi__webp_load(stbi__context *s, int *x, int *y, int *comp, int req_comp)
 {
-  if (s->read_from_callbacks == 1) {
-     return NULL;
-  }
+   WebPBitstreamFeatures features;
+   unsigned char* result = NULL;
+   uint8_t data[64];
 
-  size_t data_size = s->img_buffer_end - s->img_buffer;
+   if (s->read_from_callbacks != 1)
+   {
+      stbi__getn(s, data, 64);
+      stbi__rewind(s);
 
-  if (req_comp == 3) {
-     *comp = req_comp;
-     return WebPDecodeRGB(s->img_buffer, data_size, x, y);
-  }
+      if(((req_comp == 3)
+       || (req_comp == 4))
+      && (WebPGetFeatures(data, 64, &features) == VP8_STATUS_OK))
+      {
+         size_t size = features.width * features.height * req_comp;
 
-  if (req_comp == 4) {
-     *comp = req_comp;
-     return WebPDecodeRGBA(s->img_buffer, data_size, x, y);
-  }
+         unsigned char* buffer = (unsigned char*)stbi__malloc(size);
 
-  return NULL;
+         if(buffer)
+         {
+            size_t data_size = s->img_buffer_end - s->img_buffer;
+            int stride = features.width * req_comp;
+
+            result = (req_comp == 3) ? WebPDecodeRGBInto(s->img_buffer, data_size, buffer, size, stride) : WebPDecodeRGBAInto(s->img_buffer, data_size, buffer, size, stride);
+
+            if(result)
+            {
+               *x = features.width;
+               *y = features.height;
+               *comp = req_comp;
+            }
+            else
+            {
+               STBI_FREE(buffer);
+            }
+         }
+      }
+   }
+
+   return result;
 }
 
 static int stbi__webp_test(stbi__context *s)
