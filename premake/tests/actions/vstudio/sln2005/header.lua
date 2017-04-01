@@ -78,12 +78,22 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 		]]
 	end
 
+
 	function suite.On2015()
 		_ACTION = "vs2015"
 		prepare()
 		test.capture [[
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2015
+		]]
+
+
+	function suite.On2017()
+		_ACTION = "vs2017"
+		prepare()
+		test.capture [[
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2017
 		]]
 --[[
 VS2015 seems to add:

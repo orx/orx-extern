@@ -7,6 +7,7 @@
 	premake.vstudio.vc2010 = { }
 	local vc2010 = premake.vstudio.vc2010
 	local vstudio = premake.vstudio
+	local action = premake.action.current()
 
 
 	local function vs2010_config(prj)
@@ -27,7 +28,7 @@
 		--if prj.flags is required as it is not set at project level for tests???
 		--vs200x generator seems to swap a config for the prj in test setup
 		if prj.flags and prj.flags.Managed then
-			_p(2,'<TargetFrameworkVersion>v4.0</TargetFrameworkVersion>')
+			_p(2,'<TargetFrameworkVersion>v%s</TargetFrameworkVersion>', action.vstudio.targetFramework)
 			_p(2,'<Keyword>ManagedCProj</Keyword>')
 		else
 			_p(2,'<Keyword>Win32Proj</Keyword>')
@@ -79,7 +80,7 @@
 		_p(2,'<UseDebugLibraries>%s</UseDebugLibraries>', iif(optimisation(cfg) == "Disabled","true","false"))
 		_p(2,'<CharacterSet>%s</CharacterSet>',iif(cfg.flags.Unicode,"Unicode","MultiByte"))
 
-		local toolsets = { vs2012 = "v110", vs2013 = "v120", vs2015 = "v140" }
+		local toolsets = { vs2012 = "v110", vs2013 = "v120", vs2015 = "v140", vs2017 = "v141" }
 		local toolset = toolsets[_ACTION]
 		if toolset then
 			_p(2,'<PlatformToolset>%s</PlatformToolset>', toolset)
@@ -199,9 +200,9 @@
 
 	local function exceptions(cfg)
 		if cfg.flags.NoExceptions then
-			_p(2,'<ExceptionHandling>false</ExceptionHandling>')
+			_p(3,'<ExceptionHandling>false</ExceptionHandling>')
 		elseif cfg.flags.SEH then
-			_p(2,'<ExceptionHandling>Async</ExceptionHandling>')
+			_p(3,'<ExceptionHandling>Async</ExceptionHandling>')
 		--SEH is not required for Managed and is implied
 		end
 	end
@@ -569,12 +570,13 @@
 		io.eol = "\r\n"
 		_p('<?xml version="1.0" encoding="utf-8"?>')
 
+		local action = premake.action.current()
 		local t = ""
 		if targets then
 			t = ' DefaultTargets="' .. targets .. '"'
 		end
 
-		_p('<Project%s ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">', t)
+		_p('<Project%s ToolsVersion="%s" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">', t, action.vstudio.toolsVersion)
 	end
 
 
