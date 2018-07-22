@@ -28,3 +28,8 @@
 5. Run `ar xv libgdi32.a | cut -f3 -d ' ' | xargs ar rvs libglfw3.a && rm *.o && echo 'done'`
 6. Copy `libglfw3.a` back to the `Windows` machine
 7. Run `ranlib libglfw3.a`
+
+## Linux
+
+1. Run `cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_USE_HYBRID_HPG=ON .` in the root
+2. Run `make`
