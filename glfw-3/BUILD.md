@@ -6,7 +6,7 @@
 
 #### VS2015
 
-1. Run `cmake -G "Visual Studio 14 2015" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF -DUSE_MSVC_RUNTIME_LIBRARY_DLL=OFF -DGLFW_USE_HYBRID_HPG=ON .` in the root
+1. Run `cmake -G "Visual Studio 14 2015" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF -DUSE_MSVC_RUNTIME_LIBRARY_DLL=OFF -DGLFW_USE_HYBRID_HPG=ON .` in the root directory
 2. Open `GLFW.sln`
 3. Edit `glfw`'s project properties
     - Floating point model -> fast (`/fpfast`)
@@ -16,12 +16,12 @@
 
 #### VS2013
 
-1. Run `cmake -G "Visual Studio 12 2013" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF -DUSE_MSVC_RUNTIME_LIBRARY_DLL=OFF -DGLFW_USE_HYBRID_HPG=ON .` in the root
+1. Run `cmake -G "Visual Studio 12 2013" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF -DUSE_MSVC_RUNTIME_LIBRARY_DLL=OFF -DGLFW_USE_HYBRID_HPG=ON .` in the root directory
 2. Follow remaining points from `VS2015`
 
 ### MinGW
 
-1. Run `cmake -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_USE_HYBRID_HPG=ON .` in the root
+1. Run `cmake -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_USE_HYBRID_HPG=ON .` in the root directory
 2. Run `mingw32-make`
 3. On a `Linux` machine (or using `binutils` for `Windows`), copy `libglfw3.a` + `libopengl32.a` & `libgdi32.a` (from MinGW installation) to the same directory
 4. Run `ar xv libopengl32.a | cut -f3 -d ' ' | xargs ar rvs libglfw3.a && rm *.o && echo 'done'`
@@ -31,11 +31,14 @@
 
 ## Linux
 
-1. Run `cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF .` in the root
+1. Run `cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF .` in the root directory
 2. Run `make`
 
 ## OSX
 
 1. Add `set(CMAKE_OSX_ARCHITECTURES i386;x86_64)` to the `Cocoa` section of `CMakeLists.txt`
-2. Run `cmake -G "Xcode" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF .` in the root
-3. Run `make`
+3. Add `set(CMAKE_OSX_DEPLOYMENT_TARGET 10.7)` to the `Cocoa` section of `CMakeLists.txt`
+3. Run `cmake -G "Xcode" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF .` in the root directory
+4. Open `GLFW.xcodeproj`
+5. Switch scheme to `Release`
+6. Build
