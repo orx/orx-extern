@@ -136,9 +136,9 @@
 	function premake.gcc.getldflags(cfg)
 		local result = { }
 
-		-- Some older versions of GCC/Linux don't work correctly when adding -static while building a shared library
-		if cfg.system == "windows" and cfg.flags.StaticRuntime then
-			table.insert(result, "-static")
+		if cfg.flags.StaticRuntime then
+			table.insert(result, "-static-libgcc")
+			table.insert(result, "-static-libstdc++")
 		end
 
 		-- OS X has a bug, see http://lists.apple.com/archives/Darwin-dev/2006/Sep/msg00084.html
