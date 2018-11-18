@@ -136,7 +136,7 @@
 	function premake.gcc.getldflags(cfg)
 		local result = { }
 
-		if cfg.flags.StaticRuntime then
+		if cfg.system ~= "macosx" and cfg.flags.StaticRuntime then
 			table.insert(result, "-static-libgcc")
 			table.insert(result, "-static-libstdc++")
 		end
