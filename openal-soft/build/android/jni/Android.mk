@@ -61,7 +61,7 @@ endif
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/build/android/jni $(LOCAL_PATH)/include $(LOCAL_PATH)/OpenAL32/Include $(LOCAL_PATH)/Alc
 
 LOCAL_ARM_MODE := arm
-TARGET_PLATFORM = android-9
+TARGET_PLATFORM = android-19
 LOCAL_STATIC_LIBRARIES += cpufeatures
 
 include $(BUILD_STATIC_LIBRARY)
