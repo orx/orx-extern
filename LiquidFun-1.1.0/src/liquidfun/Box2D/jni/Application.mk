@@ -17,9 +17,9 @@
 LOCAL_PATH:=$(call my-dir)
 
 NDK_TOOLCHAIN_VERSION := clang
-APP_PLATFORM:=android-10
-APP_ABI:=armeabi-v7a
-APP_STL:=gnustl_static
+APP_PLATFORM:=android-19
+APP_ABI:=armeabi-v7a x86 arm64-v8a
+APP_STL:=c++_shared
 APP_MODULES:=\
 	libliquidfun \
 	libliquidfun_static

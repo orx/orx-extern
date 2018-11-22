@@ -14,9 +14,11 @@
 # misrepresented as being the original software.
 # 3. This notice may not be removed or altered from any source distribution.
 
-ifneq (,$(findstring armeabi-v7a,$(APP_ABI)))
+ifneq (,$(findstring armeabi-v7a,$(TARGET_ARCH_ABI)))
+$(warning $(TARGET_ARCH_ABI))
   b2_cflags := -DLIQUIDFUN_SIMD_NEON
   b2_extensions := cpp
 else
+  b2_cflags := 
   b2_extensions := cpp
 endif

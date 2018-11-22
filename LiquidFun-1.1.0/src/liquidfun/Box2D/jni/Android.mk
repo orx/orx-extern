@@ -69,9 +69,10 @@ $(eval \
   LOCAL_CFLAGS:=$(if $(APP_DEBUG),-DDEBUG=1,-DDEBUG=0) $(b2_cflags)
   LOCAL_EXPORT_C_INCLUDES:=$(LOCAL_PATH)
   LOCAL_ARM_MODE:=arm
-  ifneq (,$(findstring armeabi-v7a,$(APP_ABI)))
+  LOCAL_STATIC_LIBRARIES += cpufeatures
+
+  ifneq (,$(findstring armeabi-v7a,$(TARGET_ARCH_ABI)))
 	  LOCAL_SRC_FILES += Box2D/Particle/b2ParticleAssembly.neon.s.neon
-		LOCAL_STATIC_LIBRARIES += cpufeatures
   endif
   $$(call add-stlport-includes))
 endef
