@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<CodeLite_Workspace Name="libsndfile" Database="./libsndfile.tags">
+<CodeLite_Workspace Name="libsndfile" Database="./libsndfile.tags" Version="10.0.0">
   <Project Name="libsndfile" Path="libsndfile.project" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="no">
+      <Environment/>
       <Project Name="libsndfile" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="yes">
-      <Project Name="libsndfile" ConfigName="Debug"/>
+      <Environment/>
+      <Project Name="libsndfile" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>
