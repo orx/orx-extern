@@ -519,7 +519,7 @@ template <typename T> T* b2ParticleSystem::ReallocateBuffer(
 		sizeof(T) * newCapacity);
 	if (oldBuffer)
 	{
-		memcpy(newBuffer, oldBuffer, sizeof(T) * oldCapacity);
+		memcpy((void *)newBuffer, oldBuffer, sizeof(T) * oldCapacity);
 		m_world->m_blockAllocator.Free(oldBuffer, sizeof(T) * oldCapacity);
 	}
 	return newBuffer;
@@ -579,7 +579,7 @@ template <typename T> T* b2ParticleSystem::RequestBuffer(T* buffer)
 		buffer = (T*) (m_world->m_blockAllocator.Allocate(
 						   sizeof(T) * m_internalAllocatedCapacity));
 		b2Assert(buffer);
-		memset(buffer, 0, sizeof(T) * m_internalAllocatedCapacity);
+		memset((void *)buffer, 0, sizeof(T) * m_internalAllocatedCapacity);
 	}
 	return buffer;
 }
@@ -4482,7 +4482,7 @@ inline void b2ParticleSystem::PrepareForceBuffer()
 {
 	if (!m_hasForce)
 	{
-		memset(m_forceBuffer, 0, sizeof(*m_forceBuffer) * m_count);
+		memset((void *)m_forceBuffer, 0, sizeof(*m_forceBuffer) * m_count);
 		m_hasForce = true;
 	}
 }
