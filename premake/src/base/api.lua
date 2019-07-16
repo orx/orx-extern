@@ -54,7 +54,7 @@
 			scope = "config",
 		},
 
-		debugenvs  =
+		debugenvs =
 		{
 			kind = "list",
 			scope = "config",
@@ -71,6 +71,12 @@
 			kind  = "list",
 			scope = "config",
 			usagecopy = true,
+		},
+
+		envs =
+		{
+			kind = "list",
+			scope = "config",
 		},
 
 		excludes =

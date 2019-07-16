@@ -120,6 +120,19 @@
 				end
 				-- end resource compiler block --
 				
+				-- begin env block --
+				if #cfg.envs > 0 then
+					_p('      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">')
+					_p('          <![CDATA[')
+					for _,v in ipairs(cfg.envs) do
+						_p('            %s', premake.esc(v))
+					end
+					_p('          ]]>')
+					_p('      </Environment>')
+				end
+				
+				-- end env block --
+				
 				-- begin build steps --
 				if #cfg.prebuildcommands > 0 then
 					_p('      <PreBuild>')
