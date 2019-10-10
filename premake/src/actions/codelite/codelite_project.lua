@@ -66,8 +66,8 @@
 		for _, platform in ipairs(platforms) do
 			for cfg in premake.eachconfig(prj, platform) do
 				local name = premake.esc(cfg.longname):gsub("|","_")
-				local compiler = iif(platform == "x64", "mingw64", "mingw32")
-				_p('    <Configuration Name="%s" CompilerType="MinGW ( %s )" DebuggerType="GNU gdb debugger" Type="%s">', name, compiler, types[cfg.kind])
+				local compiler = iif(os.is("windows"), iif(platform == "x64", "MinGW ( mingw64 )", "MinGW ( mingw32 )"), "GCC")
+				_p('    <Configuration Name="%s" CompilerType="%s" DebuggerType="GNU gdb debugger" Type="%s">', name, compiler, types[cfg.kind])
 
 				local fname  = premake.esc(cfg.buildtarget.fullpath)
 				local objdir = premake.esc(cfg.objectsdir)
