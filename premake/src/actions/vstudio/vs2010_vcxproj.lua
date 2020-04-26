@@ -7,7 +7,6 @@
 	premake.vstudio.vc2010 = { }
 	local vc2010 = premake.vstudio.vc2010
 	local vstudio = premake.vstudio
-	local action = premake.action.current()
 
 
 	local function vs2010_config(prj)
@@ -22,6 +21,7 @@
 	end
 
 	local function vs2010_globals(prj)
+		local action = premake.action.current()
 		_p(1,'<PropertyGroup Label="Globals">')
 			_p(2,'<ProjectGuid>{%s}</ProjectGuid>',prj.uuid)
 			_p(2,'<RootNamespace>%s</RootNamespace>',prj.name)
@@ -32,6 +32,7 @@
 			_p(2,'<Keyword>ManagedCProj</Keyword>')
 		else
 			_p(2,'<Keyword>Win32Proj</Keyword>')
+			_p(2,'<WindowsTargetPlatformVersion>%s</WindowsTargetPlatformVersion>', action.vstudio.targetPlatform)
 		end
 		_p(1,'</PropertyGroup>')
 	end
@@ -158,7 +159,7 @@
 	end
 
 	local function precompiled_header(cfg)
-      	if not cfg.flags.NoPCH and cfg.pchheader then
+				if not cfg.flags.NoPCH and cfg.pchheader then
 			_p(3,'<PrecompiledHeader>Use</PrecompiledHeader>')
 			_p(3,'<PrecompiledHeaderFile>%s</PrecompiledHeaderFile>', cfg.pchheader)
 		else
@@ -230,7 +231,7 @@
 	end
 
 	local function floating_point(cfg)
-	     if cfg.flags.FloatFast then
+			 if cfg.flags.FloatFast then
 			_p(3,'<FloatingPointModel>Fast</FloatingPointModel>')
 		elseif cfg.flags.FloatStrict and not cfg.flags.Managed then
 			_p(3,'<FloatingPointModel>Strict</FloatingPointModel>')
@@ -335,19 +336,19 @@
 
 	local function event_hooks(cfg)
 		if #cfg.postbuildcommands> 0 then
-		    _p(2,'<PostBuildEvent>')
+				_p(2,'<PostBuildEvent>')
 				_p(3,'<Command>%s</Command>',premake.esc(table.implode(cfg.postbuildcommands, "", "", "\r\n")))
 			_p(2,'</PostBuildEvent>')
 		end
 
 		if #cfg.prebuildcommands> 0 then
-		    _p(2,'<PreBuildEvent>')
+				_p(2,'<PreBuildEvent>')
 				_p(3,'<Command>%s</Command>',premake.esc(table.implode(cfg.prebuildcommands, "", "", "\r\n")))
 			_p(2,'</PreBuildEvent>')
 		end
 
 		if #cfg.prelinkcommands> 0 then
-		    _p(2,'<PreLinkEvent>')
+				_p(2,'<PreLinkEvent>')
 				_p(3,'<Command>%s</Command>',premake.esc(table.implode(cfg.prelinkcommands, "", "", "\r\n")))
 			_p(2,'</PreLinkEvent>')
 		end
@@ -368,7 +369,7 @@
 	end
 
 	local function item_def_lib(cfg)
-       -- The Xbox360 project files are stored in another place in the project file.
+			 -- The Xbox360 project files are stored in another place in the project file.
 		if cfg.kind == 'StaticLib' and cfg.platform ~= "Xbox360" then
 			_p(1,'<Lib>')
 				_p(2,'<OutputFile>$(OutDir)%s</OutputFile>',cfg.buildtarget.name)

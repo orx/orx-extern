@@ -409,6 +409,7 @@
 			productVersion  = "8.0.30703",
 			solutionVersion = "11",
 			targetFramework = "4.0",
+			targetPlatform  = "10.0.17763.0",
 			toolsVersion    = "4.0",
 		}
 	}
