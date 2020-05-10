@@ -52,7 +52,7 @@
 		vstudio = {
 			solutionVersion = "12",
 			targetFramework = "4.7.2",
-			targetPlatform  = "10.0.17763.0",
+			targetPlatform  = "10.0",
 			toolsVersion    = "16.0",
 		}
 	}
