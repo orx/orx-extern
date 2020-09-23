@@ -5252,7 +5252,7 @@ int stb_vorbis_decode_filename(const char *filename, int *channels, int *sample_
       if (offset + limit > total) {
          short *data2;
          total *= 2;
-         data2 = (short *) orxMemory_Reallocate(data, total * sizeof(*data));
+         data2 = (short *) orxMemory_Reallocate(data, total * sizeof(*data), orxMEMORY_TYPE_AUDIO);
          if (data2 == NULL) {
             orxMemory_Free(data);
             stb_vorbis_close(v);
@@ -5292,7 +5292,7 @@ int stb_vorbis_decode_memory(const uint8 *mem, int len, int *channels, int *samp
       if (offset + limit > total) {
          short *data2;
          total *= 2;
-         data2 = (short *) orxMemory_Reallocate(data, total * sizeof(*data));
+         data2 = (short *) orxMemory_Reallocate(data, total * sizeof(*data), orxMEMORY_TYPE_AUDIO);
          if (data2 == NULL) {
             free(data);
             stb_vorbis_close(v);
