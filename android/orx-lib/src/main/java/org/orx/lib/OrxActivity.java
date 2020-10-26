@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
@@ -16,6 +15,8 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+
+import androidx.fragment.app.FragmentActivity;
 
 import org.orx.lib.inputmanagercompat.InputManagerCompat;
 
@@ -49,7 +50,7 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
             }
         };
     }
-    
+
     @Override
     protected void onStart() {
     	super.onStart();
@@ -72,7 +73,7 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
                 mSurface = new SurfaceView(getApplication());
                 setContentView(mSurface);
             }
-    		
+
         	mSurface.getHolder().addCallback(this);
         	mSurface.setFocusable(true);
         	mSurface.setFocusableInTouchMode(true);
@@ -298,7 +299,7 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     native void nativeOnKeyDown(int keycode, int unicode);
     native void nativeOnKeyUp(int keycode);
     native void nativeOnTouch(int touchDevId, int pointerFingerId,
-                                            int action, int x, 
+                                            int action, int x,
                                             int y, int p);
     native void nativeOnFocusChanged(boolean hasFocus);
     native void nativeOnInputDeviceAdded(int deviceId);
@@ -309,17 +310,17 @@ public class OrxActivity extends FragmentActivity implements SurfaceHolder.Callb
     native void nativeOnJoystickUp(int deviceId, int keycode);
 
     // Java functions called from C
-    
+
     @SuppressWarnings("UnusedDeclaration")
     public int getRotation() {
     	WindowManager windowMgr = (WindowManager) getSystemService(WINDOW_SERVICE);
     	return windowMgr.getDefaultDisplay().getRotation();
     }
-    
+
     @SuppressWarnings("UnusedDeclaration")
     public void showKeyboard(final boolean show) {
     	runOnUiThread(new Runnable() {
-			
+
 			@Override
 			public void run() {
 		        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
