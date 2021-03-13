@@ -72,9 +72,9 @@
 #define assert(X) 0
 #endif // __orxDEBUG__
 
-#if defined(__orxGCC__) && defined(__orxWINDOWS__)
+#if defined(__orxGCC__) && defined(__orxWINDOWS__) && !defined(alloca)
 #define alloca __builtin_alloca
-#endif /* __orxGCC__ && __orxWINDOWS__ */
+#endif /* __orxGCC__ && __orxWINDOWS__ && !alloca */
 
 #ifdef __cplusplus
 extern "C" {
