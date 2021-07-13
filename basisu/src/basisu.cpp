@@ -23,6 +23,7 @@
 
 #include "basisu/basisu_transcoder.h"
 #include "basisu.h"
+#include "zstd/zstddeclib.c"
 
 using namespace basist;
 

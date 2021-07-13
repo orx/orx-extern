@@ -128,8 +128,8 @@ solution "basisu"
     configuration {"linux"}
         buildoptions
         {
-          "-fPIC",
-          "-std=c++11"
+            "-fPIC",
+            "-std=c++11"
         }
         links
         {
@@ -145,6 +145,7 @@ solution "basisu"
         buildoptions
         {
             "-stdlib=libc++",
+            "-std=c++11",
             "-gdwarf-2"
         }
 
@@ -198,7 +199,6 @@ project "basisu"
 
     files
     {
-        "../**.c",
         "../**.cpp",
         "../**.h"
     }
