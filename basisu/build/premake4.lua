@@ -126,7 +126,11 @@ solution "basisu"
 -- Linux
 
     configuration {"linux"}
-        buildoptions {"-fPIC"}
+        buildoptions
+        {
+          "-fPIC",
+          "-std=c++11"
+        }
         links
         {
             "dl",
