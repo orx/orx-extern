@@ -29,12 +29,38 @@ using namespace basist;
 
 static etc1_global_selector_codebook *spoCodeBook       = nullptr;
 static ktx2_transcoder               *spoKTX2Transcoder = nullptr;
-static transcoder_texture_format      seFormat          = transcoder_texture_format::cTFRGBA32;
-static ktx2_image_level_info          sstInfo           = {};
-static BasisURead                     spfnRead          = nullptr;
-static BasisUSkip                     spfnSkip          = nullptr;
 
-extern "C" void BasisU_Init(BasisURead _pfnRead, BasisUSkip _pfnSkip, BasisUFormat _eFormat)
+static inline transcoder_texture_format GetFormat(BasisUFormat _eFormat)
+{
+  transcoder_texture_format eResult;
+
+  // Depending on format
+  switch(_eFormat)
+  {
+    case BasisUFormat_ASTC:
+      eResult = transcoder_texture_format::cTFASTC_4x4_RGBA;
+      break;
+    case BasisUFormat_BC7:
+      eResult = transcoder_texture_format::cTFBC7_RGBA;
+      break;
+    case BasisUFormat_BC3:
+      eResult = transcoder_texture_format::cTFBC3_RGBA;
+      break;
+
+    default:
+      // Warn?
+
+      // Fall through
+    case BasisUFormat_Uncompressed:
+      eResult = transcoder_texture_format::cTFRGBA32;
+      break;
+  }
+
+  // Done!
+  return eResult;
+}
+
+extern "C" void BasisU_Init()
 {
   // No code book?
   if(spoCodeBook == nullptr)
@@ -54,36 +80,6 @@ extern "C" void BasisU_Init(BasisURead _pfnRead, BasisUSkip _pfnSkip, BasisUForm
     {
       // Create KTX2 transcoder
       spoKTX2Transcoder = new ktx2_transcoder(spoCodeBook);
-    }
-
-    // Valid?
-    if(spoKTX2Transcoder)
-    {
-      // Store callbacks
-      spfnRead = _pfnRead;
-      spfnSkip = _pfnSkip;
-
-      // Store format
-      switch(_eFormat)
-      {
-        case BasisUFormat_ASTC:
-          seFormat = transcoder_texture_format::cTFASTC_4x4_RGBA;
-          break;
-        case BasisUFormat_BC7:
-          seFormat = transcoder_texture_format::cTFBC7_RGBA;
-          break;
-        case BasisUFormat_BC3:
-          seFormat = transcoder_texture_format::cTFBC3_RGBA;
-          break;
-
-        default:
-          // Warn?
-
-          // Fall through
-        case BasisUFormat_Uncompressed:
-          seFormat = transcoder_texture_format::cTFRGBA32;
-          break;
-      }
     }
   }
 
@@ -108,37 +104,39 @@ extern "C" void BasisU_Exit()
   return;
 }
 
-extern "C" int BasisU_GetInfo(void *_pData, unsigned int *_puiWidth, unsigned int *_puiHeight, unsigned int *_puiSize)
+extern "C" unsigned int BasisU_GetHeaderSize()
 {
-  ktx2_header   stHeader;
+  return (unsigned int)sizeof(ktx2_header);
+}
+
+extern "C" int BasisU_GetInfo(void *_pInput, unsigned int _uiInputSize, BasisUFormat _eFormat, unsigned int *_puiWidth, unsigned int *_puiHeight, unsigned int *_puiSize)
+{
+  ktx2_header  *pstHeader = (ktx2_header *)_pInput;
   unsigned int  uiResult = 0;
 
-  // Read header
-  if(spfnRead(_pData, &stHeader, sizeof(ktx2_header)) == sizeof(ktx2_header))
+  // Valid?
+  if(_uiInputSize >= sizeof(ktx2_header))
   {
     // Valid?
-    if((memcmp(&stHeader, g_ktx2_file_identifier, sizeof(g_ktx2_file_identifier)) == 0)
-    && (stHeader.m_vk_format == KTX2_VK_FORMAT_UNDEFINED)
-    && (stHeader.m_type_size == 1))
+    if((memcmp(pstHeader, g_ktx2_file_identifier, sizeof(g_ktx2_file_identifier)) == 0)
+    && (pstHeader->m_vk_format == KTX2_VK_FORMAT_UNDEFINED)
+    && (pstHeader->m_type_size == 1))
     {
       // Store width, height and size
-      *_puiWidth   = stHeader.m_pixel_width;
-      *_puiHeight  = stHeader.m_pixel_height;
-      *_puiSize    = basis_get_bytes_per_block_or_pixel(seFormat) * ((basis_transcoder_format_is_uncompressed(seFormat)) ? stHeader.m_pixel_width * stHeader.m_pixel_height : ((stHeader.m_pixel_width + 3) >> 2) * ((stHeader.m_pixel_height + 3) >> 2));
+      *_puiWidth   = pstHeader->m_pixel_width;
+      *_puiHeight  = pstHeader->m_pixel_height;
+      *_puiSize    = basis_get_bytes_per_block_or_pixel(GetFormat(_eFormat)) * ((basis_transcoder_format_is_uncompressed(GetFormat(_eFormat))) ? pstHeader->m_pixel_width * pstHeader->m_pixel_height : ((pstHeader->m_pixel_width + 3) >> 2) * ((pstHeader->m_pixel_height + 3) >> 2));
 
       // Update result
       uiResult = *_puiSize;
     }
   }
 
-  // Resets data
-  spfnSkip(_pData, -(int)sizeof(ktx2_header));
-
   // Done!
   return uiResult;
 }
 
-extern "C" int BasisU_Transcode(void *_pInput, unsigned int _uiInputSize, void *_pOutput, unsigned int _uiOutputSize)
+extern "C" int BasisU_Transcode(void *_pInput, unsigned int _uiInputSize, BasisUFormat _eFormat, void *_pOutput, unsigned int _uiOutputSize)
 {
   unsigned uiResult = 0;
 
@@ -148,13 +146,15 @@ extern "C" int BasisU_Transcode(void *_pInput, unsigned int _uiInputSize, void *
     // Init transcode
     if(spoKTX2Transcoder->init(_pInput, _uiInputSize))
     {
+      ktx2_image_level_info sstInfo;
+
       // Retrieve image info
       if(spoKTX2Transcoder->get_image_level_info(sstInfo, 0, 0, 0))
       {
         unsigned int uiRealSize;
 
         // Get real size
-        uiRealSize = basis_get_bytes_per_block_or_pixel(seFormat) * ((basis_transcoder_format_is_uncompressed(seFormat)) ? sstInfo.m_orig_width * sstInfo.m_orig_height : sstInfo.m_total_blocks);
+        uiRealSize = basis_get_bytes_per_block_or_pixel(GetFormat(_eFormat)) * ((basis_transcoder_format_is_uncompressed(GetFormat(_eFormat))) ? sstInfo.m_orig_width * sstInfo.m_orig_height : sstInfo.m_total_blocks);
 
         // Has enough room?
         if(_uiOutputSize >= uiRealSize)
@@ -163,7 +163,7 @@ extern "C" int BasisU_Transcode(void *_pInput, unsigned int _uiInputSize, void *
           if(spoKTX2Transcoder->start_transcoding())
           {
             // Transcode image
-            if(spoKTX2Transcoder->transcode_image_level(0, 0, 0, _pOutput, uiRealSize / basis_get_bytes_per_block_or_pixel(seFormat), seFormat))
+            if(spoKTX2Transcoder->transcode_image_level(0, 0, 0, _pOutput, uiRealSize / basis_get_bytes_per_block_or_pixel(GetFormat(_eFormat)), GetFormat(_eFormat)))
             {
               // Update result
               uiResult = uiRealSize;

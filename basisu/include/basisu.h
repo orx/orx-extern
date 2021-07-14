@@ -36,14 +36,12 @@ typedef enum __BasisUFormat_t
 
 } BasisUFormat;
 
-typedef unsigned int (*BasisURead) (void *_pData, void *_pOutput, unsigned int _uiSize);
-typedef void (*BasisUSkip) (void *_pData, int _iOffset);
-
-void BasisU_Init(BasisURead _pfnRead, BasisUSkip _pfnSkip, BasisUFormat _eFormat);
+void BasisU_Init();
 void BasisU_Exit();
 
-int BasisU_GetInfo(void *_pData, unsigned int *_puiWidth, unsigned int *_puiHeight, unsigned int *_puiSize);
-int BasisU_Transcode(void *_pInput, unsigned int _uiInputSize, void *_pOutput, unsigned int _uiOutputSize);
+unsigned int BasisU_GetHeaderSize();
+int BasisU_GetInfo(void *_pInput, unsigned int _uiInputSize, BasisUFormat _eFormat, unsigned int *_puiWidth, unsigned int *_puiHeight, unsigned int *_puiSize);
+int BasisU_Transcode(void *_pInput, unsigned int _uiInputSize, BasisUFormat _eFormat, void *_pOutput, unsigned int _uiOutputSize);
 
 #ifdef __cplusplus
 }
