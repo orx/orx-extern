@@ -107,10 +107,7 @@ solution "basisu"
     configuration {"vs2015 or vs2017 or vs2019", "x64"}
         targetdir ("../lib/vc2015/64")
 
-    configuration {"not vs2015", "not vs2017", "not vs2019"}
-        flags {"EnableSSE2"}
-
-    configuration {"not x64"}
+    configuration {"x32"}
         flags {"EnableSSE2"}
 
     configuration {"not windows"}
