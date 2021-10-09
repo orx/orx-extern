@@ -387,7 +387,7 @@ time which might be too expensive on the audio thread.
 
 If you want to load the sound asynchronously, you can specify the `MA_SOUND_FLAG_ASYNC` flag. This
 will result in `ma_sound_init_from_file()` returning quickly, but the sound will not start playing
-until sound has had some audio decoded.
+until the sound has had some audio decoded.
 
 The fourth parameter is a pointer to sound group. A sound group is used as a mechanism to organise
 sounds into groups which have their own effect processing and volume control. An example is a game
@@ -10501,7 +10501,7 @@ static void ma_sleep__posix(ma_uint32 milliseconds)
 }
 #endif
 
-static void ma_sleep(ma_uint32 milliseconds)
+static MA_INLINE void ma_sleep(ma_uint32 milliseconds)
 {
 #ifdef MA_WIN32
     ma_sleep__win32(milliseconds);
@@ -10574,7 +10574,7 @@ static MA_INLINE unsigned int ma_disable_denormals()
     }
     #elif defined(MA_X86) || defined(MA_X64)
     {
-        #if !(defined(__TINYC__) || defined(__WATCOMC__))   /* <-- Add compilers that lack support for _mm_getcsr() and _mm_setcsr() to this list. */
+        #if defined(__SSE2__) && !(defined(__TINYC__) || defined(__WATCOMC__))   /* <-- Add compilers that lack support for _mm_getcsr() and _mm_setcsr() to this list. */
         {
             prevState = _mm_getcsr();
             _mm_setcsr(prevState | MA_MM_DENORMALS_ZERO_MASK | MA_MM_FLUSH_ZERO_MASK);
@@ -10614,7 +10614,7 @@ static MA_INLINE void ma_restore_denormals(unsigned int prevState)
     }
     #elif defined(MA_X86) || defined(MA_X64)
     {
-        #if !(defined(__TINYC__) || defined(__WATCOMC__))   /* <-- Add compilers that lack support for _mm_getcsr() and _mm_setcsr() to this list. */
+        #if defined(__SSE2__) && !(defined(__TINYC__) || defined(__WATCOMC__))   /* <-- Add compilers that lack support for _mm_getcsr() and _mm_setcsr() to this list. */
         {
             _mm_setcsr(prevState);
         }
@@ -15750,7 +15750,7 @@ Timing
 *******************************************************************************/
 #ifdef MA_WIN32
     static LARGE_INTEGER g_ma_TimerFrequency;   /* <-- Initialized to zero since it's static. */
-    static void ma_timer_init(ma_timer* pTimer)
+    void ma_timer_init(ma_timer* pTimer)
     {
         LARGE_INTEGER counter;
 
@@ -15762,7 +15762,7 @@ Timing
         pTimer->counter = counter.QuadPart;
     }
 
-    static double ma_timer_get_time_in_seconds(ma_timer* pTimer)
+    double ma_timer_get_time_in_seconds(ma_timer* pTimer)
     {
         LARGE_INTEGER counter;
         if (!QueryPerformanceCounter(&counter)) {
@@ -30522,7 +30522,7 @@ static ma_result ma_context__uninit_device_tracking__coreaudio(ma_context* pCont
 
             /* At this point there should be no tracked devices. If not there's an error somewhere. */
             if (g_ppTrackedDevices_CoreAudio != NULL) {
-                ma_log_postf(ma_context_get_log(pContext), MA_LOG_LEVEL_WARNING, "You have uninitialized all contexts while an associated device is still active.", MA_INVALID_OPERATION);
+                ma_log_postf(ma_context_get_log(pContext), MA_LOG_LEVEL_WARNING, "You have uninitialized all contexts while an associated device is still active.");
                 ma_spinlock_unlock(&g_DeviceTrackingInitLock_CoreAudio);
                 return MA_INVALID_OPERATION;
             }
@@ -65319,8 +65319,7 @@ static ma_result ma_resource_manager_process_job__load_data_stream(ma_resource_m
     }
 
     /* We need to initialize the decoder first so we can determine the size of the pages. */
-    decoderConfig = ma_decoder_config_init(pResourceManager->config.decodedFormat, pResourceManager->config.decodedChannels, pResourceManager->config.decodedSampleRate);
-    decoderConfig.allocationCallbacks = pResourceManager->config.allocationCallbacks;
+    decoderConfig = ma_resource_manager__init_decoder_config(pResourceManager);
 
     if (pJob->data.loadDataStream.pFilePath != NULL) {
         result = ma_decoder_init_vfs(pResourceManager->config.pVFS, pJob->data.loadDataStream.pFilePath, &decoderConfig, &pDataStream->decoder);
@@ -65468,7 +65467,7 @@ static ma_result ma_resource_manager_process_job__seek_data_stream(ma_resource_m
     }
 
     /*
-    With seeking we just assume both pages are invalid and the relative frame cursor at at position 0. This is basically exactly the same as loading, except
+    With seeking we just assume both pages are invalid and the relative frame cursor at position 0. This is basically exactly the same as loading, except
     instead of initializing the decoder, we seek to a frame.
     */
     ma_decoder_seek_to_pcm_frame(&pDataStream->decoder, pJob->data.seekDataStream.frameIndex);
@@ -65543,7 +65542,6 @@ MA_API ma_result ma_resource_manager_process_next_job(ma_resource_manager* pReso
 
 static ma_result ma_node_read_pcm_frames(ma_node* pNode, ma_uint32 outputBusIndex, float* pFramesOut, ma_uint32 frameCount, ma_uint32* pFramesRead, ma_uint64 globalTime);
 
-
 MA_API void ma_debug_fill_pcm_frames_with_sine_wave(float* pFramesOut, ma_uint32 frameCount, ma_format format, ma_uint32 channels, ma_uint32 sampleRate)
 {
     #ifndef MA_NO_GENERATION
@@ -65562,15 +65560,16 @@ MA_API void ma_debug_fill_pcm_frames_with_sine_wave(float* pFramesOut, ma_uint32
         (void)format;
         (void)channels;
         (void)sampleRate;
-        #if defined(MA_DEBUG_OUTPUT) && !defined(_MSC_VER)
+        #if defined(MA_DEBUG_OUTPUT)
         {
-            #warning ma_debug_fill_pcm_frames_with_sine_wave() will do nothing because MA_NO_GENERATION is enabled.
+            #if _MSC_VER
+                #pragma message ("ma_debug_fill_pcm_frames_with_sine_wave() will do nothing because MA_NO_GENERATION is enabled.")
+            #endif
         }
         #endif
     }
     #endif
 }
-
 
 
 
@@ -68961,7 +68960,7 @@ MA_API ma_result ma_engine_node_init_preallocated(const ma_engine_node_config* p
     resamplerConfig = ma_linear_resampler_config_init(ma_format_f32, baseNodeConfig.pInputChannels[0], pEngineNode->sampleRate, ma_engine_get_sample_rate(pEngineNode->pEngine));
     resamplerConfig.lpfOrder = 0;    /* <-- Need to disable low-pass filtering for pitch shifting for now because there's cases where the biquads are becoming unstable. Need to figure out a better fix for this. */
 
-    result = ma_linear_resampler_init_preallocated(&resamplerConfig, ma_offset_ptr(pHeap, heapLayout.baseNodeOffset), &pEngineNode->resampler);
+    result = ma_linear_resampler_init_preallocated(&resamplerConfig, ma_offset_ptr(pHeap, heapLayout.resamplerOffset), &pEngineNode->resampler);
     if (result != MA_SUCCESS) {
         goto error1;
     }
