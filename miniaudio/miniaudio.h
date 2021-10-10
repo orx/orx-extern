@@ -61713,7 +61713,7 @@ MA_API ma_result ma_resource_manager_job_queue_free(ma_resource_manager_job_queu
 #endif
 
 /* MurmurHash3. Based on code from https://github.com/PeterScott/murmur3/blob/master/murmur3.c (public domain). */
-#if defined(__clang__) || (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)))
+#if defined(__clang__) || (defined(__GNUC__) && (__GNUC__ > 7 || (__GNUC__ == 7 && __GNUC_MINOR__ >= 1)))
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 #endif
@@ -67186,12 +67186,28 @@ static ma_result ma_node_read_pcm_frames(ma_node* pNode, ma_uint32 outputBusInde
                 */
                 if ((pNodeBase->vtable->flags & MA_NODE_FLAG_CONTINUOUS_PROCESSING) != 0) {
                     /* We're using continuous processing. Make sure we specify the whole frame count at all times. */
-                    frameCountIn = framesToProcessIn;    /* Give the processing function as much input data as we've got in the buffer. */
+                    frameCountIn = framesToProcessIn;    /* Give the processing function as much input data as we've got in the buffer, including any silenced padding from short reads. */
 
                     if ((pNodeBase->vtable->flags & MA_NODE_FLAG_ALLOW_NULL_INPUT) != 0 && pNodeBase->consumedFrameCountIn == 0 && pNodeBase->cachedFrameCountIn == 0) {
                         consumeNullInput = MA_TRUE;
                     } else {
                         consumeNullInput = MA_FALSE;
+                    }
+
+                    /*
+                    Since we're using continuous processing we're always passing in a full frame count
+                    regardless of how much input data was read. If this is greater than what we read as
+                    input, we'll end up with an underflow. We instead need to make sure our cached frame
+                    count is set to the number of frames we'll be passing to the data callback. Not
+                    doing this will result in an underflow when we "consume" the cached data later on.
+
+                    Note that this check needs to be done after the "consumeNullInput" check above because
+                    we use the property of cachedFrameCountIn being 0 to determine whether or not we
+                    should be passing in a null pointer to the processing callback for when the node is
+                    configured with MA_NODE_FLAG_ALLOW_NULL_INPUT.
+                    */
+                    if (pNodeBase->cachedFrameCountIn < (ma_uint16)frameCountIn) {
+                        pNodeBase->cachedFrameCountIn = (ma_uint16)frameCountIn;
                     }
                 } else {
                     frameCountIn = pNodeBase->cachedFrameCountIn;  /* Give the processing function as much valid input data as we've got. */
@@ -67231,7 +67247,7 @@ static ma_result ma_node_read_pcm_frames(ma_node* pNode, ma_uint32 outputBusInde
                 */
                 if (consumeNullInput == MA_FALSE) {
                     pNodeBase->consumedFrameCountIn += (ma_uint16)frameCountIn;
-                    pNodeBase->cachedFrameCountIn   -= ma_min(pNodeBase->cachedFrameCountIn, (ma_uint16)frameCountIn);
+                    pNodeBase->cachedFrameCountIn   -= (ma_uint16)frameCountIn;
                 }
 
                 /* The cached output frame count is always equal to what we just read. */
