@@ -1,6 +1,6 @@
 /*
 Audio playback and capture library. Choice of public domain or MIT-0. See license statements at the end of this file.
-miniaudio - v0.10.42 - 2021-08-22
+miniaudio - v0.10.43 - TBD
 
 David Reid - mackron@gmail.com
 
@@ -434,6 +434,10 @@ dependencies. See below for platform-specific details.
 ------------
 The Windows build should compile cleanly on all popular compilers without the need to configure any
 include paths nor link to any libraries.
+
+The UWP build may require linking to mmdevapi.lib if you get errors about an unresolved external
+symbol for ActivateAudioInterfaceAsync().
+
 
 2.2. macOS and iOS
 ------------------
@@ -3282,7 +3286,7 @@ extern "C" {
 
 #define MA_VERSION_MAJOR    0
 #define MA_VERSION_MINOR    10
-#define MA_VERSION_REVISION 42
+#define MA_VERSION_REVISION 43
 #define MA_VERSION_STRING   MA_XSTRINGIFY(MA_VERSION_MAJOR) "." MA_XSTRINGIFY(MA_VERSION_MINOR) "." MA_XSTRINGIFY(MA_VERSION_REVISION)
 
 #if defined(_MSC_VER) && !defined(__clang__)
@@ -4486,10 +4490,11 @@ typedef struct
     ma_vec3f position;  /* The absolute position of the listener. */
     ma_vec3f direction; /* The direction the listener is facing. The world up vector is config.worldUp. */
     ma_vec3f velocity;
+    ma_bool32 isEnabled;
 
     /* Memory management. */
-    void* _pHeap;
     ma_bool32 _ownsHeap;
+    void* _pHeap;
 } ma_spatializer_listener;
 
 MA_API ma_result ma_spatializer_listener_get_heap_size(const ma_spatializer_listener_config* pConfig, size_t* pHeapSizeInBytes);
@@ -4509,6 +4514,8 @@ MA_API void ma_spatializer_listener_set_speed_of_sound(ma_spatializer_listener* 
 MA_API float ma_spatializer_listener_get_speed_of_sound(const ma_spatializer_listener* pListener);
 MA_API void ma_spatializer_listener_set_world_up(ma_spatializer_listener* pListener, float x, float y, float z);
 MA_API ma_vec3f ma_spatializer_listener_get_world_up(const ma_spatializer_listener* pListener);
+MA_API void ma_spatializer_listener_set_enabled(ma_spatializer_listener* pListener, ma_bool32 isEnabled);
+MA_API ma_bool32 ma_spatializer_listener_is_enabled(const ma_spatializer_listener* pListener);
 
 
 typedef struct
@@ -8274,6 +8281,8 @@ Data Source
 **************************************************************************************************/
 typedef void ma_data_source;
 
+#define MA_DATA_SOURCE_SELF_MANAGED_RANGE_AND_LOOP_POINT    0x00000001
+
 typedef struct
 {
     ma_result (* onRead)(ma_data_source* pDataSource, void* pFramesOut, ma_uint64 frameCount, ma_uint64* pFramesRead);
@@ -8282,6 +8291,7 @@ typedef struct
     ma_result (* onGetCursor)(ma_data_source* pDataSource, ma_uint64* pCursor);
     ma_result (* onGetLength)(ma_data_source* pDataSource, ma_uint64* pLength);
     ma_result (* onSetLooping)(ma_data_source* pDataSource, ma_bool32 isLooping);
+    ma_uint32 flags;
 } ma_data_source_vtable;
 
 typedef ma_data_source* (* ma_data_source_get_next_proc)(ma_data_source* pDataSource);
@@ -9046,6 +9056,23 @@ MA_API ma_result ma_resource_manager_job_queue_next(ma_resource_manager_job_queu
 #define MA_RESOURCE_MANAGER_FLAG_NO_THREADING   0x00000002
 
 
+typedef struct
+{
+    const char* pFilePath;
+    const wchar_t* pFilePathW;
+    const ma_resource_manager_pipeline_notifications* pNotifications;
+    ma_uint64 initialSeekPointInPCMFrames;
+    ma_uint64 rangeBegInPCMFrames;
+    ma_uint64 rangeEndInPCMFrames;
+    ma_uint64 loopPointBegInPCMFrames;
+    ma_uint64 loopPointEndInPCMFrames;
+    ma_bool32 isLooping;
+    ma_uint32 flags;
+} ma_resource_manager_data_source_config;
+
+MA_API ma_resource_manager_data_source_config ma_resource_manager_data_source_config_init();
+
+
 typedef enum
 {
     ma_resource_manager_data_supply_type_unknown = 0,   /* Used for determining whether or the data supply has been initialized. */
@@ -9207,8 +9234,9 @@ MA_API ma_result ma_resource_manager_unregister_data(ma_resource_manager* pResou
 MA_API ma_result ma_resource_manager_unregister_data_w(ma_resource_manager* pResourceManager, const wchar_t* pName);
 
 /* Data Buffers. */
-MA_API ma_result ma_resource_manager_data_buffer_init(ma_resource_manager* pResourceManager, const char* pFilePath, ma_uint32 flags, ma_uint64 initialSeekPoint, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_buffer* pDataBuffer);
-MA_API ma_result ma_resource_manager_data_buffer_init_w(ma_resource_manager* pResourceManager, const wchar_t* pFilePath, ma_uint32 flags, ma_uint64 initialSeekPoint, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_buffer* pDataBuffer);
+MA_API ma_result ma_resource_manager_data_buffer_init_ex(ma_resource_manager* pResourceManager, const ma_resource_manager_data_source_config* pConfig, ma_resource_manager_data_buffer* pDataBuffer);
+MA_API ma_result ma_resource_manager_data_buffer_init(ma_resource_manager* pResourceManager, const char* pFilePath, ma_uint32 flags, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_buffer* pDataBuffer);
+MA_API ma_result ma_resource_manager_data_buffer_init_w(ma_resource_manager* pResourceManager, const wchar_t* pFilePath, ma_uint32 flags, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_buffer* pDataBuffer);
 MA_API ma_result ma_resource_manager_data_buffer_init_copy(ma_resource_manager* pResourceManager, const ma_resource_manager_data_buffer* pExistingDataBuffer, ma_resource_manager_data_buffer* pDataBuffer);
 MA_API ma_result ma_resource_manager_data_buffer_uninit(ma_resource_manager_data_buffer* pDataBuffer);
 MA_API ma_result ma_resource_manager_data_buffer_read_pcm_frames(ma_resource_manager_data_buffer* pDataBuffer, void* pFramesOut, ma_uint64 frameCount, ma_uint64* pFramesRead);
@@ -9222,8 +9250,9 @@ MA_API ma_bool32 ma_resource_manager_data_buffer_is_looping(const ma_resource_ma
 MA_API ma_result ma_resource_manager_data_buffer_get_available_frames(ma_resource_manager_data_buffer* pDataBuffer, ma_uint64* pAvailableFrames);
 
 /* Data Streams. */
-MA_API ma_result ma_resource_manager_data_stream_init(ma_resource_manager* pResourceManager, const char* pFilePath, ma_uint32 flags, ma_uint64 initialSeekPoint, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_stream* pDataStream);
-MA_API ma_result ma_resource_manager_data_stream_init_w(ma_resource_manager* pResourceManager, const wchar_t* pFilePath, ma_uint32 flags, ma_uint64 initialSeekPoint, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_stream* pDataStream);
+MA_API ma_result ma_resource_manager_data_stream_init_ex(ma_resource_manager* pResourceManager, const ma_resource_manager_data_source_config* pConfig, ma_resource_manager_data_stream* pDataStream);
+MA_API ma_result ma_resource_manager_data_stream_init(ma_resource_manager* pResourceManager, const char* pFilePath, ma_uint32 flags, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_stream* pDataStream);
+MA_API ma_result ma_resource_manager_data_stream_init_w(ma_resource_manager* pResourceManager, const wchar_t* pFilePath, ma_uint32 flags, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_stream* pDataStream);
 MA_API ma_result ma_resource_manager_data_stream_uninit(ma_resource_manager_data_stream* pDataStream);
 MA_API ma_result ma_resource_manager_data_stream_read_pcm_frames(ma_resource_manager_data_stream* pDataStream, void* pFramesOut, ma_uint64 frameCount, ma_uint64* pFramesRead);
 MA_API ma_result ma_resource_manager_data_stream_seek_to_pcm_frame(ma_resource_manager_data_stream* pDataStream, ma_uint64 frameIndex);
@@ -9236,8 +9265,9 @@ MA_API ma_bool32 ma_resource_manager_data_stream_is_looping(const ma_resource_ma
 MA_API ma_result ma_resource_manager_data_stream_get_available_frames(ma_resource_manager_data_stream* pDataStream, ma_uint64* pAvailableFrames);
 
 /* Data Sources. */
-MA_API ma_result ma_resource_manager_data_source_init(ma_resource_manager* pResourceManager, const char* pName, ma_uint32 flags, ma_uint64 initialSeekPoint, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_source* pDataSource);
-MA_API ma_result ma_resource_manager_data_source_init_w(ma_resource_manager* pResourceManager, const wchar_t* pName, ma_uint32 flags, ma_uint64 initialSeekPoint, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_source* pDataSource);
+MA_API ma_result ma_resource_manager_data_source_init_ex(ma_resource_manager* pResourceManager, const ma_resource_manager_data_source_config* pConfig, ma_resource_manager_data_source* pDataSource);
+MA_API ma_result ma_resource_manager_data_source_init(ma_resource_manager* pResourceManager, const char* pName, ma_uint32 flags, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_source* pDataSource);
+MA_API ma_result ma_resource_manager_data_source_init_w(ma_resource_manager* pResourceManager, const wchar_t* pName, ma_uint32 flags, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_source* pDataSource);
 MA_API ma_result ma_resource_manager_data_source_init_copy(ma_resource_manager* pResourceManager, const ma_resource_manager_data_source* pExistingDataSource, ma_resource_manager_data_source* pDataSource);
 MA_API ma_result ma_resource_manager_data_source_uninit(ma_resource_manager_data_source* pDataSource);
 MA_API ma_result ma_resource_manager_data_source_read_pcm_frames(ma_resource_manager_data_source* pDataSource, void* pFramesOut, ma_uint64 frameCount, ma_uint64* pFramesRead);
@@ -9814,7 +9844,12 @@ typedef struct
     ma_uint32 channelsIn;                       /* Ignored if using a data source as input (the data source's channel count will be used always). Otherwise, setting to 0 will cause the engine's channel count to be used. */
     ma_uint32 channelsOut;                      /* Set this to 0 (default) to use the engine's channel count. Set to MA_SOUND_SOURCE_CHANNEL_COUNT to use the data source's channel count (only used if using a data source as input). */
     ma_uint32 flags;                            /* A combination of MA_SOUND_FLAG_* flags. */
-    ma_uint64 initialSeekPointInFrames;         /* Initializes the sound such that it's seeked to this location by default. */
+    ma_uint64 initialSeekPointInPCMFrames;      /* Initializes the sound such that it's seeked to this location by default. */
+    ma_uint64 rangeBegInPCMFrames;
+    ma_uint64 rangeEndInPCMFrames;
+    ma_uint64 loopPointBegInPCMFrames;
+    ma_uint64 loopPointEndInPCMFrames;
+    ma_bool32 isLooping;
     ma_fence* pDoneFence;                       /* Released when the resource manager has finished decoding the entire sound. Not used with streams. */
 } ma_sound_config;
 
@@ -9934,6 +9969,8 @@ MA_API void ma_engine_listener_set_cone(ma_engine* pEngine, ma_uint32 listenerIn
 MA_API void ma_engine_listener_get_cone(const ma_engine* pEngine, ma_uint32 listenerIndex, float* pInnerAngleInRadians, float* pOuterAngleInRadians, float* pOuterGain);
 MA_API void ma_engine_listener_set_world_up(ma_engine* pEngine, ma_uint32 listenerIndex, float x, float y, float z);
 MA_API ma_vec3f ma_engine_listener_get_world_up(const ma_engine* pEngine, ma_uint32 listenerIndex);
+MA_API void ma_engine_listener_set_enabled(ma_engine* pEngine, ma_uint32 listenerIndex, ma_bool32 isEnabled);
+MA_API ma_bool32 ma_engine_listener_is_enabled(const ma_engine* pEngine, ma_uint32 listenerIndex);
 
 MA_API ma_result ma_engine_play_sound(ma_engine* pEngine, const char* pFilePath, ma_sound_group* pGroup);   /* Fire and forget. */
 
@@ -18837,7 +18874,7 @@ static ma_result ma_context_get_IAudioClient_UWP__wasapi(ma_context* pContext, m
     hr = StringFromIID(&iid, &iidStr);
 #endif
     if (FAILED(hr)) {
-        ma_log_postf(ma_context_get_log(pContext), "[WASAPI] Failed to convert device IID to string for ActivateAudioInterfaceAsync(). Out of memory.");
+        ma_log_postf(ma_context_get_log(pContext), MA_LOG_LEVEL_ERROR, "[WASAPI] Failed to convert device IID to string for ActivateAudioInterfaceAsync(). Out of memory.");
         return ma_result_from_HRESULT(hr);
     }
 
@@ -18871,7 +18908,7 @@ static ma_result ma_context_get_IAudioClient_UWP__wasapi(ma_context* pContext, m
 
     if (FAILED(hr) || FAILED(activateResult)) {
         ma_log_postf(ma_context_get_log(pContext), MA_LOG_LEVEL_ERROR, "[WASAPI] Failed to activate device.");
-        return FAILED(hr) ? ma_result_from_HRESULT(hr) : ma_result_from_HRESULT(activateResult)
+        return FAILED(hr) ? ma_result_from_HRESULT(hr) : ma_result_from_HRESULT(activateResult);
     }
 
     /* Here is where we grab the IAudioClient interface. */
@@ -24282,10 +24319,11 @@ static ma_result ma_context_enumerate_devices__alsa(ma_context* pContext, ma_enu
 
         /*
         Some devices are both playback and capture, but they are only enumerated by ALSA once. We need to fire the callback
-        again for the other device type in this case. We do this for known devices.
+        again for the other device type in this case. We do this for known devices and where the IOID hint is NULL, which
+        means both Input and Output.
         */
         if (cbResult) {
-            if (ma_is_common_device_name__alsa(NAME)) {
+            if (ma_is_common_device_name__alsa(NAME) || IOID == NULL) {
                 if (deviceType == ma_device_type_playback) {
                     if (!ma_is_capture_device_blacklisted__alsa(NAME)) {
                         cbResult = callback(pContext, ma_device_type_capture, &deviceInfo, pUserData);
@@ -25134,7 +25172,7 @@ static ma_result ma_device_wait_write__alsa(ma_device* pDevice)
 
 static ma_result ma_device_read__alsa(ma_device* pDevice, void* pFramesOut, ma_uint32 frameCount, ma_uint32* pFramesRead)
 {
-    ma_snd_pcm_sframes_t resultALSA;
+    ma_snd_pcm_sframes_t resultALSA = 0;
 
     MA_ASSERT(pDevice != NULL);
     MA_ASSERT(pFramesOut != NULL);
@@ -25190,7 +25228,7 @@ static ma_result ma_device_read__alsa(ma_device* pDevice, void* pFramesOut, ma_u
 
 static ma_result ma_device_write__alsa(ma_device* pDevice, const void* pFrames, ma_uint32 frameCount, ma_uint32* pFramesWritten)
 {
-    ma_snd_pcm_sframes_t resultALSA;
+    ma_snd_pcm_sframes_t resultALSA = 0;
 
     MA_ASSERT(pDevice != NULL);
     MA_ASSERT(pFrames != NULL);
@@ -37028,10 +37066,15 @@ static ma_bool32 ma_device__is_initialized(ma_device* pDevice)
 #ifdef MA_WIN32
 static ma_result ma_context_uninit_backend_apis__win32(ma_context* pContext)
 {
+    /* For some reason UWP complains when CoUninitialize() is called. I'm just not going to call it on UWP. */
+#ifdef MA_WIN32_DESKTOP
     ma_CoUninitialize(pContext);
     ma_dlclose(pContext, pContext->win32.hUser32DLL);
     ma_dlclose(pContext, pContext->win32.hOle32DLL);
     ma_dlclose(pContext, pContext->win32.hAdvapi32DLL);
+#else
+    (void)pContext;
+#endif
 
     return MA_SUCCESS;
 }
@@ -45707,6 +45750,7 @@ MA_API ma_result ma_spatializer_listener_init_preallocated(const ma_spatializer_
     pListener->position  = ma_vec3f_init_3f(0, 0,  0);
     pListener->direction = ma_vec3f_init_3f(0, 0, -1);
     pListener->velocity  = ma_vec3f_init_3f(0, 0,  0);
+    pListener->isEnabled = MA_TRUE;
 
     /* Swap the forward direction if we're left handed (it was initialized based on right handed). */
     if (pListener->config.handedness == ma_handedness_left) {
@@ -45895,6 +45939,24 @@ MA_API ma_vec3f ma_spatializer_listener_get_world_up(const ma_spatializer_listen
     }
 
     return pListener->config.worldUp;
+}
+
+MA_API void ma_spatializer_listener_set_enabled(ma_spatializer_listener* pListener, ma_bool32 isEnabled)
+{
+    if (pListener == NULL) {
+        return;
+    }
+
+    pListener->isEnabled = isEnabled;
+}
+
+MA_API ma_bool32 ma_spatializer_listener_is_enabled(const ma_spatializer_listener* pListener)
+{
+    if (pListener == NULL) {
+        return MA_FALSE;
+    }
+
+    return pListener->isEnabled;
 }
 
 
@@ -46176,11 +46238,16 @@ MA_API ma_result ma_spatializer_process_pcm_frames(ma_spatializer* pSpatializer,
 
     /* If we're not spatializing we need to run an optimized path. */
     if (pSpatializer->config.attenuationModel == ma_attenuation_model_none) {
-        /* No attenuation is required, but we'll need to do some channel conversion. */
-        if (pSpatializer->config.channelsIn == pSpatializer->config.channelsOut) {
-            ma_copy_pcm_frames(pFramesOut, pFramesIn, frameCount, ma_format_f32, pSpatializer->config.channelsIn);
+        if (ma_spatializer_listener_is_enabled(pListener)) {
+            /* No attenuation is required, but we'll need to do some channel conversion. */
+            if (pSpatializer->config.channelsIn == pSpatializer->config.channelsOut) {
+                ma_copy_pcm_frames(pFramesOut, pFramesIn, frameCount, ma_format_f32, pSpatializer->config.channelsIn);
+            } else {
+                ma_channel_map_apply_f32((float*)pFramesOut, pChannelMapOut, pSpatializer->config.channelsOut, (const float*)pFramesIn, pChannelMapIn, pSpatializer->config.channelsIn, frameCount, ma_channel_mix_mode_rectangular);   /* Safe casts to float* because f32 is the only supported format. */
+            }
         } else {
-            ma_channel_map_apply_f32((float*)pFramesOut, pChannelMapOut, pSpatializer->config.channelsOut, (const float*)pFramesIn, pChannelMapIn, pSpatializer->config.channelsIn, frameCount, ma_channel_mix_mode_rectangular);   /* Safe casts to float* because f32 is the only supported format. */
+            /* The listener is disabled. Output silence. */
+            ma_silence_pcm_frames(pFramesOut, frameCount, ma_format_f32, pSpatializer->config.channelsOut);
         }
 
         /*
@@ -46393,8 +46460,15 @@ MA_API ma_result ma_spatializer_process_pcm_frames(ma_spatializer* pSpatializer,
             pSpatializer->pNewChannelGainsOut[iChannel] = gain;
         }
 
-        /* Convert to our output channel count. */
-        ma_channel_map_apply_f32((float*)pFramesOut, pChannelMapOut, channelsOut, (const float*)pFramesIn, pChannelMapIn, channelsIn, frameCount, ma_channel_mix_mode_rectangular);
+        /*
+        Convert to our output channel count. If the listener is disabled we just output silence here. We cannot ignore
+        the whole section of code here because we need to update some internal spatialization state.
+        */
+        if (ma_spatializer_listener_is_enabled(pListener)) {
+            ma_channel_map_apply_f32((float*)pFramesOut, pChannelMapOut, channelsOut, (const float*)pFramesIn, pChannelMapIn, channelsIn, frameCount, ma_channel_mix_mode_rectangular);
+        } else {
+            ma_silence_pcm_frames(pFramesOut, frameCount, ma_format_f32, pSpatializer->config.channelsOut);
+        }
 
         /*
         Calculate our per-channel gains. We do this based on the normalized relative position of the sound and it's
@@ -52266,8 +52340,8 @@ static ma_result ma_data_source_read_pcm_frames_within_range(ma_data_source* pDa
         return MA_INVALID_ARGS;
     }
 
-    if (pDataSourceBase->rangeEndInFrames == ~((ma_uint64)0) && (pDataSourceBase->loopEndInFrames == ~((ma_uint64)0) || loop == MA_FALSE)) {
-        /* No range is set - just read like normal. The data source itself will tell us when the end is reached. */
+    if ((pDataSourceBase->vtable->flags & MA_DATA_SOURCE_SELF_MANAGED_RANGE_AND_LOOP_POINT) != 0 || (pDataSourceBase->rangeEndInFrames == ~((ma_uint64)0) && (pDataSourceBase->loopEndInFrames == ~((ma_uint64)0) || loop == MA_FALSE))) {
+        /* Either the data source is self-managing the range, or no range is set - just read like normal. The data source itself will tell us when the end is reached. */
         result = pDataSourceBase->vtable->onRead(pDataSourceBase, pFramesOut, frameCount, &framesRead);
     } else {
         /* Need to clamp to within the range. */
@@ -52294,7 +52368,16 @@ static ma_result ma_data_source_read_pcm_frames_within_range(ma_data_source* pDa
                 frameCount = (rangeEnd - cursor);
             }
 
-            result = pDataSourceBase->vtable->onRead(pDataSourceBase, pFramesOut, frameCount, &framesRead);
+            /*
+            If the cursor is sitting on the end of the range the frame count will be set to 0 which can
+            result in MA_INVALID_ARGS. In this case, we don't want to try reading, but instead return
+            MA_AT_END so the higher level function can know about it.
+            */
+            if (frameCount > 0) {
+                result = pDataSourceBase->vtable->onRead(pDataSourceBase, pFramesOut, frameCount, &framesRead);
+            } else {
+                result = MA_AT_END; /* The cursor is sitting on the end of the range which means we're at the end. */
+            }
         }
     }
 
@@ -52381,8 +52464,8 @@ MA_API ma_result ma_data_source_read_pcm_frames(ma_data_source* pDataSource, voi
         }
 
         /*
-        We can determine if we've reached the end by checking the return value of the onRead()
-        callback. To loop back to the start, all we need to do is seek back to the first frame.
+        We can determine if we've reached the end by checking if ma_data_source_read_pcm_frames_within_range() returned
+        MA_AT_END. To loop back to the start, all we need to do is seek back to the first frame.
         */
         if (result == MA_AT_END) {
             /*
@@ -52883,7 +52966,8 @@ static ma_data_source_vtable g_ma_audio_buffer_ref_data_source_vtable =
     ma_audio_buffer_ref__data_source_on_get_data_format,
     ma_audio_buffer_ref__data_source_on_get_cursor,
     ma_audio_buffer_ref__data_source_on_get_length,
-    NULL    /* onSetLooping */
+    NULL,   /* onSetLooping */
+    0
 };
 
 MA_API ma_result ma_audio_buffer_ref_init(ma_format format, ma_uint32 channels, const void* pData, ma_uint64 sizeInFrames, ma_audio_buffer_ref* pAudioBufferRef)
@@ -53566,7 +53650,8 @@ static ma_data_source_vtable g_ma_paged_audio_buffer_data_source_vtable =
     ma_paged_audio_buffer__data_source_on_get_data_format,
     ma_paged_audio_buffer__data_source_on_get_cursor,
     ma_paged_audio_buffer__data_source_on_get_length,
-    NULL    /* onSetLooping */
+    NULL,   /* onSetLooping */
+    0
 };
 
 MA_API ma_result ma_paged_audio_buffer_init(const ma_paged_audio_buffer_config* pConfig, ma_paged_audio_buffer* pPagedAudioBuffer)
@@ -56155,7 +56240,8 @@ static ma_data_source_vtable g_ma_wav_ds_vtable =
     ma_wav_ds_get_data_format,
     ma_wav_ds_get_cursor,
     ma_wav_ds_get_length,
-    NULL    /* onSetLooping */
+    NULL,   /* onSetLooping */
+    0
 };
 
 
@@ -56797,7 +56883,8 @@ static ma_data_source_vtable g_ma_flac_ds_vtable =
     ma_flac_ds_get_data_format,
     ma_flac_ds_get_cursor,
     ma_flac_ds_get_length,
-    NULL    /* onSetLooping */
+    NULL,   /* onSetLooping */
+    0
 };
 
 
@@ -57432,7 +57519,8 @@ static ma_data_source_vtable g_ma_mp3_ds_vtable =
     ma_mp3_ds_get_data_format,
     ma_mp3_ds_get_cursor,
     ma_mp3_ds_get_length,
-    NULL    /* onSetLooping */
+    NULL,   /* onSetLooping */
+    0
 };
 
 
@@ -58120,7 +58208,8 @@ static ma_data_source_vtable g_ma_stbvorbis_ds_vtable =
     ma_stbvorbis_ds_get_data_format,
     ma_stbvorbis_ds_get_cursor,
     ma_stbvorbis_ds_get_length,
-    NULL    /* onSetLooping */
+    NULL,   /* onSetLooping */
+    0
 };
 
 
@@ -58876,7 +58965,8 @@ static ma_data_source_vtable g_ma_decoder_data_source_vtable =
     ma_decoder__data_source_on_get_data_format,
     ma_decoder__data_source_on_get_cursor,
     ma_decoder__data_source_on_get_length,
-    NULL    /* onSetLooping */
+    NULL,   /* onSetLooping */
+    0
 };
 
 static ma_result ma_decoder__preinit(ma_decoder_read_proc onRead, ma_decoder_seek_proc onSeek, ma_decoder_tell_proc onTell, void* pUserData, const ma_decoder_config* pConfig, ma_decoder* pDecoder)
@@ -60458,7 +60548,8 @@ static ma_data_source_vtable g_ma_waveform_data_source_vtable =
     ma_waveform__data_source_on_get_data_format,
     ma_waveform__data_source_on_get_cursor,
     NULL,   /* onGetLength. There's no notion of a length in waveforms. */
-    NULL    /* onSetLooping */
+    NULL,   /* onSetLooping */
+    0
 };
 
 MA_API ma_result ma_waveform_init(const ma_waveform_config* pConfig, ma_waveform* pWaveform)
@@ -60880,7 +60971,8 @@ static ma_data_source_vtable g_ma_noise_data_source_vtable =
     ma_noise__data_source_on_get_data_format,
     NULL,   /* onGetCursor. No notion of a cursor for noise. */
     NULL,   /* onGetLength. No notion of a length for noise. */
-    NULL    /* onSetLooping */
+    NULL,   /* onSetLooping */
+    0
 };
 
 
@@ -62674,6 +62766,19 @@ MA_API ma_log* ma_resource_manager_get_log(ma_resource_manager* pResourceManager
 }
 
 
+
+MA_API ma_resource_manager_data_source_config ma_resource_manager_data_source_config_init()
+{
+    ma_resource_manager_data_source_config config;
+
+    MA_ZERO_OBJECT(&config);
+    config.rangeEndInPCMFrames     = ~((ma_uint64)0);
+    config.loopPointEndInPCMFrames = ~((ma_uint64)0);
+
+    return config;
+}
+
+
 static ma_decoder_config ma_resource_manager__init_decoder_config(ma_resource_manager* pResourceManager)
 {
     ma_decoder_config config;
@@ -63488,32 +63593,41 @@ static ma_data_source_vtable g_ma_resource_manager_data_buffer_vtable =
     ma_resource_manager_data_buffer_cb__get_data_format,
     ma_resource_manager_data_buffer_cb__get_cursor_in_pcm_frames,
     ma_resource_manager_data_buffer_cb__get_length_in_pcm_frames,
-    ma_resource_manager_data_buffer_cb__set_looping
+    ma_resource_manager_data_buffer_cb__set_looping,
+    0
 };
 
-static ma_result ma_resource_manager_data_buffer_init_internal(ma_resource_manager* pResourceManager, const char* pFilePath, const wchar_t* pFilePathW, ma_uint32 hashedName32, ma_uint32 flags, ma_uint64 initialSeekPoint, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_buffer* pDataBuffer)
+static ma_result ma_resource_manager_data_buffer_init_ex_internal(ma_resource_manager* pResourceManager, const ma_resource_manager_data_source_config* pConfig, ma_uint32 hashedName32, ma_resource_manager_data_buffer* pDataBuffer)
 {
     ma_result result = MA_SUCCESS;
     ma_resource_manager_data_buffer_node* pDataBufferNode;
     ma_data_source_config dataSourceConfig;
     ma_bool32 async;
+    ma_uint32 flags;
     ma_resource_manager_pipeline_notifications notifications;
 
-    if (pNotifications != NULL) {
-        notifications = *pNotifications;
-        pNotifications = NULL;  /* From here on out we should be referencing `notifications` instead of `pNotifications`. Set this to NULL to catch errors at testing time. */
-    } else {
-        MA_ZERO_OBJECT(&notifications);
-    }
-
     if (pDataBuffer == NULL) {
-        ma_resource_manager_pipeline_notifications_signal_all_notifications(&notifications);
+        if (pConfig != NULL && pConfig->pNotifications != NULL) {
+            ma_resource_manager_pipeline_notifications_signal_all_notifications(&notifications);
+        }
+
         return MA_INVALID_ARGS;
     }
 
     MA_ZERO_OBJECT(pDataBuffer);
 
+    if (pConfig == NULL) {
+        return MA_INVALID_ARGS;
+    }
+
+    if (pConfig->pNotifications != NULL) {
+        notifications = *pConfig->pNotifications;   /* From here on out we should be referencing `notifications` instead of `pNotifications`. Set this to NULL to catch errors at testing time. */
+    } else {
+        MA_ZERO_OBJECT(&notifications);
+    }
+
     /* For safety, always remove the ASYNC flag if threading is disabled on the resource manager. */
+    flags = pConfig->flags;
     if (ma_resource_manager_is_threading_enabled(pResourceManager) == MA_FALSE) {
         flags &= ~MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC;
     }
@@ -63535,7 +63649,7 @@ static ma_result ma_resource_manager_data_buffer_init_internal(ma_resource_manag
     ma_resource_manager_pipeline_notifications_acquire_all_fences(&notifications);
     {
         /* We first need to acquire a node. If ASYNC is not set, this will not return until the entire sound has been loaded. */
-        result = ma_resource_manager_data_buffer_node_acquire(pResourceManager, pFilePath, pFilePathW, hashedName32, flags, NULL, notifications.init.pFence, notifications.done.pFence, &pDataBufferNode);
+        result = ma_resource_manager_data_buffer_node_acquire(pResourceManager, pConfig->pFilePath, pConfig->pFilePathW, hashedName32, flags, NULL, notifications.init.pFence, notifications.done.pFence, &pDataBufferNode);
         if (result != MA_SUCCESS) {
             ma_resource_manager_pipeline_notifications_signal_all_notifications(&notifications);
             goto done;
@@ -63629,8 +63743,8 @@ static ma_result ma_resource_manager_data_buffer_init_internal(ma_resource_manag
     }
 done:
     if (result == MA_SUCCESS) {
-        if (initialSeekPoint > 0) {
-            ma_resource_manager_data_buffer_seek_to_pcm_frame(pDataBuffer, initialSeekPoint);
+        if (pConfig->initialSeekPointInPCMFrames > 0) {
+            ma_resource_manager_data_buffer_seek_to_pcm_frame(pDataBuffer, pConfig->initialSeekPointInPCMFrames);
         }
     }
 
@@ -63639,25 +63753,49 @@ done:
     return result;
 }
 
-MA_API ma_result ma_resource_manager_data_buffer_init(ma_resource_manager* pResourceManager, const char* pFilePath, ma_uint32 flags, ma_uint64 initialSeekPoint, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_buffer* pDataBuffer)
+MA_API ma_result ma_resource_manager_data_buffer_init_ex(ma_resource_manager* pResourceManager, const ma_resource_manager_data_source_config* pConfig, ma_resource_manager_data_buffer* pDataBuffer)
 {
-    return ma_resource_manager_data_buffer_init_internal(pResourceManager, pFilePath, NULL, 0, flags, initialSeekPoint, pNotifications, pDataBuffer);
+    return ma_resource_manager_data_buffer_init_ex_internal(pResourceManager, pConfig, 0, pDataBuffer);
 }
 
-MA_API ma_result ma_resource_manager_data_buffer_init_w(ma_resource_manager* pResourceManager, const wchar_t* pFilePath, ma_uint32 flags, ma_uint64 initialSeekPoint, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_buffer* pDataBuffer)
+MA_API ma_result ma_resource_manager_data_buffer_init(ma_resource_manager* pResourceManager, const char* pFilePath, ma_uint32 flags, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_buffer* pDataBuffer)
 {
-    return ma_resource_manager_data_buffer_init_internal(pResourceManager, NULL, pFilePath, 0, flags, initialSeekPoint, pNotifications, pDataBuffer);
+    ma_resource_manager_data_source_config config;
+
+    config = ma_resource_manager_data_source_config_init();
+    config.pFilePath      = pFilePath;
+    config.flags          = flags;
+    config.pNotifications = pNotifications;
+
+    return ma_resource_manager_data_buffer_init_ex(pResourceManager, &config, pDataBuffer);
+}
+
+MA_API ma_result ma_resource_manager_data_buffer_init_w(ma_resource_manager* pResourceManager, const wchar_t* pFilePath, ma_uint32 flags, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_buffer* pDataBuffer)
+{
+    ma_resource_manager_data_source_config config;
+
+    config = ma_resource_manager_data_source_config_init();
+    config.pFilePathW     = pFilePath;
+    config.flags          = flags;
+    config.pNotifications = pNotifications;
+
+    return ma_resource_manager_data_buffer_init_ex(pResourceManager, &config, pDataBuffer);
 }
 
 MA_API ma_result ma_resource_manager_data_buffer_init_copy(ma_resource_manager* pResourceManager, const ma_resource_manager_data_buffer* pExistingDataBuffer, ma_resource_manager_data_buffer* pDataBuffer)
 {
+    ma_resource_manager_data_source_config config;
+
     if (pExistingDataBuffer == NULL) {
         return MA_INVALID_ARGS;
     }
 
     MA_ASSERT(pExistingDataBuffer->pNode != NULL);  /* <-- If you've triggered this, you've passed in an invalid existing data buffer. */
 
-    return ma_resource_manager_data_buffer_init_internal(pResourceManager, NULL, NULL, pExistingDataBuffer->pNode->hashedName32, pExistingDataBuffer->flags, 0, NULL, pDataBuffer);
+    config = ma_resource_manager_data_source_config_init();
+    config.flags = pExistingDataBuffer->flags;
+
+    return ma_resource_manager_data_buffer_init_ex_internal(pResourceManager, &config, pExistingDataBuffer->pNode->hashedName32, pDataBuffer);
 }
 
 static ma_result ma_resource_manager_data_buffer_uninit_internal(ma_resource_manager_data_buffer* pDataBuffer)
@@ -64169,10 +64307,11 @@ static ma_data_source_vtable g_ma_resource_manager_data_stream_vtable =
     ma_resource_manager_data_stream_cb__get_data_format,
     ma_resource_manager_data_stream_cb__get_cursor_in_pcm_frames,
     ma_resource_manager_data_stream_cb__get_length_in_pcm_frames,
-    ma_resource_manager_data_stream_cb__set_looping
+    ma_resource_manager_data_stream_cb__set_looping,
+    MA_DATA_SOURCE_SELF_MANAGED_RANGE_AND_LOOP_POINT
 };
 
-static ma_result ma_resource_manager_data_stream_init_internal(ma_resource_manager* pResourceManager, const char* pFilePath, const wchar_t* pFilePathW, ma_uint32 flags, ma_uint64 initialSeekPoint, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_stream* pDataStream)
+MA_API ma_result ma_resource_manager_data_stream_init_ex(ma_resource_manager* pResourceManager, const ma_resource_manager_data_source_config* pConfig, ma_resource_manager_data_stream* pDataStream)
 {
     ma_result result;
     ma_data_source_config dataSourceConfig;
@@ -64183,19 +64322,25 @@ static ma_result ma_resource_manager_data_stream_init_internal(ma_resource_manag
     ma_resource_manager_inline_notification waitNotification;
     ma_resource_manager_pipeline_notifications notifications;
 
-    if (pNotifications != NULL) {
-        notifications = *pNotifications;
-        pNotifications = NULL;  /* From here on out, `notifications` should be used instead of `pNotifications`. Setting this to NULL to catch any errors at testing time. */
-    } else {
-        MA_ZERO_OBJECT(&notifications);
-    }
-
     if (pDataStream == NULL) {
-        ma_resource_manager_pipeline_notifications_signal_all_notifications(&notifications);
+        if (pConfig != NULL && pConfig->pNotifications != NULL) {
+            ma_resource_manager_pipeline_notifications_signal_all_notifications(&notifications);
+        }
+
         return MA_INVALID_ARGS;
     }
 
     MA_ZERO_OBJECT(pDataStream);
+
+    if (pConfig == NULL) {
+        return MA_INVALID_ARGS;
+    }
+
+    if (pConfig->pNotifications != NULL) {
+        notifications = *pConfig->pNotifications;    /* From here on out, `notifications` should be used instead of `pNotifications`. Setting this to NULL to catch any errors at testing time. */
+    } else {
+        MA_ZERO_OBJECT(&notifications);
+    }
 
     dataSourceConfig = ma_data_source_config_init();
     dataSourceConfig.vtable = &g_ma_resource_manager_data_stream_vtable;
@@ -64207,10 +64352,14 @@ static ma_result ma_resource_manager_data_stream_init_internal(ma_resource_manag
     }
 
     pDataStream->pResourceManager = pResourceManager;
-    pDataStream->flags            = flags;
+    pDataStream->flags            = pConfig->flags;
     pDataStream->result           = MA_BUSY;
 
-    if (pResourceManager == NULL || (pFilePath == NULL && pFilePathW == NULL)) {
+    ma_data_source_set_range_in_pcm_frames(pDataStream, pConfig->rangeBegInPCMFrames, pConfig->rangeEndInPCMFrames);
+    ma_data_source_set_loop_point_in_pcm_frames(pDataStream, pConfig->loopPointBegInPCMFrames, pConfig->loopPointEndInPCMFrames);
+    ma_data_source_set_looping(pDataStream, pConfig->isLooping);
+
+    if (pResourceManager == NULL || (pConfig->pFilePath == NULL && pConfig->pFilePathW == NULL)) {
         ma_resource_manager_pipeline_notifications_signal_all_notifications(&notifications);
         return MA_INVALID_ARGS;
     }
@@ -64218,10 +64367,10 @@ static ma_result ma_resource_manager_data_stream_init_internal(ma_resource_manag
     /* We want all access to the VFS and the internal decoder to happen on the job thread just to keep things easier to manage for the VFS.  */
 
     /* We need a copy of the file path. We should probably make this more efficient, but for now we'll do a transient memory allocation. */
-    if (pFilePath != NULL) {
-        pFilePathCopy = ma_copy_string(pFilePath, &pResourceManager->config.allocationCallbacks);
+    if (pConfig->pFilePath != NULL) {
+        pFilePathCopy  = ma_copy_string(pConfig->pFilePath, &pResourceManager->config.allocationCallbacks);
     } else {
-        pFilePathWCopy = ma_copy_string_w(pFilePathW, &pResourceManager->config.allocationCallbacks);
+        pFilePathWCopy = ma_copy_string_w(pConfig->pFilePathW, &pResourceManager->config.allocationCallbacks);
     }
 
     if (pFilePathCopy == NULL && pFilePathWCopy == NULL) {
@@ -64233,7 +64382,7 @@ static ma_result ma_resource_manager_data_stream_init_internal(ma_resource_manag
     We need to check for the presence of MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC. If it's not set, we need to wait before returning. Otherwise we
     can return immediately. Likewise, we'll also check for MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_WAIT_INIT and do the same.
     */
-    if ((flags & MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC) == 0 || (flags & MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_WAIT_INIT) != 0) {
+    if ((pConfig->flags & MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC) == 0 || (pConfig->flags & MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_WAIT_INIT) != 0) {
         waitBeforeReturning = MA_TRUE;
         ma_resource_manager_inline_notification_init(pResourceManager, &waitNotification);
     }
@@ -64246,7 +64395,7 @@ static ma_result ma_resource_manager_data_stream_init_internal(ma_resource_manag
     job.data.loadDataStream.pDataStream       = pDataStream;
     job.data.loadDataStream.pFilePath         = pFilePathCopy;
     job.data.loadDataStream.pFilePathW        = pFilePathWCopy;
-    job.data.loadDataStream.initialSeekPoint  = initialSeekPoint;
+    job.data.loadDataStream.initialSeekPoint  = pConfig->initialSeekPointInPCMFrames;
     job.data.loadDataStream.pInitNotification = (waitBeforeReturning == MA_TRUE) ? &waitNotification : notifications.init.pNotification;
     job.data.loadDataStream.pInitFence        = notifications.init.pFence;
     result = ma_resource_manager_post_job(pResourceManager, &job);
@@ -64277,14 +64426,28 @@ static ma_result ma_resource_manager_data_stream_init_internal(ma_resource_manag
     return MA_SUCCESS;
 }
 
-MA_API ma_result ma_resource_manager_data_stream_init(ma_resource_manager* pResourceManager, const char* pFilePath, ma_uint32 flags, ma_uint64 initialSeekPoint, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_stream* pDataStream)
+MA_API ma_result ma_resource_manager_data_stream_init(ma_resource_manager* pResourceManager, const char* pFilePath, ma_uint32 flags, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_stream* pDataStream)
 {
-    return ma_resource_manager_data_stream_init_internal(pResourceManager, pFilePath, NULL, flags, initialSeekPoint, pNotifications, pDataStream);
+    ma_resource_manager_data_source_config config;
+
+    config = ma_resource_manager_data_source_config_init();
+    config.pFilePath      = pFilePath;
+    config.flags          = flags;
+    config.pNotifications = pNotifications;
+    
+    return ma_resource_manager_data_stream_init_ex(pResourceManager, &config, pDataStream);
 }
 
-MA_API ma_result ma_resource_manager_data_stream_init_w(ma_resource_manager* pResourceManager, const wchar_t* pFilePath, ma_uint32 flags, ma_uint64 initialSeekPoint, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_stream* pDataStream)
+MA_API ma_result ma_resource_manager_data_stream_init_w(ma_resource_manager* pResourceManager, const wchar_t* pFilePath, ma_uint32 flags, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_stream* pDataStream)
 {
-    return ma_resource_manager_data_stream_init_internal(pResourceManager, NULL, pFilePath, flags, initialSeekPoint, pNotifications, pDataStream);
+    ma_resource_manager_data_source_config config;
+
+    config = ma_resource_manager_data_source_config_init();
+    config.pFilePathW     = pFilePath;
+    config.flags          = flags;
+    config.pNotifications = pNotifications;
+    
+    return ma_resource_manager_data_stream_init_ex(pResourceManager, &config, pDataStream);
 }
 
 MA_API ma_result ma_resource_manager_data_stream_uninit(ma_resource_manager_data_stream* pDataStream)
@@ -64339,42 +64502,30 @@ static void* ma_resource_manager_data_stream_get_page_data_pointer(ma_resource_m
 static void ma_resource_manager_data_stream_fill_page(ma_resource_manager_data_stream* pDataStream, ma_uint32 pageIndex)
 {
     ma_result result = MA_SUCCESS;
-    ma_bool32 isLooping;
     ma_uint64 pageSizeInFrames;
     ma_uint64 totalFramesReadForThisPage = 0;
     void* pPageData = ma_resource_manager_data_stream_get_page_data_pointer(pDataStream, pageIndex, 0);
 
     pageSizeInFrames = ma_resource_manager_data_stream_get_page_size_in_frames(pDataStream);
 
-    isLooping = ma_resource_manager_data_stream_is_looping(pDataStream);   /* Won't fail. */
+    /* The decoder needs to inherit the stream's looping and range state. */
+    {
+        ma_uint64 rangeBeg;
+        ma_uint64 rangeEnd;
+        ma_uint64 loopPointBeg;
+        ma_uint64 loopPointEnd;
 
-    if (isLooping) {
-        while (totalFramesReadForThisPage < pageSizeInFrames) {
-            ma_uint64 framesRemaining;
-            ma_uint64 framesRead;
+        ma_data_source_set_looping(&pDataStream->decoder, ma_resource_manager_data_stream_is_looping(pDataStream));
 
-            framesRemaining = pageSizeInFrames - totalFramesReadForThisPage;
-            result = ma_decoder_read_pcm_frames(&pDataStream->decoder, ma_offset_pcm_frames_ptr(pPageData, totalFramesReadForThisPage, pDataStream->decoder.outputFormat, pDataStream->decoder.outputChannels), framesRemaining, &framesRead);
-            totalFramesReadForThisPage += framesRead;
+        ma_data_source_get_range_in_pcm_frames(pDataStream, &rangeBeg, &rangeEnd);
+        ma_data_source_set_range_in_pcm_frames(&pDataStream->decoder, rangeBeg, rangeEnd);
 
-            /* Loop back to the start if we reached the end. We'll also have a known length at this point as well. */
-            if (result == MA_AT_END || framesRead < framesRemaining) {
-                if (pDataStream->totalLengthInPCMFrames == 0) {
-                    ma_decoder_get_cursor_in_pcm_frames(&pDataStream->decoder, &pDataStream->totalLengthInPCMFrames);
-                }
-
-                ma_decoder_seek_to_pcm_frame(&pDataStream->decoder, 0);
-                result = MA_SUCCESS;    /* Clear the AT_END result so we don't incorrectly mark this looping stream as at the end and then have it stopped. */
-            }
-
-            if (result != MA_SUCCESS && result != MA_AT_END) {
-                break;
-            }
-        }
-    } else {
-        result = ma_decoder_read_pcm_frames(&pDataStream->decoder, pPageData, pageSizeInFrames, &totalFramesReadForThisPage);
+        ma_data_source_get_loop_point_in_pcm_frames(pDataStream, &loopPointBeg, &loopPointEnd);
+        ma_data_source_set_loop_point_in_pcm_frames(&pDataStream->decoder, loopPointBeg, loopPointEnd);
     }
 
+    /* Just read straight from the decoder. It will deal with ranges and looping for us. */
+    result = ma_data_source_read_pcm_frames(&pDataStream->decoder, pPageData, pageSizeInFrames, &totalFramesReadForThisPage);
     if (result == MA_AT_END || totalFramesReadForThisPage < pageSizeInFrames) {
         c89atomic_exchange_32(&pDataStream->isDecoderAtEnd, MA_TRUE);
     }
@@ -64800,7 +64951,7 @@ MA_API ma_result ma_resource_manager_data_stream_get_available_frames(ma_resourc
 }
 
 
-static ma_result ma_resource_manager_data_source_preinit(ma_resource_manager* pResourceManager, ma_uint32 flags, ma_resource_manager_data_source* pDataSource)
+static ma_result ma_resource_manager_data_source_preinit(ma_resource_manager* pResourceManager, const ma_resource_manager_data_source_config* pConfig, ma_resource_manager_data_source* pDataSource)
 {
     if (pDataSource == NULL) {
         return MA_INVALID_ARGS;
@@ -64808,58 +64959,73 @@ static ma_result ma_resource_manager_data_source_preinit(ma_resource_manager* pR
 
     MA_ZERO_OBJECT(pDataSource);
 
+    if (pConfig == NULL) {
+        return MA_INVALID_ARGS;
+    }
+
     if (pResourceManager == NULL) {
         return MA_INVALID_ARGS;
     }
 
-    pDataSource->flags = flags;
+    pDataSource->flags = pConfig->flags;
 
     return MA_SUCCESS;
 }
 
-MA_API ma_result ma_resource_manager_data_source_init(ma_resource_manager* pResourceManager, const char* pName, ma_uint32 flags, ma_uint64 initialSeekPoint, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_source* pDataSource)
+MA_API ma_result ma_resource_manager_data_source_init_ex(ma_resource_manager* pResourceManager, const ma_resource_manager_data_source_config* pConfig, ma_resource_manager_data_source* pDataSource)
 {
     ma_result result;
 
-    result = ma_resource_manager_data_source_preinit(pResourceManager, flags, pDataSource);
+    result = ma_resource_manager_data_source_preinit(pResourceManager, pConfig, pDataSource);
     if (result != MA_SUCCESS) {
         return result;
     }
 
     /* The data source itself is just a data stream or a data buffer. */
-    if ((flags & MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_STREAM) != 0) {
-        return ma_resource_manager_data_stream_init(pResourceManager, pName, flags, initialSeekPoint, pNotifications, &pDataSource->backend.stream);
+    if ((pConfig->flags & MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_STREAM) != 0) {
+        return ma_resource_manager_data_stream_init_ex(pResourceManager, pConfig, &pDataSource->backend.stream);
     } else {
-        return ma_resource_manager_data_buffer_init(pResourceManager, pName, flags, initialSeekPoint, pNotifications, &pDataSource->backend.buffer);
+        return ma_resource_manager_data_buffer_init_ex(pResourceManager, pConfig, &pDataSource->backend.buffer);
     }
 }
 
-MA_API ma_result ma_resource_manager_data_source_init_w(ma_resource_manager* pResourceManager, const wchar_t* pName, ma_uint32 flags, ma_uint64 initialSeekPoint, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_source* pDataSource)
+MA_API ma_result ma_resource_manager_data_source_init(ma_resource_manager* pResourceManager, const char* pName, ma_uint32 flags, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_source* pDataSource)
 {
-    ma_result result;
+    ma_resource_manager_data_source_config config;
 
-    result = ma_resource_manager_data_source_preinit(pResourceManager, flags, pDataSource);
-    if (result != MA_SUCCESS) {
-        return result;
-    }
+    config = ma_resource_manager_data_source_config_init();
+    config.pFilePath      = pName;
+    config.flags          = flags;
+    config.pNotifications = pNotifications;
 
-    /* The data source itself is just a data stream or a data buffer. */
-    if ((flags & MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_STREAM) != 0) {
-        return ma_resource_manager_data_stream_init_w(pResourceManager, pName, flags, initialSeekPoint, pNotifications, &pDataSource->backend.stream);
-    } else {
-        return ma_resource_manager_data_buffer_init_w(pResourceManager, pName, flags, initialSeekPoint, pNotifications, &pDataSource->backend.buffer);
-    }
+    return ma_resource_manager_data_source_init_ex(pResourceManager, &config, pDataSource);
+}
+
+MA_API ma_result ma_resource_manager_data_source_init_w(ma_resource_manager* pResourceManager, const wchar_t* pName, ma_uint32 flags, const ma_resource_manager_pipeline_notifications* pNotifications, ma_resource_manager_data_source* pDataSource)
+{
+    ma_resource_manager_data_source_config config;
+
+    config = ma_resource_manager_data_source_config_init();
+    config.pFilePathW     = pName;
+    config.flags          = flags;
+    config.pNotifications = pNotifications;
+
+    return ma_resource_manager_data_source_init_ex(pResourceManager, &config, pDataSource);
 }
 
 MA_API ma_result ma_resource_manager_data_source_init_copy(ma_resource_manager* pResourceManager, const ma_resource_manager_data_source* pExistingDataSource, ma_resource_manager_data_source* pDataSource)
 {
     ma_result result;
+    ma_resource_manager_data_source_config config;
 
     if (pExistingDataSource == NULL) {
         return MA_INVALID_ARGS;
     }
 
-    result = ma_resource_manager_data_source_preinit(pResourceManager, pExistingDataSource->flags, pDataSource);
+    config = ma_resource_manager_data_source_config_init();
+    config.flags = pExistingDataSource->flags;
+
+    result = ma_resource_manager_data_source_preinit(pResourceManager, &config, pDataSource);
     if (result != MA_SUCCESS) {
         return result;
     }
@@ -69220,6 +69386,8 @@ MA_API ma_sound_config ma_sound_config_init(void)
     ma_sound_config config;
 
     MA_ZERO_OBJECT(&config);
+    config.rangeEndInPCMFrames     = ~((ma_uint64)0);
+    config.loopPointEndInPCMFrames = ~((ma_uint64)0);
 
     return config;
 }
@@ -69772,10 +69940,12 @@ MA_API ma_uint32 ma_engine_find_closest_listener(const ma_engine* pEngine, float
 
     iListenerClosest = 0;
     for (iListener = 0; iListener < pEngine->listenerCount; iListener += 1) {
-        float len2 = ma_vec3f_len2(ma_vec3f_sub(pEngine->listeners[iListener].position, ma_vec3f_init_3f(absolutePosX, absolutePosY, absolutePosZ)));
-        if (closestLen2 > len2) {
-            closestLen2 = len2;
-            iListenerClosest = iListener;
+        if (ma_engine_listener_is_enabled(pEngine, iListener)) {
+            float len2 = ma_vec3f_len2(ma_vec3f_sub(pEngine->listeners[iListener].position, ma_vec3f_init_3f(absolutePosX, absolutePosY, absolutePosZ)));
+            if (closestLen2 > len2) {
+                closestLen2 = len2;
+                iListenerClosest = iListener;
+            }
         }
     }
 
@@ -69879,6 +70049,24 @@ MA_API ma_vec3f ma_engine_listener_get_world_up(const ma_engine* pEngine, ma_uin
     }
 
     return ma_spatializer_listener_get_world_up(&pEngine->listeners[listenerIndex]);
+}
+
+MA_API void ma_engine_listener_set_enabled(ma_engine* pEngine, ma_uint32 listenerIndex, ma_bool32 isEnabled)
+{
+    if (pEngine == NULL || listenerIndex >= pEngine->listenerCount) {
+        return;
+    }
+
+    ma_spatializer_listener_set_enabled(&pEngine->listeners[listenerIndex], isEnabled);
+}
+
+MA_API ma_bool32 ma_engine_listener_is_enabled(const ma_engine* pEngine, ma_uint32 listenerIndex)
+{
+    if (pEngine == NULL || listenerIndex >= pEngine->listenerCount) {
+        return MA_FALSE;
+    }
+
+    return ma_spatializer_listener_is_enabled(&pEngine->listeners[listenerIndex]);
 }
 
 
@@ -70094,6 +70282,18 @@ static ma_result ma_sound_init_from_data_source_internal(ma_engine* pEngine, con
         return result;
     }
 
+
+    /* Apply initial range and looping state to the data source if applicable. */
+    if (pConfig->rangeBegInPCMFrames != 0 || pConfig->rangeEndInPCMFrames != ~((ma_uint64)0)) {
+        ma_data_source_set_range_in_pcm_frames(ma_sound_get_data_source(pSound), pConfig->rangeBegInPCMFrames, pConfig->rangeEndInPCMFrames);
+    }
+
+    if (pConfig->loopPointBegInPCMFrames != 0 || pConfig->loopPointEndInPCMFrames != ~((ma_uint64)0)) {
+        ma_data_source_set_range_in_pcm_frames(ma_sound_get_data_source(pSound), pConfig->loopPointBegInPCMFrames, pConfig->loopPointEndInPCMFrames);
+    }
+
+    ma_sound_set_looping(pSound, pConfig->isLooping);
+
     return MA_SUCCESS;
 }
 
@@ -70131,12 +70331,19 @@ MA_API ma_result ma_sound_init_from_file_internal(ma_engine* pEngine, const ma_s
     */
     if (notifications.done.pFence) { ma_fence_acquire(notifications.done.pFence); }
     {
-        if (pConfig->pFilePath != NULL) {
-            result = ma_resource_manager_data_source_init(pEngine->pResourceManager, pConfig->pFilePath, flags, pConfig->initialSeekPointInFrames, &notifications, pSound->pResourceManagerDataSource);
-        } else {
-            result = ma_resource_manager_data_source_init_w(pEngine->pResourceManager, pConfig->pFilePathW, flags, pConfig->initialSeekPointInFrames, &notifications, pSound->pResourceManagerDataSource);
-        }
+        ma_resource_manager_data_source_config resourceManagerDataSourceConfig = ma_resource_manager_data_source_config_init();
+        resourceManagerDataSourceConfig.pFilePath                   = pConfig->pFilePath;
+        resourceManagerDataSourceConfig.pFilePathW                  = pConfig->pFilePathW;
+        resourceManagerDataSourceConfig.flags                       = flags;
+        resourceManagerDataSourceConfig.pNotifications              = &notifications;
+        resourceManagerDataSourceConfig.initialSeekPointInPCMFrames = pConfig->initialSeekPointInPCMFrames;
+        resourceManagerDataSourceConfig.rangeBegInPCMFrames         = pConfig->rangeBegInPCMFrames;
+        resourceManagerDataSourceConfig.rangeEndInPCMFrames         = pConfig->rangeEndInPCMFrames;
+        resourceManagerDataSourceConfig.loopPointBegInPCMFrames     = pConfig->loopPointBegInPCMFrames;
+        resourceManagerDataSourceConfig.loopPointEndInPCMFrames     = pConfig->loopPointEndInPCMFrames;
+        resourceManagerDataSourceConfig.isLooping                   = pConfig->isLooping;
 
+        result = ma_resource_manager_data_source_init_ex(pEngine->pResourceManager, &resourceManagerDataSourceConfig, pSound->pResourceManagerDataSource);
         if (result != MA_SUCCESS) {
             goto done;
         }
@@ -87784,6 +87991,10 @@ issues with certain devices and configurations. These can be individually enable
 /*
 REVISION HISTORY
 ================
+v0.10.43 - TBD
+  - ALSA: Fix use of uninitialized variables
+  - ALSA: Fix enumeration of devices that support both playback and capture.
+
 v0.10.42 - 2021-08-22
   - Fix a possible deadlock when stopping devices.
 
