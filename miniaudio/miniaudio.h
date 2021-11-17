@@ -31618,7 +31618,8 @@ static ma_result ma_context_init__coreaudio(ma_context* pContext, const ma_conte
                     return MA_INVALID_OPERATION;    /* Failed to set session category. */
                 }
             #else
-                return MA_INVALID_OPERATION;    /* AVAudioSession.Category was introduced in iOS 12.0. */
+                /* Ignore the session category on version 11 and older, but post a warning. */
+                ma_log_postf(ma_context_get_log(pContext), MA_LOG_LEVEL_WARNING, "Session category only supported in iOS 12 and newer.");
             #endif
             }
         }
@@ -36388,7 +36389,7 @@ static ma_result ma_device_init_by_type__webaudio(ma_device* pDevice, const ma_d
         var isCapture  = $3;
         var pDevice    = $4;
 
-        if (typeof(miniaudio) === 'undefined') {
+        if (typeof(window.miniaudio) === 'undefined') {
             return -1;  /* Context not initialized. */
         }
 
@@ -36685,8 +36686,8 @@ static ma_result ma_context_init__webaudio(ma_context* pContext, const ma_contex
             return 0;   /* Web Audio not supported. */
         }
 
-        if (typeof(miniaudio) === 'undefined') {
-            miniaudio = {};
+        if (typeof(window.miniaudio) === 'undefined') {
+            window.miniaudio = {};
             miniaudio.devices = [];   /* Device cache for mapping devices to indexes for JavaScript/C interop. */
 
             miniaudio.track_device = function(device) {
@@ -87998,6 +87999,7 @@ REVISION HISTORY
 v0.10.43 - TBD
   - ALSA: Fix use of uninitialized variables
   - ALSA: Fix enumeration of devices that support both playback and capture.
+  - WebAudio: Fix errors in strict mode.
 
 v0.10.42 - 2021-08-22
   - Fix a possible deadlock when stopping devices.
