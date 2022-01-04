@@ -16,8 +16,7 @@ threads to manage internally and how to implement your own custom job thread.
 */
 #define MA_NO_ENGINE        /* We're intentionally not using the ma_engine API here. */
 #define MINIAUDIO_IMPLEMENTATION
-#include "../../miniaudio.h"
-#include "../miniaudio_engine.h"
+#include "../miniaudio.h"
 
 static ma_resource_manager_data_source g_dataSources[16];
 static ma_uint32                       g_dataSourceCount;
@@ -275,7 +274,6 @@ int main(int argc, char** argv)
             &resourceManager,
             argv[iFile+1],
             MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE | MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC /*| MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_STREAM*/,
-            0,      /* Initial seek point. */
             NULL,   /* Async notification. */
             &g_dataSources[iFile]);
 

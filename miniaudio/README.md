@@ -22,6 +22,42 @@
 
 Examples
 ========
+
+This example shows one way to play a sound using the high level API.
+
+```c
+#define MINIAUDIO_IMPLEMENTATION
+#include "../miniaudio.h"
+
+#include <stdio.h>
+
+int main(int argc, char** argv)
+{
+    ma_result result;
+    ma_engine engine;
+
+    if (argc < 2) {
+        printf("No input file.");
+        return -1;
+    }
+
+    result = ma_engine_init(NULL, &engine);
+    if (result != MA_SUCCESS) {
+        printf("Failed to initialize audio engine.");
+        return -1;
+    }
+
+    ma_engine_play_sound(&engine, argv[1], NULL);
+
+    printf("Press Enter to quit...");
+    getchar();
+
+    ma_engine_uninit(&engine);
+
+    return 0;
+}
+```
+
 This example shows how to decode and play a sound using the low level API.
 
 ```c
@@ -89,41 +125,6 @@ int main(int argc, char** argv)
 }
 ```
 
-This example shows one way to play a sound using the high level API.
-
-```c
-#define MINIAUDIO_IMPLEMENTATION
-#include "../miniaudio.h"
-
-#include <stdio.h>
-
-int main(int argc, char** argv)
-{
-    ma_result result;
-    ma_engine engine;
-
-    if (argc < 2) {
-        printf("No input file.");
-        return -1;
-    }
-
-    result = ma_engine_init(NULL, &engine);
-    if (result != MA_SUCCESS) {
-        printf("Failed to initialize audio engine.");
-        return -1;
-    }
-
-    ma_engine_play_sound(&engine, argv[1], NULL);
-
-    printf("Press Enter to quit...");
-    getchar();
-
-    ma_engine_uninit(&engine);
-
-    return 0;
-}
-```
-
 More examples can be found in the [examples](examples) folder or online here: https://miniaud.io/docs/examples/
 
 
@@ -174,12 +175,13 @@ Major Features
 - Written in C and compilable as C++, enabling miniaudio to work on almost all compilers.
 - Supports all major desktop and mobile platforms, with multiple backends for maximum compatibility.
 - A low level API with direct access to the raw audio data.
-- A high level API with resource management, node graphs and effects, including 3D spatialization.
-- Custom backends.
+- A high level API with sound management and effects, including 3D spatialization.
 - Supports playback, capture, full-duplex and loopback (WASAPI only).
 - Device enumeration for connecting to specific devices, not just defaults.
 - Connect to multiple devices at once.
 - Shared and exclusive mode on supported backends.
+- Resource management for loading and streaming sounds.
+- A node graph system for advanced mixing and effect processing.
 - Data conversion (sample format conversion, channel conversion and resampling).
 - Filters.
   - Biquads
@@ -190,18 +192,14 @@ Major Features
   - Delay/Echo
   - Spatializer
   - Stereo Pan
-- Waveform generation.
-  - Sine
-  - Square
-  - Triangle
-  - Sawtooth
+- Waveform generation (sine, square, triangle, sawtooth).
 - Noise generation (white, pink, Brownian).
 - Decoding
   - WAV
   - FLAC
   - MP3
   - Vorbis via stb_vorbis (not built in - must be included separately).
-  - Custom decoding backends are also supported.
+  - Custom
 - Encoding
   - WAV
 
