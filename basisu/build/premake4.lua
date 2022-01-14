@@ -36,7 +36,7 @@ function defaultaction (name, action)
    end
 end
 
-defaultaction ("windows", "vs2015")
+defaultaction ("windows", "vs2022")
 defaultaction ("linux", "gmake")
 defaultaction ("macosx", "gmake")
 
@@ -101,10 +101,10 @@ solution "basisu"
     configuration {"windows", "gmake or codelite or codeblocks", "x64"}
         targetdir ("../lib/mingw/64")
 
-    configuration {"vs2015 or vs2017 or vs2019", "x32"}
+    configuration {"vs2015 or vs2017 or vs2019 or vs2022", "x32"}
         targetdir ("../lib/vc2015/32")
 
-    configuration {"vs2015 or vs2017 or vs2019", "x64"}
+    configuration {"vs2015 or vs2017 or vs2019 or vs2022", "x64"}
         targetdir ("../lib/vc2015/64")
 
     configuration {"x32"}
