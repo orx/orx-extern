@@ -95,6 +95,24 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2017
 		]]
+
+
+	function suite.On2019()
+		_ACTION = "vs2019"
+		prepare()
+		test.capture [[
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2019
+		]]
+
+
+	function suite.On2022()
+		_ACTION = "vs2022"
+		prepare()
+		test.capture [[
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2022
+		]]
 --[[
 VS2015 seems to add:
 
