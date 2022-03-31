@@ -9335,6 +9335,7 @@ typedef struct
     ma_data_source_base ds;
     ma_format format;
     ma_uint32 channels;
+    ma_uint32 sampleRate;
     ma_uint64 cursor;
     ma_uint64 sizeInFrames;
     const void* pData;
@@ -9358,6 +9359,7 @@ typedef struct
 {
     ma_format format;
     ma_uint32 channels;
+    ma_uint32 sampleRate;
     ma_uint64 sizeInFrames;
     const void* pData;  /* If set to NULL, will allocate a block of memory for you. */
     ma_allocation_callbacks allocationCallbacks;
@@ -10749,7 +10751,7 @@ struct ma_sound
 {
     ma_engine_node engineNode;          /* Must be the first member for compatibility with the ma_node API. */
     ma_data_source* pDataSource;
-    ma_uint64 seekTarget;               /* The PCM frame index to seek to in the mixing thread. Set to (~(ma_uint64)0) to not perform any seeking. */
+    MA_ATOMIC(8, ma_uint64) seekTarget; /* The PCM frame index to seek to in the mixing thread. Set to (~(ma_uint64)0) to not perform any seeking. */
     MA_ATOMIC(4, ma_bool32) atEnd;
     ma_bool8 ownsDataSource;
 
@@ -55201,7 +55203,7 @@ static ma_result ma_audio_buffer_ref__data_source_on_get_data_format(ma_data_sou
 
     *pFormat     = pAudioBufferRef->format;
     *pChannels   = pAudioBufferRef->channels;
-    *pSampleRate = 0;   /* There is no notion of a sample rate with audio buffers. */
+    *pSampleRate = pAudioBufferRef->sampleRate;
     ma_channel_map_init_standard(ma_standard_channel_map_default, pChannelMap, channelMapCap, pAudioBufferRef->channels);
 
     return MA_SUCCESS;
@@ -55257,6 +55259,7 @@ MA_API ma_result ma_audio_buffer_ref_init(ma_format format, ma_uint32 channels, 
 
     pAudioBufferRef->format       = format;
     pAudioBufferRef->channels     = channels;
+    pAudioBufferRef->sampleRate   = 0;  /* TODO: Version 0.12. Set this to sampleRate. */
     pAudioBufferRef->cursor       = 0;
     pAudioBufferRef->sizeInFrames = sizeInFrames;
     pAudioBufferRef->pData        = pData;
@@ -55309,7 +55312,7 @@ MA_API ma_uint64 ma_audio_buffer_ref_read_pcm_frames(ma_audio_buffer_ref* pAudio
         }
 
         if (pFramesOut != NULL) {
-            ma_copy_pcm_frames(pFramesOut, ma_offset_ptr(pAudioBufferRef->pData, pAudioBufferRef->cursor * ma_get_bytes_per_frame(pAudioBufferRef->format, pAudioBufferRef->channels)), framesToRead, pAudioBufferRef->format, pAudioBufferRef->channels);
+            ma_copy_pcm_frames(ma_offset_ptr(pFramesOut, totalFramesRead * ma_get_bytes_per_frame(pAudioBufferRef->format, pAudioBufferRef->channels)), ma_offset_ptr(pAudioBufferRef->pData, pAudioBufferRef->cursor * ma_get_bytes_per_frame(pAudioBufferRef->format, pAudioBufferRef->channels)), framesToRead, pAudioBufferRef->format, pAudioBufferRef->channels);
         }
 
         totalFramesRead += framesToRead;
@@ -55467,10 +55470,11 @@ MA_API ma_audio_buffer_config ma_audio_buffer_config_init(ma_format format, ma_u
     ma_audio_buffer_config config;
 
     MA_ZERO_OBJECT(&config);
-    config.format = format;
-    config.channels = channels;
+    config.format       = format;
+    config.channels     = channels;
+    config.sampleRate   = 0;    /* TODO: Version 0.12. Set this to sampleRate. */
     config.sizeInFrames = sizeInFrames;
-    config.pData = pData;
+    config.pData        = pData;
     ma_allocation_callbacks_init_copy(&config.allocationCallbacks, pAllocationCallbacks);
 
     return config;
@@ -55498,6 +55502,9 @@ static ma_result ma_audio_buffer_init_ex(const ma_audio_buffer_config* pConfig, 
     if (result != MA_SUCCESS) {
         return result;
     }
+
+    /* TODO: Version 0.12. Set this in ma_audio_buffer_ref_init() instead of here. */
+    pAudioBuffer->ref.sampleRate = pConfig->sampleRate;
 
     ma_allocation_callbacks_init_copy(&pAudioBuffer->allocationCallbacks, &pConfig->allocationCallbacks);
 
@@ -71003,6 +71010,7 @@ static void ma_engine_node_process_pcm_frames__sound(ma_node* pNode, const float
     ma_uint32 dataSourceChannels;
     ma_uint8 temp[MA_DATA_CONVERTER_STACK_BUFFER_SIZE];
     ma_uint32 tempCapInFrames;
+    ma_uint64 seekTarget;
 
     /* This is a data source node which means no input buses. */
     (void)ppFramesIn;
@@ -71016,13 +71024,14 @@ static void ma_engine_node_process_pcm_frames__sound(ma_node* pNode, const float
     }
 
     /* If we're seeking, do so now before reading. */
-    if (pSound->seekTarget != MA_SEEK_TARGET_NONE) {
-        ma_data_source_seek_to_pcm_frame(pSound->pDataSource, pSound->seekTarget);
+    seekTarget = c89atomic_load_64(&pSound->seekTarget);
+    if (seekTarget != MA_SEEK_TARGET_NONE) {
+        ma_data_source_seek_to_pcm_frame(pSound->pDataSource, seekTarget);
 
         /* Any time-dependant effects need to have their times updated. */
-        ma_node_set_time(pSound, pSound->seekTarget);
+        ma_node_set_time(pSound, seekTarget);
 
-        pSound->seekTarget  = MA_SEEK_TARGET_NONE;
+        c89atomic_exchange_64(&pSound->seekTarget, MA_SEEK_TARGET_NONE);
     }
 
     /*
@@ -73177,24 +73186,8 @@ MA_API ma_result ma_sound_seek_to_pcm_frame(ma_sound* pSound, ma_uint64 frameInd
         return MA_INVALID_OPERATION;
     }
 
-    /*
-    Resource manager data sources are thread safe which means we can just seek immediately. However, we cannot guarantee that other data sources are
-    thread safe as well so in that case we'll need to get the mixing thread to seek for us to ensure we don't try seeking at the same time as reading.
-    */
-#ifndef MA_NO_RESOURCE_MANAGER
-    if (pSound->pDataSource == pSound->pResourceManagerDataSource) {
-        ma_result result = ma_resource_manager_data_source_seek_to_pcm_frame(pSound->pResourceManagerDataSource, frameIndex);
-        if (result != MA_SUCCESS) {
-            return result;
-        }
-
-        /* Time dependant effects need to have their timers updated. */
-        return ma_node_set_time(&pSound->engineNode, frameIndex);
-    }
-#endif
-
-    /* Getting here means the data source is not a resource manager data source so we'll need to get the mixing thread to do the seeking for us. */
-    pSound->seekTarget = frameIndex;
+    /* We can't be seeking while reading at the same time. We just set the seek target and get the mixing thread to do the actual seek. */
+    c89atomic_exchange_64(&pSound->seekTarget, frameIndex);
 
     return MA_SUCCESS;
 }
