@@ -1,6 +1,6 @@
 /*
 Audio playback and capture library. Choice of public domain or MIT-0. See license statements at the end of this file.
-miniaudio - v0.11.8 - 2022-02-12
+miniaudio - v0.11.9 - 2022-04-20
 
 David Reid - mackron@gmail.com
 
@@ -386,7 +386,7 @@ Sounds should be uninitialized with `ma_sound_uninit()`.
 
 Sounds are not started by default. Start a sound with `ma_sound_start()` and stop it with
 `ma_sound_stop()`. When a sound is stopped, it is not rewound to the start. Use
-`ma_sound_seek_to_pcm_frames(&sound, 0)` to seek back to the start of a sound. By default, starting
+`ma_sound_seek_to_pcm_frame(&sound, 0)` to seek back to the start of a sound. By default, starting
 and stopping sounds happens immediately, but sometimes it might be convenient to schedule the sound
 the be started and/or stopped at a specific time. This can be done with the following functions:
 
@@ -3640,7 +3640,7 @@ extern "C" {
 
 #define MA_VERSION_MAJOR    0
 #define MA_VERSION_MINOR    11
-#define MA_VERSION_REVISION 8
+#define MA_VERSION_REVISION 9
 #define MA_VERSION_STRING   MA_XSTRINGIFY(MA_VERSION_MAJOR) "." MA_XSTRINGIFY(MA_VERSION_MINOR) "." MA_XSTRINGIFY(MA_VERSION_REVISION)
 
 #if defined(_MSC_VER) && !defined(__clang__)
@@ -10817,6 +10817,7 @@ typedef struct
     ma_uint32 gainSmoothTimeInFrames;           /* The number of frames to interpolate the gain of spatialized sounds across. If set to 0, will use gainSmoothTimeInMilliseconds. */
     ma_uint32 gainSmoothTimeInMilliseconds;     /* When set to 0, gainSmoothTimeInFrames will be used. If both are set to 0, a default value will be used. */
     ma_allocation_callbacks allocationCallbacks;
+    ma_device_notification_proc notificationCallback;
     ma_bool32 noAutoStart;                      /* When set to true, requires an explicit call to ma_engine_start(). This is false by default, meaning the engine will be started automatically in ma_engine_init(). */
     ma_bool32 noDevice;                         /* When set to true, don't create a default device. ma_engine_read_pcm_frames() can be called manually to read data. */
     ma_mono_expansion_mode monoExpansionMode;   /* Controls how the mono channel should be expanded to other channels when spatialization is disabled on a sound. */
@@ -71746,6 +71747,7 @@ MA_API ma_result ma_engine_init(const ma_engine_config* pConfig, ma_engine* pEng
             deviceConfig.sampleRate                = engineConfig.sampleRate;
             deviceConfig.dataCallback              = ma_engine_data_callback_internal;
             deviceConfig.pUserData                 = pEngine;
+            deviceConfig.notificationCallback      = engineConfig.notificationCallback;
             deviceConfig.periodSizeInFrames        = engineConfig.periodSizeInFrames;
             deviceConfig.periodSizeInMilliseconds  = engineConfig.periodSizeInMilliseconds;
             deviceConfig.noPreSilencedOutputBuffer = MA_TRUE;    /* We'll always be outputting to every frame in the callback so there's no need for a pre-silenced buffer. */
