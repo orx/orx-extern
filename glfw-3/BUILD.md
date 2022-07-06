@@ -18,12 +18,19 @@
 ### MinGW
 
 1. Run `cmake -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_USE_HYBRID_HPG=ON .` in the root directory
-2. Run `mingw32-make`
-3. On a `Linux` machine (or using `binutils` for `Windows`), copy `libglfw3.a` + `libopengl32.a` & `libgdi32.a` (from MinGW installation) to the same directory
-4. Run `ar xv libopengl32.a | cut -f3 -d ' ' | xargs ar rvs libglfw3.a && rm *.o && echo 'done'`
-5. Run `ar xv libgdi32.a | cut -f3 -d ' ' | xargs ar rvs libglfw3.a && rm *.o && echo 'done'`
-6. Copy `libglfw3.a` back to the `Windows` machine
-7. Run `ranlib libglfw3.a`
+2. Edit `CMakeCache.txt`
+    - Set `CMAKE_BUILD_TYPE:STRING=Release`
+    - Set `CMAKE_C_FLAGS_RELEASE:STRING=-O3 -DNDEBUG -m64`
+2. Run `mingw32-make` & copy `src/libglfw3.a` (64 bit)
+3. Edit `CMakeCache.txt`
+    - Set `CMAKE_C_FLAGS_RELEASE:STRING=-O3 -DNDEBUG -m32`
+4. Run `mingw32-make` & copy `src/libglfw3.a` (32 bit)
+For both 32bit & 64bit versions:
+5. On a `Linux` machine (or using `binutils` for `Windows`), copy `libglfw3.a` + `libopengl32.a` & `libgdi32.a` (from MinGW installation) to the same directory
+6. Run `ar xv libopengl32.a | cut -f3 -d ' ' | xargs ar rvs libglfw3.a && rm *.o && echo 'done'`
+7. Run `ar xv libgdi32.a | cut -f3 -d ' ' | xargs ar rvs libglfw3.a && rm *.o && echo 'done'`
+8. Copy `libglfw3.a` back to the `Windows` machine
+9. Run `ranlib libglfw3.a`
 
 ## Linux
 
