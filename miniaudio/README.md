@@ -17,8 +17,7 @@
     <a href="#supported-platforms">Supported Platforms</a> -
     <a href="#backends">Backends</a> -
     <a href="#major-features">Major Features</a> -
-    <a href="#building">Building</a> -
-    <a href="#unofficial-bindings">Unofficial Bindings</a>
+    <a href="#building">Building</a>
 </p>
 
 Examples
@@ -74,7 +73,7 @@ void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uin
         return;
     }
 
-    ma_decoder_read_pcm_frames(pDecoder, pOutput, frameCount);
+    ma_decoder_read_pcm_frames(pDecoder, pOutput, frameCount, NULL);
 
     (void)pInput;
 }
