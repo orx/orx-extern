@@ -13,8 +13,8 @@
 # 2. Altered source versions must be plainly marked as such, and must not be
 # misrepresented as being the original software.
 # 3. This notice may not be removed or altered from any source distribution.
-APP_PLATFORM:=android-10
-APP_ABI:=armeabi-v7a
-APP_STL:=gnustl_static
-APP_MODULES:=libandroidutil_static
-APP_CFLAGS+=-Wall -Werror -Wno-long-long -Wno-variadic-macros
+APP_PLATFORM := android-19
+APP_ABI := armeabi-v7a
+APP_STL := c++_shared
+APP_MODULES := libandroidutil_static
+APP_CFLAGS += -Wall -Werror -Wno-long-long -Wno-variadic-macros
