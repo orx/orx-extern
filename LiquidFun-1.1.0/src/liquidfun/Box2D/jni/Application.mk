@@ -16,11 +16,8 @@
 
 LOCAL_PATH:=$(call my-dir)
 
-NDK_TOOLCHAIN_VERSION := clang
-APP_PLATFORM:=android-19
-APP_ABI:=armeabi-v7a x86 arm64-v8a x86_64
-APP_STL:=c++_shared
-APP_MODULES:=\
-	libliquidfun \
-	libliquidfun_static
-APP_CFLAGS+=-Wall -Werror -Wno-long-long -Wno-variadic-macros
+APP_PLATFORM := android-19
+APP_ABI := armeabi-v7a x86 arm64-v8a x86_64
+APP_STL := c++_shared
+APP_MODULES := libliquidfun libliquidfun_static
+APP_CFLAGS += -Wall -Werror -Wno-long-long -Wno-variadic-macros

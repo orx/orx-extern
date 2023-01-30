@@ -28,15 +28,6 @@ source_directories:=\
 
 include $(LOCAL_PATH)/b2_android_common.mk
 
-# Conditionally include libstlport (so include path is added to CFLAGS) if
-# it's not being built using the NDK build process.
-define add-stlport-includes
-$(eval \
-  ifeq ($(NDK_PROJECT_PATH),)
-  include external/stlport/libstlport.mk
-  endif)
-endef
-
 # Configure common local variables to build box2d adding $(1) to the end of the
 # build target's name.
 define box2d-module
@@ -75,7 +66,7 @@ $(eval \
 	    LOCAL_STATIC_LIBRARIES += cpufeatures
 
   endif
-  $$(call add-stlport-includes))
+  )
 endef
 
 # --- libliquidfun ---
