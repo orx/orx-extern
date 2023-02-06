@@ -2,6 +2,11 @@
 #if defined(_WIN32) && !defined(_CRT_SECURE_NO_WARNINGS)
 #  define _CRT_SECURE_NO_WARNINGS
 #endif
+#ifdef _MSC_VER
+#  if !defined(__clang__)
+#    pragma warning (disable: 5105)
+#  endif
+#endif
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wnonportable-system-include-path"
 #endif
@@ -10,18 +15,20 @@
 #include <thread.h>
 #include <test.h>
 
+#include <fcntl.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <math.h>
 #include <time.h>
 
 #define pointer_offset(ptr, ofs) (void*)((char*)(ptr) + (ptrdiff_t)(ofs))
 #define pointer_diff(first, second) (ptrdiff_t)((const char*)(first) - (const char*)(second))
 
-static size_t _hardware_threads;
-static int _test_failed;
+static size_t hardware_threads;
+static int test_failed;
 
 static void
 test_initialize(void);
@@ -30,7 +37,7 @@ static int
 test_fail_cb(const char* reason, const char* file, int line) {
 	fprintf(stderr, "FAIL: %s @ %s:%d\n", reason, file, line);
 	fflush(stderr);
-	_test_failed = 1;
+	test_failed = 1;
 	return -1;
 }
 
@@ -362,7 +369,7 @@ test_realloc(void) {
 	for (size_t iloop = 0; iloop < 8000; ++iloop) {
 		for (size_t iptr = 0; iptr < pointer_count; ++iptr) {
 			if (iloop)
-				rpfree(rprealloc(pointers[iptr], rand() % 4096));
+				rpfree(rprealloc(pointers[iptr], (size_t)rand() % 4096));
 			pointers[iptr] = rpaligned_alloc(alignments[(iptr + iloop) % 5], iloop + iptr);
 		}
 	}
@@ -421,7 +428,7 @@ test_superalign(void) {
 	return 0;
 }
 
-typedef struct _allocator_thread_arg {
+typedef struct allocator_thread_arg_t {
 	unsigned int        loops;
 	unsigned int        passes; //max 4096
 	unsigned int        datasize[32];
@@ -665,7 +672,7 @@ crossallocator_thread(void* argp) {
 
 	rpfree(extra_pointers);
 
-	while ((next_crossthread < end_crossthread) && !_test_failed) {
+	while ((next_crossthread < end_crossthread) && !test_failed) {
 		if (arg.crossthread_pointers[next_crossthread]) {
 			rpfree(arg.crossthread_pointers[next_crossthread]);
 			arg.crossthread_pointers[next_crossthread] = 0;
@@ -787,16 +794,14 @@ end:
 }
 
 static int
-test_threaded(void) {
+test_thread_implementation(void) {
 	uintptr_t thread[32];
 	uintptr_t threadres[32];
 	unsigned int i;
 	size_t num_alloc_threads;
 	allocator_thread_arg_t arg;
 
-	rpmalloc_initialize();
-
-	num_alloc_threads = _hardware_threads;
+	num_alloc_threads = hardware_threads;
 	if (num_alloc_threads < 2)
 		num_alloc_threads = 2;
 	if (num_alloc_threads > 32)
@@ -846,9 +851,21 @@ test_threaded(void) {
 			return -1;
 	}
 
-	printf("Memory threaded tests passed\n");
-
 	return 0;
+}
+
+static int
+test_threaded(void) {
+	rpmalloc_initialize();
+
+	int ret = test_thread_implementation();
+
+	rpmalloc_finalize();
+
+	if (ret == 0)
+		printf("Memory threaded tests passed\n");
+
+	return ret;
 }
 
 static int 
@@ -859,7 +876,7 @@ test_crossthread(void) {
 
 	rpmalloc_initialize();
 
-	size_t num_alloc_threads = _hardware_threads;
+	size_t num_alloc_threads = hardware_threads;
 	if (num_alloc_threads < 2)
 		num_alloc_threads = 2;
 	if (num_alloc_threads > 16)
@@ -917,9 +934,9 @@ test_crossthread(void) {
 	for (unsigned int ithread = 0; ithread < num_alloc_threads; ++ithread)
 		rpfree(arg[ithread].pointers);
 
-	rpmalloc_finalize();
-
 	printf("Memory cross thread free tests passed\n");
+
+	rpmalloc_finalize();
 
 	return 0;
 }
@@ -935,7 +952,7 @@ test_threadspam(void) {
 	rpmalloc_initialize();
 
 	num_passes = 100;
-	num_alloc_threads = _hardware_threads;
+	num_alloc_threads = hardware_threads;
 	if (num_alloc_threads < 2)
 		num_alloc_threads = 2;
 #if defined(__LLP64__) || defined(__LP64__) || defined(_WIN64)
@@ -1002,7 +1019,7 @@ test_first_class_heaps(void) {
 
 	rpmalloc_initialize();
 
-	num_alloc_threads = _hardware_threads * 2;
+	num_alloc_threads = hardware_threads * 2;
 	if (num_alloc_threads < 2)
 		num_alloc_threads = 2;
 	if (num_alloc_threads > 16)
@@ -1091,6 +1108,59 @@ test_error(void) {
 	return 0;
 }
 
+static int
+test_large_pages(void) {
+	rpmalloc_config_t config = {0};
+	config.page_size = 16 * 1024 * 1024;
+	config.span_map_count = 16;
+
+	rpmalloc_initialize_config(&config);
+
+	int ret = test_thread_implementation();
+
+	rpmalloc_finalize();
+
+	if (ret == 0)
+		printf("Large page config test passed\n");
+
+	return ret;
+}
+
+static int
+test_named_pages(void) {
+	rpmalloc_config_t config = {0};
+	char page_name[64] = {0};
+	snprintf(page_name, sizeof(page_name), "rpmalloc ::%s::", __func__);
+	config.page_name = page_name;
+	rpmalloc_initialize_config(&config);
+
+	void* testptr = rpmalloc(16 * 1024 * 1024);
+#if defined(__linux__)
+	char name[256], buf[4096] = {0};
+	int pid = getpid();
+	snprintf(name, sizeof(name), "/proc/%d/maps", pid);
+	int fd = open(name, O_RDONLY);
+	if (fd != -1) {
+		read(fd, buf, sizeof(buf));
+		close(fd);
+	}
+#endif
+	rpfree(testptr);
+
+	rpmalloc_finalize();
+
+	printf("Named pages test passed\n");
+#if defined(__linux__)
+	// Since it s kernel version and config dependent
+	// we do not make an issue out of it.
+	if (!strstr(buf, page_name)) {
+		printf("\tbut the page did not get an id as expected\n");
+	}
+#endif
+
+	return 0;
+}
+
 int
 test_run(int argc, char** argv) {
 	(void)sizeof(argc);
@@ -1109,6 +1179,10 @@ test_run(int argc, char** argv) {
 	if (test_threadspam())
 		return -1;
 	if (test_first_class_heaps())
+		return -1;
+	if (test_large_pages())
+		return -1;
+	if (test_named_pages())
 		return -1;
 	if (test_error())
 		return -1;
@@ -1141,7 +1215,7 @@ static void
 test_initialize(void) {
 	SYSTEM_INFO system_info;
 	GetSystemInfo(&system_info);
-	_hardware_threads = (size_t)system_info.dwNumberOfProcessors;
+	hardware_threads = (size_t)system_info.dwNumberOfProcessors;
 }
 
 #elif (defined(__linux__) || defined(__linux))
@@ -1156,14 +1230,14 @@ test_initialize(void) {
 	sched_getaffinity(0, sizeof(testmask), &testmask);     //Get mask for all CPUs
 	sched_setaffinity(0, sizeof(prevmask), &prevmask);     //Reset current mask
 	int num = CPU_COUNT(&testmask);
-	_hardware_threads = (size_t)(num > 1 ? num : 1);
+	hardware_threads = (size_t)(num > 1 ? num : 1);
 }
 
 #else
 
 static void
 test_initialize(void) {
-	_hardware_threads = 1;
+	hardware_threads = 1;
 }
 
 #endif
