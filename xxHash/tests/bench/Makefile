@@ -1,6 +1,6 @@
 # ################################################################
 # xxHash benchHash Makefile
-# Copyright (C) 2019-2020 Yann Collet
+# Copyright (C) 2019-2021 Yann Collet
 #
 # GPL v2 License
 #
@@ -29,7 +29,8 @@
 
 CPPFLAGS += -I../..   # directory of xxHash source files
 CFLAGS   ?= -O3
-CFLAGS   += -std=c99 -Wall -Wextra -Wstrict-aliasing=1
+CFLAGS   += -Wall -Wextra -Wstrict-aliasing=1 \
+            -std=c99
 CFLAGS   += $(MOREFLAGS)   # custom way to add flags
 CXXFLAGS ?= -O3
 LDFLAGS  += $(MOREFLAGS)

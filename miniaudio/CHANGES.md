@@ -1,9 +1,52 @@
-v0.11.10 - TBD
+v0.11.12 - TBD
+=====================
+* Fix a bug with data source ranges which resulted in data being read from outside the range.
+* Fix a crash due to a race condition in the resource manager.
+* Fix a crash with some backends when rerouting the playback side of a duplex device.
+* Fix some bugs with initialization of POSIX threads.
+* Fix a bug where sounds are not resampled when `MA_SOUND_NO_PITCH` is used.
+* Fix a bug where changing the range of a data source would result in no audio being read.
+* Fix a bug where asynchronously loaded data sources via the resources manager would reset ranges and loop points.
+* Fix a bug with the Vorbis decoder where seeking would not seek to the correct location.
+* Fix some Wimplicit-fallthrough warnings.
+* Add support for Windows 95/98.
+* Optimizations to the high level API.
+* Remove the old runtime linking system for pthread. The `MA_USE_RUNTIME_LINKING_FOR_PTHREAD` option is no longer used.
+* WASAPI: Fix a crash when starting a device while it's in the process of rerouting.
+
+
+v0.11.11 - 2022-11-04
+=====================
+* Silence an unused variable warning.
+* Remove references to ccall() from the Empscripten build.
+* Improve Android detection.
+* WASAPI: Some minor improvements to overrun recovery for capture and duplex modes.
+
+
+v0.11.10 - 2022-10-20
 =====================
 * Add support for setting the device notification callback when initializing an engine object.
+* Add support for more than 2 outputs to splitter nodes.
 * Fix a crash when initializing a channel converter.
+* Fix a channel mapping error where weights are calculated incorrectly.
 * Fix an unaligned access error.
+* Fix logging with the C++ build.
+* Fix some undefined behavior errors, including some memset()'s to null pointers of 0 bytes.
+* Fix logging of device info for loopback devices.
+* WASAPI: Fix an error where 32-bit formats are not properly detected.
+* WASAPI: Fix a bug where the device is not drained when stopped.
+* WASAPI: Fix an issue with loopback mode that results in waiting indefinitely and the callback never getting fired.
+* WASAPI: Add support for the Avrt API to specify the audio thread's latency sensitivity requirements. Use the `deviceConfig.wasapi.usage` configuration option.
+* PulseAudio: Pass the requested sample rate, if set, to PulseAudio so that it uses the requested sample rate internally rather than always using miniaudio's resampler.
+* PulseAudio: Fix a rare null pointer dereference.
+* ALSA: Fix a potential crash on older versions of Linux.
+* Core Audio: Fix a very unlikely memory leak.
+* Core Audio: Update a deprecated symbol.
+* AAudio: Fix an error where the wrong tokens are being used for usage, content types and input preset hints.
+* WebAudio: Do some cleanup of the internal global JavaScript object when the last context has been uninitialized.
 * Win32: Fix an error when the channel mask reported by Windows is all zero.
+* Various documentation fixes.
+* Bring dr_wav, dr_flac and dr_mp3 up-to-date with latest versions.
 
 
 v0.11.9 - 2022-04-20
