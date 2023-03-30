@@ -27,8 +27,7 @@
 
 using namespace basist;
 
-static etc1_global_selector_codebook *spoCodeBook       = nullptr;
-static ktx2_transcoder               *spoKTX2Transcoder = nullptr;
+static ktx2_transcoder *spoKTX2Transcoder = nullptr;
 
 static inline transcoder_texture_format GetFormat(BasisUFormat _eFormat)
 {
@@ -62,25 +61,14 @@ static inline transcoder_texture_format GetFormat(BasisUFormat _eFormat)
 
 extern "C" void BasisU_Init()
 {
-  // No code book?
-  if(spoCodeBook == nullptr)
+  // No KTX2 transcoder?
+  if(spoKTX2Transcoder == nullptr)
   {
     // Init Basis Universal
     basisu_transcoder_init();
 
-    // Create code book
-    spoCodeBook = new etc1_global_selector_codebook(g_global_selector_cb_size, g_global_selector_cb);
-  }
-
-  // Valid?
-  if(spoCodeBook)
-  {
-    // No KTX2 transcoder?
-    if(spoKTX2Transcoder == nullptr)
-    {
-      // Create KTX2 transcoder
-      spoKTX2Transcoder = new ktx2_transcoder(spoCodeBook);
-    }
+    // Create KTX2 transcoder
+    spoKTX2Transcoder = new ktx2_transcoder();
   }
 
   // Done!
@@ -93,11 +81,6 @@ extern "C" void BasisU_Exit()
   {
     delete spoKTX2Transcoder;
     spoKTX2Transcoder = nullptr;
-  }
-  if(spoCodeBook)
-  {
-    delete spoCodeBook;
-    spoCodeBook = nullptr;
   }
 
   // Done!
