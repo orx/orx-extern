@@ -10047,7 +10047,7 @@ MA_API ma_noise_config ma_noise_config_init(ma_format format, ma_uint32 channels
 
 typedef struct
 {
-    ma_data_source_vtable ds;
+    ma_data_source_base ds;
     ma_noise_config config;
     ma_lcg lcg;
     union
@@ -56753,7 +56753,7 @@ MA_API ma_result ma_data_source_set_range_in_pcm_frames(ma_data_source* pDataSou
     pDataSourceBase->loopBegInFrames = 0;
     pDataSourceBase->loopEndInFrames = ~((ma_uint64)0);
 
-    
+
     /*
     Seek to within range. Note that our seek positions here are relative to the new range. We don't want
     do do this if we failed to retrieve the cursor earlier on because it probably means the data source
