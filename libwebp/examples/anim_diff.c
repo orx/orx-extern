@@ -13,12 +13,15 @@
 //
 // example: anim_diff foo.gif bar.webp
 
+#include <assert.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>  // for 'strtod'.
 #include <string.h>  // for 'strcmp'.
 
 #include "./anim_util.h"
+#include "./example_util.h"
+#include "./unicode.h"
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define snprintf _snprintf
@@ -29,20 +32,67 @@ static int AdditionWillOverflow(int a, int b) {
   return (b > 0) && (a > INT_MAX - b);
 }
 
-// Minimize number of frames by combining successive frames that have exact same
-// ARGB data into a single longer duration frame.
-static void MinimizeAnimationFrames(AnimatedImage* const img) {
+static int FramesAreEqual(const uint8_t* const rgba1,
+                          const uint8_t* const rgba2, int width, int height) {
+  const int stride = width * 4;  // Always true for 'DecodedFrame.rgba'.
+  return !memcmp(rgba1, rgba2, stride * height);
+}
+
+static WEBP_INLINE int PixelsAreSimilar(uint32_t src, uint32_t dst,
+                                        int max_allowed_diff) {
+  const int src_a = (src >> 24) & 0xff;
+  const int src_r = (src >> 16) & 0xff;
+  const int src_g = (src >> 8) & 0xff;
+  const int src_b = (src >> 0) & 0xff;
+  const int dst_a = (dst >> 24) & 0xff;
+  const int dst_r = (dst >> 16) & 0xff;
+  const int dst_g = (dst >> 8) & 0xff;
+  const int dst_b = (dst >> 0) & 0xff;
+
+  return (abs(src_r * src_a - dst_r * dst_a) <= (max_allowed_diff * 255)) &&
+         (abs(src_g * src_a - dst_g * dst_a) <= (max_allowed_diff * 255)) &&
+         (abs(src_b * src_a - dst_b * dst_a) <= (max_allowed_diff * 255)) &&
+         (abs(src_a - dst_a) <= max_allowed_diff);
+}
+
+static int FramesAreSimilar(const uint8_t* const rgba1,
+                            const uint8_t* const rgba2,
+                            int width, int height, int max_allowed_diff) {
+  int i, j;
+  assert(max_allowed_diff > 0);
+  for (j = 0; j < height; ++j) {
+    for (i = 0; i < width; ++i) {
+      const int stride = width * 4;
+      const size_t offset = j * stride + i;
+      if (!PixelsAreSimilar(rgba1[offset], rgba2[offset], max_allowed_diff)) {
+        return 0;
+      }
+    }
+  }
+  return 1;
+}
+
+// Minimize number of frames by combining successive frames that have at max
+// 'max_diff' difference per channel between corresponding pixels.
+static void MinimizeAnimationFrames(AnimatedImage* const img, int max_diff) {
   uint32_t i;
   for (i = 1; i < img->num_frames; ++i) {
     DecodedFrame* const frame1 = &img->frames[i - 1];
     DecodedFrame* const frame2 = &img->frames[i];
     const uint8_t* const rgba1 = frame1->rgba;
     const uint8_t* const rgba2 = frame2->rgba;
+    int should_merge_frames = 0;
     // If merging frames will result in integer overflow for 'duration',
     // skip merging.
     if (AdditionWillOverflow(frame1->duration, frame2->duration)) continue;
-    if (!memcmp(rgba1, rgba2, img->canvas_width * 4 * img->canvas_height)) {
-      // Merge 'i+1'th frame into 'i'th frame.
+    if (max_diff > 0) {
+      should_merge_frames = FramesAreSimilar(rgba1, rgba2, img->canvas_width,
+                                             img->canvas_height, max_diff);
+    } else {
+      should_merge_frames =
+          FramesAreEqual(rgba1, rgba2, img->canvas_width, img->canvas_height);
+    }
+    if (should_merge_frames) {  // Merge 'i+1'th frame into 'i'th frame.
       frame1->duration += frame2->duration;
       if (i + 1 < img->num_frames) {
         memmove(&img->frames[i], &img->frames[i + 1],
@@ -57,6 +107,20 @@ static void MinimizeAnimationFrames(AnimatedImage* const img) {
 static int CompareValues(uint32_t a, uint32_t b, const char* output_str) {
   if (a != b) {
     fprintf(stderr, "%s: %d vs %d\n", output_str, a, b);
+    return 0;
+  }
+  return 1;
+}
+
+static int CompareBackgroundColor(uint32_t bg1, uint32_t bg2, int premultiply) {
+  if (premultiply) {
+    const int alpha1 = (bg1 >> 24) & 0xff;
+    const int alpha2 = (bg2 >> 24) & 0xff;
+    if (alpha1 == 0 && alpha2 == 0) return 1;
+  }
+  if (bg1 != bg2) {
+    fprintf(stderr, "Background color mismatch: 0x%08x vs 0x%08x\n",
+            bg1, bg2);
     return 0;
   }
   return 1;
@@ -81,10 +145,20 @@ static int CompareAnimatedImagePair(const AnimatedImage* const img1,
   if (!ok) return 0;  // These are fatal failures, can't proceed.
 
   if (is_multi_frame_image) {  // Checks relevant for multi-frame images only.
-    ok = CompareValues(img1->loop_count, img2->loop_count,
-                       "Loop count mismatch") && ok;
-    ok = CompareValues(img1->bgcolor, img2->bgcolor,
-                       "Background color mismatch") && ok;
+    int max_loop_count_workaround = 0;
+    // Transcodes to webp increase the gif loop count by 1 for compatibility.
+    // When the gif has the maximum value the webp value will be off by one.
+    if ((img1->format == ANIM_GIF && img1->loop_count == 65536 &&
+         img2->format == ANIM_WEBP && img2->loop_count == 65535) ||
+        (img1->format == ANIM_WEBP && img1->loop_count == 65535 &&
+         img2->format == ANIM_GIF && img2->loop_count == 65536)) {
+      max_loop_count_workaround = 1;
+    }
+    ok = (max_loop_count_workaround ||
+          CompareValues(img1->loop_count, img2->loop_count,
+                        "Loop count mismatch")) && ok;
+    ok = CompareBackgroundColor(img1->bgcolor, img2->bgcolor,
+                                premultiply) && ok;
   }
 
   for (i = 0; i < img1->num_frames; ++i) {
@@ -125,6 +199,11 @@ static void Help(void) {
   printf("  -min_psnr <float> ... minimum per-frame PSNR\n");
   printf("  -raw_comparison ..... if this flag is not used, RGB is\n");
   printf("                        premultiplied before comparison\n");
+  printf("  -max_diff <int> ..... maximum allowed difference per channel\n"
+         "                        between corresponding pixels in subsequent\n"
+         "                        frames\n");
+  printf("  -h .................. this help\n");
+  printf("  -version ............ print version number and exit\n");
 }
 
 int main(int argc, const char* argv[]) {
@@ -135,45 +214,54 @@ int main(int argc, const char* argv[]) {
   int got_input1 = 0;
   int got_input2 = 0;
   int premultiply = 1;
+  int max_diff = 0;
   int i, c;
   const char* files[2] = { NULL, NULL };
   AnimatedImage images[2];
 
-  if (argc < 3) {
-    Help();
-    return -1;
-  }
+  INIT_WARGV(argc, argv);
 
   for (c = 1; c < argc; ++c) {
     int parse_error = 0;
     if (!strcmp(argv[c], "-dump_frames")) {
       if (c < argc - 1) {
         dump_frames = 1;
-        dump_folder = argv[++c];
+        dump_folder = (const char*)GET_WARGV(argv, ++c);
       } else {
         parse_error = 1;
       }
     } else if (!strcmp(argv[c], "-min_psnr")) {
       if (c < argc - 1) {
-        const char* const v = argv[++c];
-        char* end = NULL;
-        const double d = strtod(v, &end);
-        if (end == v) {
-          parse_error = 1;
-          fprintf(stderr, "Error! '%s' is not a floating point number.\n", v);
-        }
-        min_psnr = d;
+        min_psnr = ExUtilGetFloat(argv[++c], &parse_error);
       } else {
         parse_error = 1;
       }
     } else if (!strcmp(argv[c], "-raw_comparison")) {
       premultiply = 0;
+    } else if (!strcmp(argv[c], "-max_diff")) {
+      if (c < argc - 1) {
+        max_diff = ExUtilGetInt(argv[++c], 0, &parse_error);
+      } else {
+        parse_error = 1;
+      }
+    } else if (!strcmp(argv[c], "-h") || !strcmp(argv[c], "-help")) {
+      Help();
+      FREE_WARGV_AND_RETURN(0);
+    } else if (!strcmp(argv[c], "-version")) {
+      int dec_version, demux_version;
+      GetAnimatedImageVersions(&dec_version, &demux_version);
+      printf("WebP Decoder version: %d.%d.%d\nWebP Demux version: %d.%d.%d\n",
+             (dec_version >> 16) & 0xff, (dec_version >> 8) & 0xff,
+             (dec_version >> 0) & 0xff,
+             (demux_version >> 16) & 0xff, (demux_version >> 8) & 0xff,
+             (demux_version >> 0) & 0xff);
+      FREE_WARGV_AND_RETURN(0);
     } else {
       if (!got_input1) {
-        files[0] = argv[c];
+        files[0] = (const char*)GET_WARGV(argv, c);
         got_input1 = 1;
       } else if (!got_input2) {
-        files[1] = argv[c];
+        files[1] = (const char*)GET_WARGV(argv, c);
         got_input2 = 1;
       } else {
         parse_error = 1;
@@ -181,40 +269,49 @@ int main(int argc, const char* argv[]) {
     }
     if (parse_error) {
       Help();
-      return -1;
+      FREE_WARGV_AND_RETURN(-1);
     }
   }
+  if (argc < 3) {
+    Help();
+    FREE_WARGV_AND_RETURN(-1);
+  }
+
+
   if (!got_input2) {
     Help();
-    return -1;
+    FREE_WARGV_AND_RETURN(-1);
   }
 
   if (dump_frames) {
-    printf("Dumping decoded frames in: %s\n", dump_folder);
+    WPRINTF("Dumping decoded frames in: %s\n", (const W_CHAR*)dump_folder);
   }
 
   memset(images, 0, sizeof(images));
   for (i = 0; i < 2; ++i) {
-    printf("Decoding file: %s\n", files[i]);
+    WPRINTF("Decoding file: %s\n", (const W_CHAR*)files[i]);
     if (!ReadAnimatedImage(files[i], &images[i], dump_frames, dump_folder)) {
-      fprintf(stderr, "Error decoding file: %s\n Aborting.\n", files[i]);
+      WFPRINTF(stderr, "Error decoding file: %s\n Aborting.\n",
+               (const W_CHAR*)files[i]);
       return_code = -2;
       goto End;
     } else {
-      MinimizeAnimationFrames(&images[i]);
+      MinimizeAnimationFrames(&images[i], max_diff);
     }
   }
 
   if (!CompareAnimatedImagePair(&images[0], &images[1],
                                 premultiply, min_psnr)) {
-    fprintf(stderr, "\nFiles %s and %s differ.\n", files[0], files[1]);
+    WFPRINTF(stderr, "\nFiles %s and %s differ.\n", (const W_CHAR*)files[0],
+             (const W_CHAR*)files[1]);
     return_code = -3;
   } else {
-    printf("\nFiles %s and %s are identical.\n", files[0], files[1]);
+    WPRINTF("\nFiles %s and %s are identical.\n", (const W_CHAR*)files[0],
+            (const W_CHAR*)files[1]);
     return_code = 0;
   }
  End:
   ClearAnimatedImage(&images[0]);
   ClearAnimatedImage(&images[1]);
-  return return_code;
+  FREE_WARGV_AND_RETURN(return_code);
 }
