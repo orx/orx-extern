@@ -33,7 +33,7 @@
 
 static uint32 hasNeon = 1;
 
-#ifdef ANDROID
+#if defined(ANDROID) && !defined(__ARM_NEON__)
 
 #include "cpu-features.h"
 static uint64_t cpuFeatures = 0;
@@ -455,7 +455,7 @@ b2ParticleSystem::b2ParticleSystem(const b2ParticleSystemDef* def,
 
 	SetDestructionByAge(m_def.destroyByAge);
 
-#if defined(LIQUIDFUN_SIMD_NEON) && defined(ANDROID)
+#if defined(LIQUIDFUN_SIMD_NEON) && defined(ANDROID) && !defined(__ARM_NEON__)
   if (cpuFeatures == 0 && hasNeon)
   {
     cpuFeatures = android_getCpuFeatures();
