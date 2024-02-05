@@ -139,6 +139,10 @@
 		_p('endif')
 		_p('')
 
+		if os.is("windows") then
+			_p('SHELL = cmd')
+		end
+
 		_p('CC = %s', cc.cc)
 		_p('CXX = %s', cc.cxx)
 		_p('AR = %s', cc.ar)
