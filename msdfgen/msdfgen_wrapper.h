@@ -6,7 +6,7 @@ extern "C"
 {
 #endif
 
-int generateMTSDF(void* pPixelBuffer, int s32Stride, FT_GlyphSlot pGlyph, float fRange, double dAngleThreshold);
+void generateMTSDF(void* pPixelBuffer, int s32Stride, FT_GlyphSlot pGlyph, float fRange, double dAngleThreshold);
 
 #if defined(__cplusplus)
 }

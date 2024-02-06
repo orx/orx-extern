@@ -84,63 +84,37 @@ static FT_Error readFreetypeOutline(Shape& output, FT_Outline* outline)
   return error;
 }
 
-static bool autoFrame(Projection* pProjection, Vector2 frame, Shape::Bounds bounds, float fRange)
+extern "C" void generateMTSDF(void* pPixelBuffer, int s32Stride, FT_GlyphSlot pGlyph, float fRange, double dAngleThreshold)
 {
-  Vector2 translate, scale;
-  double left = bounds.l, bottom = bounds.b, right = bounds.r, top = bounds.t;
-  double m = 0.5;
-
-  frame -= 2.0 * m * fRange;
-
-  if(left >= right || bottom >= top)
-  {
-    left = bottom = 0, right = top = 1;
-  }
-
-  if(frame.x <= 0 || frame.y <= 0)
-  {
-    return false;
-  }
-
-  Vector2 dims(right - left, top - bottom);
-  if(dims.x * frame.y < dims.y * frame.x)
-  {
-    translate.set(0.5 * (frame.x / frame.y * dims.y - dims.x) - left, -bottom);
-    scale = frame.y / dims.y;
-  }
-  else
-  {
-    translate.set(-left, 0.5 * (frame.y / frame.x * dims.x - dims.y) - bottom);
-    scale = frame.x / dims.x;
-  }
-
-  translate += m * fRange / scale;
-
-  *pProjection = Projection(scale, translate);
-  return true;
-}
-
-extern "C" int generateMTSDF(void* pPixelBuffer, int s32Stride, FT_GlyphSlot pGlyph, float fRange, double dAngleThreshold)
-{
+  int s32Width, s32Height;
+  double left, right, top, bottom;
   Shape shape;
+
   readFreetypeOutline(shape, &pGlyph->outline);
+  shape.inverseYAxis = true;
 
   shape.normalize();
   edgeColoringInkTrap(shape, dAngleThreshold);
 
-  Vector2 frame(pGlyph->bitmap.width, pGlyph->bitmap.rows);
-  Projection projection;
-  if(!autoFrame(&projection, frame, shape.getBounds(), fRange))
-  {
-    return 0;
-  }
+  Shape::Bounds bounds = shape.getBounds();
 
-  Bitmap<float, 4> mtsdf(pGlyph->bitmap.width, pGlyph->bitmap.rows);
-  generateMTSDF(mtsdf, shape, projection, fRange);
+  s32Width = (int)ceil(pGlyph->bitmap.width + fRange) + 1;
+  s32Height = (int)ceil(pGlyph->bitmap.rows + fRange) + 1;
+
+  left = bounds.l - 0.5 * fRange;
+  right = bounds.r + 0.5 * fRange;
+  bottom = bounds.b - 0.5 * fRange;
+  top = bounds.t + 0.5 * fRange;
+
+  Vector2 dims(s32Width, s32Height);
+  Vector2 translate(0.5 * (dims.x - right - left), 0.5 * (dims.y - top - bottom));
+
+  Bitmap<float, 4> mtsdf(s32Width, s32Height);
+  generateMTSDF(mtsdf, shape, fRange, 1.0, translate);
 
   unsigned char* pDst = (unsigned char*)pPixelBuffer;
 
-  for (int i = mtsdf.height() - 1; i >= 0; i--)
+  for (int i = 0; i < mtsdf.height(); i++)
   {
     for (int j = 0; j < mtsdf.width(); j++)
     {
@@ -150,9 +124,7 @@ extern "C" int generateMTSDF(void* pPixelBuffer, int s32Stride, FT_GlyphSlot pGl
       *pDst++ = pixelFloatToByte(mtsdf(j, i)[3]);
     }
 
-    // Advance to next row in target buffer, taking into account our written data.
+    /* Advance to next row in target buffer, taking into account our written data. */
     pDst += (s32Stride - mtsdf.width() * 4);
   }
-
-  return 1;
 }
