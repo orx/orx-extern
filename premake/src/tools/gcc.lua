@@ -63,16 +63,16 @@
 			ldflags  = "-L/usr/lib64",
 		},
 		Universal = {
-			cppflags = "",
-			flags    = "-arch i386 -arch x86_64 -arch ppc -arch ppc64",
+			cppflags = "-MMD",
+			flags    = "-arch i386 -arch x86_64 -arch arm64",
 		},
 		Universal32 = {
-			cppflags = "",
-			flags    = "-arch i386 -arch ppc",
+			cppflags = "-MMD",
+			flags    = "-arch i386",
 		},
 		Universal64 = {
-			cppflags = "",
-			flags    = "-arch x86_64 -arch ppc64",
+			cppflags = "-MMD",
+			flags    = "-arch x86_64 -arch arm64",
 		},
 		PS3 = {
 			cc         = "ppu-lv2-g++",
