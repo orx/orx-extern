@@ -13,7 +13,7 @@
     - In Librarian->All Options, remove `/machine:X86 %(AdditionalOptions)`
     - In Librarian->General, select `Ignore All Default Libraries` -> `Yes`
     - Add `x64` as a target in the configuration manager, based on `Win32`
-
+4. Build both Release configurations & copy both `glfw3.lib`
 
 ### MinGW
 
@@ -35,11 +35,19 @@ For both 32bit & 64bit versions:
 ## Linux
 
 1. Run `cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF .` in the root directory
-2. Run `make`
+2. Edit `CMakeCache.txt`
+    - Set `CMAKE_BUILD_TYPE:STRING=Release`
+    - Set `CMAKE_C_FLAGS_RELEASE:STRING=-O3 -DNDEBUG -m64`
+3. Run `make` & copy `src/libglfw3.a` (64 bit)
+4. Edit `CMakeCache.txt`
+    - Set `CMAKE_C_FLAGS_RELEASE:STRING=-O3 -DNDEBUG -m32`
+5. Run `make` & copy `src/libglfw3.a` (32 bit)
 
 ## OSX
 
 1. Add `set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)` to the `Cocoa` section of `CMakeLists.txt`
 2. Add `set(CMAKE_OSX_DEPLOYMENT_TARGET 10.7)` to the `Cocoa` section of `CMakeLists.txt`
 3. Run `cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF .` in the root directory
-4. Build
+4. Edit `CMakeCache.txt`
+    - Set `CMAKE_BUILD_TYPE:STRING=Release`
+5. Run `make` & copy `src/libglfw3.a` (Universal 64 bit)
