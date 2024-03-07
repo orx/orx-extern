@@ -34,7 +34,7 @@ For both 32bit & 64bit versions:
 
 ## Linux
 
-1. Run `cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF .` in the root directory
+1. Run `cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_WAYLAND=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF .` in the root directory
 2. Edit `CMakeCache.txt`
     - Set `CMAKE_BUILD_TYPE:STRING=Release`
     - Set `CMAKE_C_FLAGS_RELEASE:STRING=-O3 -DNDEBUG -m64`
