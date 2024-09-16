@@ -55,6 +55,13 @@ else
 EXT =
 endif
 
+ifeq ($(NODE_JS),1)
+    # Link in unrestricted filesystem support
+    LDFLAGS += -sNODERAWFS
+    # Set flag to fix isatty() support
+    CPPFLAGS += -DXSUM_NODE_JS=1
+endif
+
 # OS X linker doesn't support -soname, and use different extension
 # see: https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/DynamicLibraryDesignGuidelines.html
 ifeq ($(UNAME), Darwin)
@@ -174,6 +181,7 @@ clean:  ## remove all build artifacts
 	$(Q)$(RM) -r *.dSYM   # Mac OS-X specific
 	$(Q)$(RM) core *.o *.obj *.$(SHARED_EXT) *.$(SHARED_EXT).* *.a libxxhash.pc
 	$(Q)$(RM) xxhsum$(EXT) xxhsum32$(EXT) xxhsum_inlinedXXH$(EXT) dispatch$(EXT)
+	$(Q)$(RM) xxhsum.wasm xxhsum.js xxhsum.html
 	$(Q)$(RM) xxh32sum$(EXT) xxh64sum$(EXT) xxh128sum$(EXT)
 	$(Q)$(RM) $(XXHSUM_SRC_DIR)/*.o $(XXHSUM_SRC_DIR)/*.obj
 	$(MAKE) -C tests clean
@@ -189,8 +197,9 @@ clean:  ## remove all build artifacts
 # make check can be run with cross-compiled binaries on emulated environments (qemu user mode)
 # by setting $(RUN_ENV) to the target emulation environment
 .PHONY: check
-check: xxhsum   ## basic tests for xxhsum CLI, set RUN_ENV for emulated environments
+check: xxhsum test_sanity   ## basic tests for xxhsum CLI, set RUN_ENV for emulated environments
 	# stdin
+	# If you get "Wrong parameters" on Emscripten+Node.js, recompile with `NODE_JS=1`
 	$(RUN_ENV) ./xxhsum$(EXT) < xxhash.c
 	# multiple files
 	$(RUN_ENV) ./xxhsum$(EXT) xxhash.*
@@ -215,6 +224,10 @@ check: xxhsum   ## basic tests for xxhsum CLI, set RUN_ENV for emulated environm
 .PHONY: test-unicode
 test-unicode:
 	$(MAKE) -C tests test_unicode
+
+.PHONY: test_sanity
+test_sanity:
+	$(MAKE) -C tests test_sanity
 
 .PHONY: test-mem
 VALGRIND = valgrind --leak-check=yes --error-exitcode=1
@@ -306,6 +319,14 @@ test-xxhsum-c: xxhsum
 test-filename-escape:
 	$(MAKE) -C tests test_filename_escape
 
+.PHONY: test-cli-comment-line
+test-cli-comment-line:
+	$(MAKE) -C tests test_cli_comment_line
+
+.PHONY: test-cli-ignore-missing
+test-cli-ignore-missing:
+	$(MAKE) -C tests test_cli_ignore_missing
+
 .PHONY: armtest
 armtest: clean
 	@echo ---- test ARM compilation ----
@@ -315,6 +336,11 @@ armtest: clean
 clangtest: clean
 	@echo ---- test clang compilation ----
 	CC=clang MOREFLAGS="-Werror -Wconversion -Wno-sign-conversion" $(MAKE) all
+
+.PHONY: gcc-og-test
+gcc-og-test: clean
+	@echo ---- test gcc -Og compilation ----
+	CFLAGS="-Og -Wall -Wextra -Wundef -Wshadow -Wcast-align -Werror -fPIC" MOREFLAGS="-Werror" $(MAKE) all
 
 .PHONY: cxxtest
 cxxtest: clean
@@ -420,7 +446,7 @@ test-inline:
 
 .PHONY: test-all
 test-all: CFLAGS += -Werror
-test-all: test test32 test-unicode clangtest cxxtest usan test-inline listL120 trailingWhitespace test-xxh-nnn-sums
+test-all: test test32 test-unicode clangtest gcc-og-test cxxtest usan test-inline listL120 trailingWhitespace test-xxh-nnn-sums
 
 .PHONY: test-tools
 test-tools:
@@ -540,8 +566,8 @@ libxxhash.pc: libxxhash.pc.in
 	@echo creating pkgconfig
 	$(Q)$(SED) $(SED_ERE_OPT) -e 's|@PREFIX@|$(PREFIX)|' \
           -e 's|@EXECPREFIX@|$(PCEXECDIR)|' \
-          -e 's|@LIBDIR@|$(PCLIBDIR)|' \
-          -e 's|@INCLUDEDIR@|$(PCINCDIR)|' \
+          -e 's|@LIBDIR@|$$\{exec_prefix\}/$(PCLIBDIR)|' \
+          -e 's|@INCLUDEDIR@|$$\{prefix\}/$(PCINCDIR)|' \
           -e 's|@VERSION@|$(LIBVER)|' \
           $< > $@
 
