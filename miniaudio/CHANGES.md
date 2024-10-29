@@ -1,13 +1,17 @@
 v0.11.22 - TBD
 =====================
+* Add `MA_SOUND_FLAG_LOOPING` and `MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_LOOPING` flags. These can be used to initialize sounds and resource managed data sources to loop by default. This is the recommended way to enable looping for streams. The `isLooping` config option in `ma_sound_config` and `ma_resource_manager_data_source_config` has been deprecated. If you are using those, you should switch to the new flag or else you'll get compiler errors when upgrading to a future version.
 * Fix a bug relating to node detachment.
 * Fix a bug where amplification with `ma_device_set_master_volume()` does not work.
+* Fix a bug where sounds loaded with `MA_SOUND_FLAG_DECODE` do not loop.
 * ALSA: Fix some warnings relating to unhandled return value of `read()`.
 * DirectSound: Add support for specifying an explicit window handle for SetCooperativeLevel().
 * Web: Fix ScriptProcessorNode path when compiling with `--closure=1`. Note that the Audio Worklets path is not currently working due to the callback specified in `emscripten_create_wasm_audio_worklet_processor_async` never getting fired.
 * Web: Fix an error with the unlocked notification when compiling as C++.
 * Web: Fix a JavaScript error when initializing and then uninitializing a context before any interactivity.
 * AAudio: The default minimum SDK version has been increased from 26 to 27 when enabling AAudio. If you need to support version 26, you can use `#define MA_AAUDIO_MIN_ANDROID_SDK_VERSION 26`.
+* AAudio: Fix ma_device_get_info() implementation
+* PulseAudio: Allow setting the channel map requested from PulseAudio in device configs
 
 
 v0.11.21 - 2023-11-15
@@ -182,7 +186,7 @@ v0.11.7 - 2022-02-06
 
 v0.11.6 - 2022-01-22
 ====================
-* WASAPI: Fix a bug where the device is not stopped when an error occurrs when writing to a playback device.
+* WASAPI: Fix a bug where the device is not stopped when an error occurs when writing to a playback device.
 * PulseAudio: Fix a rare crash due to a division by zero.
 * The node graph can now be used as a node. This allows node graphs to be connected to other node graphs.
 * Fix a crash with high-pass and band-pass filters.
@@ -274,7 +278,7 @@ v0.11.0 - 2021-12-18
   - Add support for disabling denormals on the audio thread.
   - Add a delay/echo effect called ma_delay.
   - Add a stereo pan effect called ma_panner.
-  - Add a spataializer effect called ma_spatializer.
+  - Add a spatializer effect called ma_spatializer.
   - Add support for amplification for device master volume.
   - Remove dependency on MA_MAX_CHANNELS from filters and data conversion.
   - Increase MA_MAX_CHANNELS from 32 to 254.
@@ -476,7 +480,7 @@ v0.10.26 - 2020-11-24
 
 v0.10.25 - 2020-11-15
   - PulseAudio: Fix a bug where the stop callback isn't fired.
-  - WebAudio: Fix an error that occurs when Emscripten increases the size of it's heap.
+  - WebAudio: Fix an error that occurs when Emscripten increases the size of its heap.
   - Custom Backends: Change the onContextInit and onDeviceInit callbacks to take a parameter which is a pointer to the config that was
     passed into ma_context_init() and ma_device_init(). This replaces the deviceType parameter of onDeviceInit.
   - Fix compilation warnings on older versions of GCC.
@@ -860,7 +864,7 @@ v0.9 - 2019-03-06
   - API CHANGE: Add log level to the log callback. New signature:
     - void on_log(ma_context* pContext, ma_device* pDevice, ma_uint32 logLevel, const char* message)
   - API CHANGE: Changes to result codes. Constants have changed and unused codes have been removed. If you're
-    a binding mainainer you will need to update your result code constants.
+    a binding maintainer you will need to update your result code constants.
   - API CHANGE: Change the order of the ma_backend enums to priority order. If you are a binding maintainer, you
     will need to update.
   - API CHANGE: Rename mal_dsp to ma_pcm_converter. All functions have been renamed from mal_dsp_*() to
@@ -969,7 +973,7 @@ v0.8 - 2018-07-05
   - Changed MAL_IMPLEMENTATION to MINI_AL_IMPLEMENTATION for consistency with other libraries. The old
     way is still supported for now, but you should update as it may be removed in the future.
   - API CHANGE: Replace device enumeration APIs. mal_enumerate_devices() has been replaced with
-    mal_context_get_devices(). An additional low-level device enumration API has been introduced called
+    mal_context_get_devices(). An additional low-level device enumeration API has been introduced called
     mal_context_enumerate_devices() which uses a callback to report devices.
   - API CHANGE: Rename mal_get_sample_size_in_bytes() to mal_get_bytes_per_sample() and add
     mal_get_bytes_per_frame().
