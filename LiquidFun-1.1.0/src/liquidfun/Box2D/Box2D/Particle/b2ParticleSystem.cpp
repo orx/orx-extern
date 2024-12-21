@@ -2776,16 +2776,22 @@ void b2ParticleSystem::RemoveSpuriousBodyContacts()
 	int32 discarded = 0;
 
 
-#if !defined(_WIN32) && !defined(WIN32)
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4858)
+#else
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-result"
-#endif // !_WIN32 && !WIN32
+#endif
+
   std::remove_if(m_bodyContactBuffer.Begin(),
 					m_bodyContactBuffer.End(),
 					b2ParticleBodyContactRemovePredicate(this, &discarded));
-#if !defined(_WIN32) && !defined(WIN32)
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#else
 #pragma GCC diagnostic pop
-#endif // !_WIN32 && !WIN32
+#endif
 
 	m_bodyContactBuffer.SetCount(m_bodyContactBuffer.GetCount() - discarded);
 }
