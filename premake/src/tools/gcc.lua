@@ -89,6 +89,13 @@
   endif
   include $(DEVKITPPC)/wii_rules']],
 		},
+		Web = {
+			cc        = "emcc",
+			cxx       = "em++",
+			ar        = "emar",
+			cppflags  = "-MMD",
+			flags     = "-pthread",
+		},
 	}
 
 	local platforms = premake.gcc.platforms

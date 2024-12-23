@@ -56,15 +56,15 @@
 		_p('')
 
 		if os.is("MacOSX") and prj.kind == "WindowedApp" then
-			_p('all: $(TARGETDIR) $(OBJDIR) prebuild prelink $(TARGET) $(dir $(TARGETDIR))PkgInfo $(dir $(TARGETDIR))Info.plist')
+			_p('all: $(TARGETDIR) $(OBJDIR) $(TARGET) $(dir $(TARGETDIR))PkgInfo $(dir $(TARGETDIR))Info.plist')
 		else
-			_p('all: $(TARGETDIR) $(OBJDIR) prebuild prelink $(TARGET)')
+			_p('all: $(TARGETDIR) $(OBJDIR) $(TARGET)')
 		end
 		_p('\t@:')
 		_p('')
 
 		-- target build rule
-		_p('$(TARGET): $(GCH) $(OBJECTS) $(LDDEPS) $(RESOURCES)')
+		_p('$(TARGET): prebuild $(GCH) $(OBJECTS) $(LDDEPS) $(RESOURCES) prelink')
 		_p('\t@echo Linking %s', prj.name)
 		_p('\t$(SILENT) $(LINKCMD)')
 		_p('\t$(POSTBUILDCMDS)')
@@ -278,7 +278,11 @@
 			-- $(LIBS) moved to end (http://sourceforge.net/p/premake/bugs/279/)
 
 			local tool = iif(cfg.language == "C", "CC", "CXX")
-			_p('  LINKCMD    = $(%s) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)', tool)
+			if cfg.platform == "Web" then
+				_p('  LINKCMD    = $(%s) -o $(TARGET) $(OBJECTS) $(ALL_LDFLAGS) $(LIBS)', tool)
+			else
+				_p('  LINKCMD    = $(%s) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)', tool)
+			end
 
 		end
 	end

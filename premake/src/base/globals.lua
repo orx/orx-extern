@@ -57,6 +57,12 @@
 			iscrosscompiler = true,
 			namestyle       = "windows",
 		},
+		Web =
+		{
+			cfgsuffix       = "web",
+			iscrosscompiler = true,
+			namestyle       = "WEB",
+		},
 	}
 
 
