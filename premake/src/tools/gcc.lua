@@ -94,7 +94,6 @@
 			cxx       = "em++",
 			ar        = "emar",
 			cppflags  = "-MMD",
-			flags     = "-pthread",
 		},
 	}
 
