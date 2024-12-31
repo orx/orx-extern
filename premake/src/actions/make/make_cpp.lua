@@ -228,6 +228,9 @@
 		if platform.ar then
 			_p('  AR         = %s', platform.ar)
 		end
+		if platform.rescomp then
+			_p('  RESCOMP    = %s', platform.rescomp)
+		end
 	end
 
 

@@ -93,6 +93,7 @@
 			cc        = "emcc",
 			cxx       = "em++",
 			ar        = "emar",
+			rescomp   = ":",
 			cppflags  = "-MMD",
 		},
 	}
