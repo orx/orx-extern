@@ -3141,7 +3141,7 @@ Biquad filtering is achieved with the `ma_biquad` API. Example:
 
     ```c
     ma_biquad_config config = ma_biquad_config_init(ma_format_f32, channels, b0, b1, b2, a0, a1, a2);
-    ma_result result = ma_biquad_init(&config, &biquad);
+    ma_result result = ma_biquad_init(&config, NULL, &biquad);
     if (result != MA_SUCCESS) {
         // Error.
     }
@@ -5825,6 +5825,8 @@ MA_API void ma_data_source_uninit(ma_data_source* pDataSource);
 MA_API ma_result ma_data_source_read_pcm_frames(ma_data_source* pDataSource, void* pFramesOut, ma_uint64 frameCount, ma_uint64* pFramesRead);   /* Must support pFramesOut = NULL in which case a forward seek should be performed. */
 MA_API ma_result ma_data_source_seek_pcm_frames(ma_data_source* pDataSource, ma_uint64 frameCount, ma_uint64* pFramesSeeked); /* Can only seek forward. Equivalent to ma_data_source_read_pcm_frames(pDataSource, NULL, frameCount, &framesRead); */
 MA_API ma_result ma_data_source_seek_to_pcm_frame(ma_data_source* pDataSource, ma_uint64 frameIndex);
+MA_API ma_result ma_data_source_seek_seconds(ma_data_source* pDataSource, float secondCount, float* pSecondsSeeked); /* Can only seek forward. Abstraction to ma_data_source_seek_pcm_frames() */
+MA_API ma_result ma_data_source_seek_to_second(ma_data_source* pDataSource, float seekPointInSeconds); /* Abstraction to ma_data_source_seek_to_pcm_frame() */
 MA_API ma_result ma_data_source_get_data_format(ma_data_source* pDataSource, ma_format* pFormat, ma_uint32* pChannels, ma_uint32* pSampleRate, ma_channel* pChannelMap, size_t channelMapCap);
 MA_API ma_result ma_data_source_get_cursor_in_pcm_frames(ma_data_source* pDataSource, ma_uint64* pCursor);
 MA_API ma_result ma_data_source_get_length_in_pcm_frames(ma_data_source* pDataSource, ma_uint64* pLength);    /* Returns MA_NOT_IMPLEMENTED if the length is unknown or cannot be determined. Decoders can return this. */
@@ -6287,7 +6289,7 @@ Job Queue
 /*
 Slot Allocator
 --------------
-The idea of the slot allocator is for it to be used in conjunction with a fixed sized buffer. You use the slot allocator to allocator an index that can be used
+The idea of the slot allocator is for it to be used in conjunction with a fixed sized buffer. You use the slot allocator to allocate an index that can be used
 as the insertion point for an object.
 
 Slots are reference counted to help mitigate the ABA problem in the lock-free queue we use for tracking jobs.
@@ -7965,6 +7967,7 @@ struct ma_device
         {
             /*AAudioStream**/ ma_ptr pStreamPlayback;
             /*AAudioStream**/ ma_ptr pStreamCapture;
+            ma_mutex closeLock;
             ma_aaudio_usage usage;
             ma_aaudio_content_type contentType;
             ma_aaudio_input_preset inputPreset;
@@ -11393,6 +11396,7 @@ MA_API void ma_sound_set_looping(ma_sound* pSound, ma_bool32 isLooping);
 MA_API ma_bool32 ma_sound_is_looping(const ma_sound* pSound);
 MA_API ma_bool32 ma_sound_at_end(const ma_sound* pSound);
 MA_API ma_result ma_sound_seek_to_pcm_frame(ma_sound* pSound, ma_uint64 frameIndex); /* Just a wrapper around ma_data_source_seek_to_pcm_frame(). */
+MA_API ma_result ma_sound_seek_to_second(ma_sound* pSound, float seekPointInSeconds); /* Abstraction to ma_sound_seek_to_pcm_frame() */
 MA_API ma_result ma_sound_get_data_format(ma_sound* pSound, ma_format* pFormat, ma_uint32* pChannels, ma_uint32* pSampleRate, ma_channel* pChannelMap, size_t channelMapCap);
 MA_API ma_result ma_sound_get_cursor_in_pcm_frames(ma_sound* pSound, ma_uint64* pCursor);
 MA_API ma_result ma_sound_get_length_in_pcm_frames(ma_sound* pSound, ma_uint64* pLength);
@@ -38086,21 +38090,33 @@ static ma_result ma_context_get_device_info__aaudio(ma_context* pContext, ma_dev
     return MA_SUCCESS;
 }
 
+static ma_result ma_close_streams__aaudio(ma_device* pDevice)
+{
+    MA_ASSERT(pDevice != NULL);
+
+    ma_mutex_lock(&pDevice->aaudio.closeLock);
+    {
+        /* When re-routing, streams may have been closed and never re-opened. Hence the extra checks below. */
+        if (pDevice->type == ma_device_type_capture || pDevice->type == ma_device_type_duplex) {
+            ma_close_stream__aaudio(pDevice->pContext, (ma_AAudioStream*)pDevice->aaudio.pStreamCapture);
+            pDevice->aaudio.pStreamCapture = NULL;
+        }
+        if (pDevice->type == ma_device_type_playback || pDevice->type == ma_device_type_duplex) {
+            ma_close_stream__aaudio(pDevice->pContext, (ma_AAudioStream*)pDevice->aaudio.pStreamPlayback);
+            pDevice->aaudio.pStreamPlayback = NULL;
+        }
+    }
+    ma_mutex_unlock(&pDevice->aaudio.closeLock);
+
+    return MA_SUCCESS;
+}
 
 static ma_result ma_device_uninit__aaudio(ma_device* pDevice)
 {
     MA_ASSERT(pDevice != NULL);
 
-    /* When re-routing, streams may have been closed and never re-opened. Hence the extra checks below. */
-
-    if (pDevice->type == ma_device_type_capture || pDevice->type == ma_device_type_duplex) {
-        ma_close_stream__aaudio(pDevice->pContext, (ma_AAudioStream*)pDevice->aaudio.pStreamCapture);
-        pDevice->aaudio.pStreamCapture = NULL;
-    }
-    if (pDevice->type == ma_device_type_playback || pDevice->type == ma_device_type_duplex) {
-        ma_close_stream__aaudio(pDevice->pContext, (ma_AAudioStream*)pDevice->aaudio.pStreamPlayback);
-        pDevice->aaudio.pStreamPlayback = NULL;
-    }
+    ma_close_streams__aaudio(pDevice);
+    ma_mutex_uninit(&pDevice->aaudio.closeLock);
 
     return MA_SUCCESS;
 }
@@ -38180,6 +38196,11 @@ static ma_result ma_device_init__aaudio(ma_device* pDevice, const ma_device_conf
         if (result != MA_SUCCESS) {
             return result;
         }
+    }
+
+    result = ma_mutex_init(&pDevice->aaudio.closeLock);
+    if (result != MA_SUCCESS) {
+        return result;
     }
 
     return MA_SUCCESS;
@@ -38323,15 +38344,7 @@ static ma_result ma_device_reinit__aaudio(ma_device* pDevice, ma_device_type dev
 
 error_disconnected:
     /* The first thing to do is close the streams. */
-    if (deviceType == ma_device_type_capture || deviceType == ma_device_type_duplex) {
-        ma_close_stream__aaudio(pDevice->pContext, (ma_AAudioStream*)pDevice->aaudio.pStreamCapture);
-        pDevice->aaudio.pStreamCapture = NULL;
-    }
-
-    if (deviceType == ma_device_type_playback || deviceType == ma_device_type_duplex) {
-        ma_close_stream__aaudio(pDevice->pContext, (ma_AAudioStream*)pDevice->aaudio.pStreamPlayback);
-        pDevice->aaudio.pStreamPlayback = NULL;
-    }
+    ma_close_streams__aaudio(pDevice);
 
     /* Now we need to reinitialize each streams. The hardest part with this is just filling output the config and descriptors. */
     {
@@ -38392,7 +38405,7 @@ error_disconnected:
         result = ma_device_post_init(pDevice, deviceType, &descriptorPlayback, &descriptorCapture);
         if (result != MA_SUCCESS) {
             ma_log_post(ma_device_get_log(pDevice), MA_LOG_LEVEL_WARNING, "[AAudio] Failed to initialize device after route change.");
-            ma_device_uninit__aaudio(pDevice);
+            ma_close_streams__aaudio(pDevice);
             return result;
         }
 
@@ -39857,6 +39870,10 @@ Web Audio Backend
 #if (__EMSCRIPTEN_major__ > 3) || (__EMSCRIPTEN_major__ == 3 && (__EMSCRIPTEN_minor__ > 1 || (__EMSCRIPTEN_minor__ == 1 && __EMSCRIPTEN_tiny__ >= 32)))
     #include <emscripten/webaudio.h>
     #define MA_SUPPORT_AUDIO_WORKLETS
+
+    #if (__EMSCRIPTEN_major__ > 3) || (__EMSCRIPTEN_major__ == 3 && (__EMSCRIPTEN_minor__ > 1 || (__EMSCRIPTEN_minor__ == 1 && __EMSCRIPTEN_tiny__ >= 70)))
+        #define MA_SUPPORT_AUDIO_WORKLETS_VARIABLE_BUFFER_SIZE
+    #endif
 #endif
 
 /*
@@ -40104,10 +40121,6 @@ static EM_BOOL ma_audio_worklet_process_callback__webaudio(int inputCount, const
     (void)paramCount;
     (void)pParams;
 
-    if (ma_device_get_state(pDevice) != ma_device_state_started) {
-        return EM_TRUE;
-    }
-
     /*
     The Emscripten documentation says that it'll always be 128 frames being passed in. Hard coding it like that feels
     like a very bad idea to me. Even if it's hard coded in the backend, the API and documentation should always refer
@@ -40116,7 +40129,20 @@ static EM_BOOL ma_audio_worklet_process_callback__webaudio(int inputCount, const
     Unfortunately the audio data is not interleaved so we'll need to convert it before we give the data to miniaudio
     for further processing.
     */
-    frameCount = 128;
+    if (pDevice->type == ma_device_type_playback) {
+        frameCount = pDevice->playback.internalPeriodSizeInFrames;
+    } else {
+        frameCount = pDevice->capture.internalPeriodSizeInFrames;
+    }
+
+    if (ma_device_get_state(pDevice) != ma_device_state_started) {
+        /* Fill the output buffer with zero to avoid a noise sound */
+        for (int i = 0; i < outputCount; i += 1) {
+            MA_ZERO_MEMORY(pOutputs[i].data, pOutputs[i].numberOfChannels * frameCount * sizeof(float));
+        }
+
+        return EM_TRUE;
+    }
 
     if (inputCount > 0) {
         /* Input data needs to be interleaved before we hand it to the client. */
@@ -40194,7 +40220,15 @@ static void ma_audio_worklet_processor_created__webaudio(EMSCRIPTEN_WEBAUDIO_T a
     Now that we know the channel count to use we can allocate the intermediary buffer. The
     intermediary buffer is used for interleaving and deinterleaving.
     */
-    intermediaryBufferSizeInFrames = 128;
+    #if defined(MA_SUPPORT_AUDIO_WORKLETS_VARIABLE_BUFFER_SIZE)
+    {
+        intermediaryBufferSizeInFrames = (size_t)emscripten_audio_context_quantum_size(audioContext);
+    }
+    #else
+    {
+        intermediaryBufferSizeInFrames = 128;
+    }
+    #endif
 
     pParameters->pDevice->webaudio.pIntermediaryBuffer = (float*)ma_malloc(intermediaryBufferSizeInFrames * (ma_uint32)channels * sizeof(float), &pParameters->pDevice->pContext->allocationCallbacks);
     if (pParameters->pDevice->webaudio.pIntermediaryBuffer == NULL) {
@@ -56571,11 +56605,7 @@ MA_API ma_result ma_rb_commit_read(ma_rb* pRB, size_t sizeInBytes)
 
     ma_atomic_exchange_32(&pRB->encodedReadOffset, ma_rb__construct_offset(newReadOffsetLoopFlag, newReadOffsetInBytes));
 
-    if (ma_rb_pointer_distance(pRB) == 0) {
-        return MA_AT_END;
-    } else {
-        return MA_SUCCESS;
-    }
+    return MA_SUCCESS;
 }
 
 MA_API ma_result ma_rb_acquire_write(ma_rb* pRB, size_t* pSizeInBytes, void** ppBufferOut)
@@ -56657,11 +56687,7 @@ MA_API ma_result ma_rb_commit_write(ma_rb* pRB, size_t sizeInBytes)
 
     ma_atomic_exchange_32(&pRB->encodedWriteOffset, ma_rb__construct_offset(newWriteOffsetLoopFlag, newWriteOffsetInBytes));
 
-    if (ma_rb_pointer_distance(pRB) == 0) {
-        return MA_AT_END;
-    } else {
-        return MA_SUCCESS;
-    }
+    return MA_SUCCESS;
 }
 
 MA_API ma_result ma_rb_seek_read(ma_rb* pRB, size_t offsetInBytes)
@@ -56882,6 +56908,16 @@ static ma_result ma_pcm_rb_data_source__on_read(ma_data_source* pDataSource, voi
         }
 
         totalFramesRead += mappedFrameCount;
+    }
+
+    /*
+    There is no notion of an "end" in a ring buffer. If we didn't have enough data to fill the requested frame
+    count we'll need to pad with silence. If we don't do this, totalFramesRead might equal 0 which will result
+    in the data source layer at a higher level translating this to MA_AT_END which is incorrect for a ring buffer.
+    */
+    if (totalFramesRead < frameCount) {
+        ma_silence_pcm_frames(ma_offset_pcm_frames_ptr(pFramesOut, totalFramesRead, pRB->format, pRB->channels), (frameCount - totalFramesRead), pRB->format, pRB->channels);
+        totalFramesRead = frameCount;
     }
 
     *pFramesRead = totalFramesRead;
@@ -57486,6 +57522,58 @@ static ma_result ma_data_source_resolve_current(ma_data_source* pDataSource, ma_
     return MA_SUCCESS;
 }
 
+static ma_result ma_data_source_read_pcm_frames_from_backend(ma_data_source* pDataSource, void* pFramesOut, ma_uint64 frameCount, ma_uint64* pFramesRead)
+{
+    ma_data_source_base* pDataSourceBase = (ma_data_source_base*)pDataSource;
+
+    MA_ASSERT(pDataSourceBase                 != NULL);
+    MA_ASSERT(pDataSourceBase->vtable         != NULL);
+    MA_ASSERT(pDataSourceBase->vtable->onRead != NULL);
+    MA_ASSERT(pFramesRead != NULL);
+
+    if (pFramesOut != NULL) {
+        return pDataSourceBase->vtable->onRead(pDataSourceBase, pFramesOut, frameCount, pFramesRead);
+    } else {
+        /*
+        No output buffer. Probably seeking forward. Read and discard. Can probably optimize this in terms of
+        onSeek and onGetCursor, but need to keep in mind that the data source may not implement these functions.
+        */
+        ma_result result;
+        ma_uint64 framesRead;
+        ma_format format;
+        ma_uint32 channels;
+        ma_uint64 discardBufferCapInFrames;
+        ma_uint8  pDiscardBuffer[4096];
+
+        result = ma_data_source_get_data_format(pDataSource, &format, &channels, NULL, NULL, 0);
+        if (result != MA_SUCCESS) {
+            return result;
+        }
+
+        discardBufferCapInFrames = sizeof(pDiscardBuffer) / ma_get_bytes_per_frame(format, channels);
+
+        framesRead = 0;
+        while (framesRead < frameCount) {
+            ma_uint64 framesReadThisIteration = 0;
+            ma_uint64 framesToRead = frameCount - framesRead;
+            if (framesToRead > discardBufferCapInFrames) {
+                framesToRead = discardBufferCapInFrames;
+            }
+
+            result = pDataSourceBase->vtable->onRead(pDataSourceBase, pDiscardBuffer, framesToRead, &framesReadThisIteration);
+            if (result != MA_SUCCESS) {
+                return result;
+            }
+
+            framesRead += framesReadThisIteration;
+        }
+
+        *pFramesRead = framesRead;
+
+        return MA_SUCCESS;
+    }
+}
+
 static ma_result ma_data_source_read_pcm_frames_within_range(ma_data_source* pDataSource, void* pFramesOut, ma_uint64 frameCount, ma_uint64* pFramesRead)
 {
     ma_data_source_base* pDataSourceBase = (ma_data_source_base*)pDataSource;
@@ -57505,7 +57593,7 @@ static ma_result ma_data_source_read_pcm_frames_within_range(ma_data_source* pDa
 
     if ((pDataSourceBase->vtable->flags & MA_DATA_SOURCE_SELF_MANAGED_RANGE_AND_LOOP_POINT) != 0 || (pDataSourceBase->rangeEndInFrames == ~((ma_uint64)0) && (pDataSourceBase->loopEndInFrames == ~((ma_uint64)0) || loop == MA_FALSE))) {
         /* Either the data source is self-managing the range, or no range is set - just read like normal. The data source itself will tell us when the end is reached. */
-        result = pDataSourceBase->vtable->onRead(pDataSourceBase, pFramesOut, frameCount, &framesRead);
+        result = ma_data_source_read_pcm_frames_from_backend(pDataSource, pFramesOut, frameCount, &framesRead);
     } else {
         /* Need to clamp to within the range. */
         ma_uint64 relativeCursor;
@@ -57514,7 +57602,7 @@ static ma_result ma_data_source_read_pcm_frames_within_range(ma_data_source* pDa
         result = ma_data_source_get_cursor_in_pcm_frames(pDataSourceBase, &relativeCursor);
         if (result != MA_SUCCESS) {
             /* Failed to retrieve the cursor. Cannot read within a range or loop points. Just read like normal - this may happen for things like noise data sources where it doesn't really matter. */
-            result = pDataSourceBase->vtable->onRead(pDataSourceBase, pFramesOut, frameCount, &framesRead);
+            result = ma_data_source_read_pcm_frames_from_backend(pDataSource, pFramesOut, frameCount, &framesRead);
         } else {
             ma_uint64 rangeBeg;
             ma_uint64 rangeEnd;
@@ -57542,7 +57630,7 @@ static ma_result ma_data_source_read_pcm_frames_within_range(ma_data_source* pDa
             MA_AT_END so the higher level function can know about it.
             */
             if (frameCount > 0) {
-                result = pDataSourceBase->vtable->onRead(pDataSourceBase, pFramesOut, frameCount, &framesRead);
+                result = ma_data_source_read_pcm_frames_from_backend(pDataSource, pFramesOut, frameCount, &framesRead);
             } else {
                 result = MA_AT_END; /* The cursor is sitting on the end of the range which means we're at the end. */
             }
@@ -57715,7 +57803,7 @@ MA_API ma_result ma_data_source_seek_to_pcm_frame(ma_data_source* pDataSource, m
     ma_data_source_base* pDataSourceBase = (ma_data_source_base*)pDataSource;
 
     if (pDataSourceBase == NULL) {
-        return MA_SUCCESS;
+        return MA_INVALID_ARGS;
     }
 
     if (pDataSourceBase->vtable->onSeek == NULL) {
@@ -57723,12 +57811,59 @@ MA_API ma_result ma_data_source_seek_to_pcm_frame(ma_data_source* pDataSource, m
     }
 
     if (frameIndex > pDataSourceBase->rangeEndInFrames) {
-        return MA_INVALID_OPERATION;    /* Trying to seek to far forward. */
+        return MA_INVALID_OPERATION;    /* Trying to seek too far forward. */
     }
 
     MA_ASSERT(pDataSourceBase->vtable != NULL);
 
     return pDataSourceBase->vtable->onSeek(pDataSource, pDataSourceBase->rangeBegInFrames + frameIndex);
+}
+
+MA_API ma_result ma_data_source_seek_seconds(ma_data_source* pDataSource, float secondCount, float* pSecondsSeeked)
+{
+    ma_uint64 frameCount;
+    ma_uint64 framesSeeked = 0;
+    ma_uint32 sampleRate;
+    ma_result result;
+
+    if (pDataSource == NULL) {
+        return MA_INVALID_ARGS;
+    }
+
+    result = ma_data_source_get_data_format(pDataSource, NULL, NULL, &sampleRate, NULL, 0);
+    if (result != MA_SUCCESS) {
+        return result;
+    }
+
+    /* We need PCM frames instead of seconds */
+    frameCount = (ma_uint64)(secondCount * sampleRate);
+
+    result = ma_data_source_seek_pcm_frames(pDataSource, frameCount, &framesSeeked);
+
+    /* VC6 doesn't support division between unsigned 64-bit integer and floating point number. Signed integer needed. This shouldn't affect anything in practice */
+    *pSecondsSeeked = (ma_int64)framesSeeked / (float)sampleRate;
+    return result;
+}
+
+MA_API ma_result ma_data_source_seek_to_second(ma_data_source* pDataSource, float seekPointInSeconds)
+{
+    ma_uint64 frameIndex;
+    ma_uint32 sampleRate;
+    ma_result result;
+
+    if (pDataSource == NULL) {
+        return MA_INVALID_ARGS;
+    }
+
+    result = ma_data_source_get_data_format(pDataSource, NULL, NULL, &sampleRate, NULL, 0);
+    if (result != MA_SUCCESS) {
+        return result;
+    }
+
+    /* We need PCM frames instead of seconds */
+    frameIndex = (ma_uint64)(seekPointInSeconds * sampleRate);
+
+    return ma_data_source_seek_to_pcm_frame(pDataSource, frameIndex);
 }
 
 MA_API ma_result ma_data_source_get_data_format(ma_data_source* pDataSource, ma_format* pFormat, ma_uint32* pChannels, ma_uint32* pSampleRate, ma_channel* pChannelMap, size_t channelMapCap)
@@ -58015,6 +58150,13 @@ MA_API void ma_data_source_get_range_in_pcm_frames(const ma_data_source* pDataSo
 {
     const ma_data_source_base* pDataSourceBase = (const ma_data_source_base*)pDataSource;
 
+    if (pRangeBegInFrames != NULL) {
+        *pRangeBegInFrames = 0;
+    }
+    if (pRangeEndInFrames != NULL) {
+        *pRangeEndInFrames = 0;
+    }
+
     if (pDataSource == NULL) {
         return;
     }
@@ -58058,6 +58200,13 @@ MA_API ma_result ma_data_source_set_loop_point_in_pcm_frames(ma_data_source* pDa
 MA_API void ma_data_source_get_loop_point_in_pcm_frames(const ma_data_source* pDataSource, ma_uint64* pLoopBegInFrames, ma_uint64* pLoopEndInFrames)
 {
     const ma_data_source_base* pDataSourceBase = (const ma_data_source_base*)pDataSource;
+
+    if (pLoopBegInFrames != NULL) {
+        *pLoopBegInFrames = 0;
+    }
+    if (pLoopEndInFrames != NULL) {
+        *pLoopEndInFrames = 0;
+    }
 
     if (pDataSource == NULL) {
         return;
@@ -75655,8 +75804,8 @@ MA_API ma_result ma_engine_init(const ma_engine_config* pConfig, ma_engine* pEng
             ma_allocation_callbacks_init_copy(&resourceManagerConfig.allocationCallbacks, &pEngine->allocationCallbacks);
             resourceManagerConfig.pVFS              = engineConfig.pResourceManagerVFS;
 
-            /* The Emscripten build cannot use threads. */
-            #if defined(MA_EMSCRIPTEN)
+            /* The Emscripten build cannot use threads unless it's targeting pthreads. */
+            #if defined(MA_EMSCRIPTEN) && !defined(__EMSCRIPTEN_PTHREADS__)
             {
                 resourceManagerConfig.jobThreadCount = 0;
                 resourceManagerConfig.flags |= MA_RESOURCE_MANAGER_FLAG_NO_THREADING;
@@ -77313,6 +77462,27 @@ MA_API ma_result ma_sound_seek_to_pcm_frame(ma_sound* pSound, ma_uint64 frameInd
     ma_atomic_exchange_64(&pSound->seekTarget, frameIndex);
 
     return MA_SUCCESS;
+}
+
+MA_API ma_result ma_sound_seek_to_second(ma_sound* pSound, float seekPointInSeconds)
+{
+    ma_uint64 frameIndex;
+    ma_uint32 sampleRate;
+    ma_result result;
+
+    if (pSound == NULL) {
+        return MA_INVALID_ARGS;
+    }
+
+    result = ma_sound_get_data_format(pSound, NULL, NULL, &sampleRate, NULL, 0);
+    if (result != MA_SUCCESS) {
+        return result;
+    }
+
+    /* We need PCM frames. We need to convert first */
+    frameIndex = (ma_uint64)(seekPointInSeconds * sampleRate);
+
+    return ma_sound_seek_to_pcm_frame(pSound, frameIndex);
 }
 
 MA_API ma_result ma_sound_get_data_format(ma_sound* pSound, ma_format* pFormat, ma_uint32* pChannels, ma_uint32* pSampleRate, ma_channel* pChannelMap, size_t channelMapCap)
@@ -93137,7 +93307,7 @@ For more information, please refer to <http://unlicense.org/>
 ===============================================================================
 ALTERNATIVE 2 - MIT No Attribution
 ===============================================================================
-Copyright 2023 David Reid
+Copyright 2025 David Reid
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
