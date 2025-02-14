@@ -17930,7 +17930,12 @@ MA_API void ma_dlclose(ma_log* pLog, ma_handle handle)
     #ifdef MA_WIN32
         FreeLibrary((HMODULE)handle);
     #else
-        dlclose((void*)handle);
+        /* Hack for Android bug (see https://github.com/android/ndk/issues/360). Calling dlclose() pre-API 28 may segfault. */
+        #if !defined(MA_ANDROID) || (defined(__ANDROID_API__) && __ANDROID_API__ >= 28)
+        {
+            dlclose((void*)handle);
+        }
+        #endif
     #endif
 
     (void)pLog;
@@ -30184,8 +30189,10 @@ static ma_pa_stream* ma_device__pa_stream_new__pulse(ma_device* pDevice, const c
     if (pStreamName != NULL) {
         ma_strncpy_s(actualStreamName, sizeof(actualStreamName), pStreamName, (size_t)-1);
     } else {
-        ma_strcpy_s(actualStreamName, sizeof(actualStreamName), "miniaudio:");
-        ma_itoa_s(g_StreamCounter, actualStreamName + 8, sizeof(actualStreamName)-8, 10);  /* 8 = strlen("miniaudio:") */
+        const char* pBaseName = "miniaudio:";
+        size_t baseNameLen = strlen(pBaseName);
+        ma_strcpy_s(actualStreamName, sizeof(actualStreamName), pBaseName);
+        ma_itoa_s(g_StreamCounter, actualStreamName + baseNameLen, sizeof(actualStreamName)-baseNameLen, 10);
     }
     g_StreamCounter += 1;
 
@@ -37537,7 +37544,9 @@ AAudio Backend
 ******************************************************************************/
 #ifdef MA_HAS_AAUDIO
 
-/*#include <AAudio/AAudio.h>*/
+#ifdef MA_NO_RUNTIME_LINKING
+    #include <AAudio/AAudio.h>
+#endif
 
 typedef int32_t                                         ma_aaudio_result_t;
 typedef int32_t                                         ma_aaudio_direction_t;
@@ -38481,6 +38490,7 @@ static ma_result ma_context_uninit__aaudio(ma_context* pContext)
 
 static ma_result ma_context_init__aaudio(ma_context* pContext, const ma_context_config* pConfig, ma_backend_callbacks* pCallbacks)
 {
+#if !defined(MA_NO_RUNTIME_LINKING)
     size_t i;
     const char* libNames[] = {
         "libaaudio.so"
@@ -38526,7 +38536,37 @@ static ma_result ma_context_init__aaudio(ma_context* pContext, const ma_context_
     pContext->aaudio.AAudioStream_getFramesPerBurst                = (ma_proc)ma_dlsym(ma_context_get_log(pContext), pContext->aaudio.hAAudio, "AAudioStream_getFramesPerBurst");
     pContext->aaudio.AAudioStream_requestStart                     = (ma_proc)ma_dlsym(ma_context_get_log(pContext), pContext->aaudio.hAAudio, "AAudioStream_requestStart");
     pContext->aaudio.AAudioStream_requestStop                      = (ma_proc)ma_dlsym(ma_context_get_log(pContext), pContext->aaudio.hAAudio, "AAudioStream_requestStop");
-
+#else
+    pContext->aaudio.AAudio_createStreamBuilder                    = (ma_proc)AAudio_createStreamBuilder;
+    pContext->aaudio.AAudioStreamBuilder_delete                    = (ma_proc)AAudioStreamBuilder_delete;
+    pContext->aaudio.AAudioStreamBuilder_setDeviceId               = (ma_proc)AAudioStreamBuilder_setDeviceId;
+    pContext->aaudio.AAudioStreamBuilder_setDirection              = (ma_proc)AAudioStreamBuilder_setDirection;
+    pContext->aaudio.AAudioStreamBuilder_setSharingMode            = (ma_proc)AAudioStreamBuilder_setSharingMode;
+    pContext->aaudio.AAudioStreamBuilder_setFormat                 = (ma_proc)AAudioStreamBuilder_setFormat;
+    pContext->aaudio.AAudioStreamBuilder_setChannelCount           = (ma_proc)AAudioStreamBuilder_setChannelCount;
+    pContext->aaudio.AAudioStreamBuilder_setSampleRate             = (ma_proc)AAudioStreamBuilder_setSampleRate;
+    pContext->aaudio.AAudioStreamBuilder_setBufferCapacityInFrames = (ma_proc)AAudioStreamBuilder_setBufferCapacityInFrames;
+    pContext->aaudio.AAudioStreamBuilder_setFramesPerDataCallback  = (ma_proc)AAudioStreamBuilder_setFramesPerDataCallback;
+    pContext->aaudio.AAudioStreamBuilder_setDataCallback           = (ma_proc)AAudioStreamBuilder_setDataCallback;
+    pContext->aaudio.AAudioStreamBuilder_setErrorCallback          = (ma_proc)AAudioStreamBuilder_setErrorCallback;
+    pContext->aaudio.AAudioStreamBuilder_setPerformanceMode        = (ma_proc)AAudioStreamBuilder_setPerformanceMode;
+    pContext->aaudio.AAudioStreamBuilder_setUsage                  = (ma_proc)AAudioStreamBuilder_setUsage;
+    pContext->aaudio.AAudioStreamBuilder_setContentType            = (ma_proc)AAudioStreamBuilder_setContentType;
+    pContext->aaudio.AAudioStreamBuilder_setInputPreset            = (ma_proc)AAudioStreamBuilder_setInputPreset;
+    pContext->aaudio.AAudioStreamBuilder_setAllowedCapturePolicy   = (ma_proc)AAudioStreamBuilder_setAllowedCapturePolicy;
+    pContext->aaudio.AAudioStreamBuilder_openStream                = (ma_proc)AAudioStreamBuilder_openStream;
+    pContext->aaudio.AAudioStream_close                            = (ma_proc)AAudioStream_close;
+    pContext->aaudio.AAudioStream_getState                         = (ma_proc)AAudioStream_getState;
+    pContext->aaudio.AAudioStream_waitForStateChange               = (ma_proc)AAudioStream_waitForStateChange;
+    pContext->aaudio.AAudioStream_getFormat                        = (ma_proc)AAudioStream_getFormat;
+    pContext->aaudio.AAudioStream_getChannelCount                  = (ma_proc)AAudioStream_getChannelCount;
+    pContext->aaudio.AAudioStream_getSampleRate                    = (ma_proc)AAudioStream_getSampleRate;
+    pContext->aaudio.AAudioStream_getBufferCapacityInFrames        = (ma_proc)AAudioStream_getBufferCapacityInFrames;
+    pContext->aaudio.AAudioStream_getFramesPerDataCallback         = (ma_proc)AAudioStream_getFramesPerDataCallback;
+    pContext->aaudio.AAudioStream_getFramesPerBurst                = (ma_proc)AAudioStream_getFramesPerBurst;
+    pContext->aaudio.AAudioStream_requestStart                     = (ma_proc)AAudioStream_requestStart;
+    pContext->aaudio.AAudioStream_requestStop                      = (ma_proc)AAudioStream_requestStop;
+#endif
 
     pCallbacks->onContextInit             = ma_context_init__aaudio;
     pCallbacks->onContextUninit           = ma_context_uninit__aaudio;
