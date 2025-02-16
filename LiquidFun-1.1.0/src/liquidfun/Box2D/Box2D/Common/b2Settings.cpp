@@ -98,8 +98,11 @@ void* b2Alloc(int32 size)
 
 void b2Free(void* mem)
 {
-	b2_numAllocs--;
-	b2_freeCallback(mem, b2_callbackData);
+	if (mem != NULL)
+	{
+		b2_numAllocs--;
+		b2_freeCallback(mem, b2_callbackData);
+	}
 }
 
 void b2SetNumAllocs(const int32 numAllocs)
