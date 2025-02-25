@@ -209,3 +209,11 @@ project "msdfgen"
     {
       "MSDFGEN_NO_FREETYPE=1"
     }
+
+-- Windows
+
+    configuration {"windows", "debug", "vs*"}
+        defines
+        {
+            "_ITERATOR_DEBUG_LEVEL=2"
+        }
