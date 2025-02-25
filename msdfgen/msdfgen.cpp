@@ -1311,16 +1311,16 @@ int Shape::edgeCount() const {
     return total;
 }
 
-void Shape::orientContours() {
-    struct Intersection {
-        double x;
-        int direction;
-        int contourIndex;
+struct Intersection {
+    double x;
+    int direction;
+    int contourIndex;
 
-        static int compare(const void *a, const void *b) {
-            return sign(reinterpret_cast<const Intersection *>(a)->x-reinterpret_cast<const Intersection *>(b)->x);
-        }
-    };
+    static int compare(const void *a, const void *b) {
+        return sign(reinterpret_cast<const Intersection *>(a)->x-reinterpret_cast<const Intersection *>(b)->x);
+    }
+};
+void Shape::orientContours() {
 
     const double ratio = .5*(sqrt(5)-1); // an irrational number to minimize chance of intersecting a corner or other point of interest
     std::vector<int> orientations(contours.size());
@@ -2275,16 +2275,16 @@ template class OverlappingContourCombiner<MultiAndTrueDistanceSelector>;
 
 namespace msdfgen {
 
-void approximateSDF(const BitmapRef<float, 1> &output, const Shape &shape, const SDFTransformation &transformation) {
-    struct Entry {
-        float absDist;
-        int bitmapX, bitmapY;
-        Point2 nearPoint;
+struct Entry {
+    float absDist;
+    int bitmapX, bitmapY;
+    Point2 nearPoint;
 
-        bool operator<(const Entry &other) const {
-            return absDist > other.absDist;
-        }
-    } entry;
+    bool operator<(const Entry &other) const {
+        return absDist > other.absDist;
+    }
+} entry;
+void approximateSDF(const BitmapRef<float, 1> &output, const Shape &shape, const SDFTransformation &transformation) {
 
     float *firstRow = output.pixels;
     ptrdiff_t stride = output.width;
