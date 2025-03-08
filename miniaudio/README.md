@@ -7,7 +7,6 @@
 
 <p align="center">
     <a href="https://discord.gg/9vpqbjU"><img src="https://img.shields.io/discord/712952679415939085?label=discord&logo=discord&style=flat-square" alt="discord"></a>
-    <a href="https://fosstodon.org/@mackron"><img src="https://img.shields.io/mastodon/follow/109293691403797709?color=blue&domain=https%3A%2F%2Ffosstodon.org&label=mastodon&logo=mastodon&style=flat-square" alt="mastodon"></a>
 </p>
 
 <p align="center">
@@ -206,8 +205,9 @@ Backends
 Security
 ========
 I deal with all security related issues publicly and transparently, and it can sometimes take a while before I
-get a chance to address it. If this is an issue for you, you need to use another library. Please post any
-security related bugs on the public GitHub issue tracker.
+get a chance to address it. If this is an issue for you, you need to use another library. The fastest way to get
+a bug fixed is to submit a pull request, but if this is unpractical for you please post a ticket to the public
+GitHub issue tracker.
 
 
 License

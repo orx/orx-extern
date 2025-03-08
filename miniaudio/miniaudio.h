@@ -1,6 +1,6 @@
 /*
 Audio playback and capture library. Choice of public domain or MIT-0. See license statements at the end of this file.
-miniaudio - v0.11.22 - TBD
+miniaudio - v0.11.22 - 2025-02-24
 
 David Reid - mackron@gmail.com
 
@@ -7986,6 +7986,7 @@ struct ma_device
             /*AAudioStream**/ ma_ptr pStreamPlayback;
             /*AAudioStream**/ ma_ptr pStreamCapture;
             ma_mutex rerouteLock;
+            ma_atomic_bool32 isTearingDown;
             ma_aaudio_usage usage;
             ma_aaudio_content_type contentType;
             ma_aaudio_input_preset inputPreset;
@@ -9959,7 +9960,7 @@ typedef struct
     ma_allocation_callbacks allocationCallbacks;
     ma_encoding_format encodingFormat;
     ma_uint32 seekPointCount;   /* When set to > 0, specifies the number of seek points to use for the generation of a seek table. Not all decoding backends support this. */
-    const ma_decoding_backend_vtable* const* ppCustomBackendVTables;
+    ma_decoding_backend_vtable** ppCustomBackendVTables;
     ma_uint32 customBackendCount;
     void* pCustomBackendUserData;
 } ma_decoder_config;
@@ -10486,7 +10487,7 @@ typedef struct
     ma_uint32 jobQueueCapacity;     /* The maximum number of jobs that can fit in the queue at a time. Defaults to MA_JOB_TYPE_RESOURCE_MANAGER_QUEUE_CAPACITY. Cannot be zero. */
     ma_uint32 flags;
     ma_vfs* pVFS;                   /* Can be NULL in which case defaults will be used. */
-    const ma_decoding_backend_vtable* const* ppCustomDecodingBackendVTables;
+    ma_decoding_backend_vtable** ppCustomDecodingBackendVTables;
     ma_uint32 customDecodingBackendCount;
     void* pCustomDecodingBackendUserData;
 } ma_resource_manager_config;
@@ -13932,7 +13933,7 @@ static ma_uint32 ma_ffs_32(ma_uint32 x)
 
     /* Just a naive implementation just to get things working for now. Will optimize this later. */
     for (i = 0; i < 32; i += 1) {
-        if ((x & (1 << i)) != 0) {
+        if ((x & (1U << i)) != 0) {
             return i;
         }
     }
@@ -17501,7 +17502,7 @@ static ma_job_proc g_jobVTable[MA_JOB_TYPE_COUNT] =
 
     /* Device. */
 #if !defined(MA_NO_DEVICE_IO)
-    ma_job_process__device__aaudio_reroute                      /*MA_JOB_TYPE_DEVICE_AAUDIO_REROUTE*/
+    ma_job_process__device__aaudio_reroute                      /* MA_JOB_TYPE_DEVICE_AAUDIO_REROUTE */
 #endif
 };
 
@@ -19043,9 +19044,7 @@ static void ma_device__read_frames_from_client(ma_device* pDevice, ma_uint32 fra
                     framesToReadThisIterationIn = requiredInputFrameCount;
                 }
 
-                if (framesToReadThisIterationIn > 0) {
-                    ma_device__handle_data_callback(pDevice, pIntermediaryBuffer, NULL, (ma_uint32)framesToReadThisIterationIn);
-                }
+                ma_device__handle_data_callback(pDevice, pIntermediaryBuffer, NULL, (ma_uint32)framesToReadThisIterationIn);
 
                 /*
                 At this point we have our decoded data in input format and now we need to convert to output format. Note that even if we didn't read any
@@ -28229,7 +28228,21 @@ static ma_result ma_device_start__alsa(ma_device* pDevice)
     }
 
     if (pDevice->type == ma_device_type_playback || pDevice->type == ma_device_type_duplex) {
-        /* Don't need to do anything for playback because it'll be started automatically when enough data has been written. */
+        /*        
+        When data is written to the device we wait for the device to get ready to receive data with poll(). In my testing
+        I have observed that poll() can sometimes block forever unless the device is started explicitly with snd_pcm_start()
+        or some data is written with snd_pcm_writei().
+
+        To resolve this I've decided to do an explicit start with snd_pcm_start(). The problem with this is that the device
+        is started without any data in the internal buffer which will result in an immediate underrun. If instead we were
+        to call into snd_pcm_writei() in an attempt to prevent the underrun, we would run the risk of a weird deadlock
+        issue as documented inside ma_device_write__alsa().
+        */
+        resultALSA = ((ma_snd_pcm_start_proc)pDevice->pContext->alsa.snd_pcm_start)((ma_snd_pcm_t*)pDevice->alsa.pPCMPlayback);
+        if (resultALSA < 0) {
+            ma_log_post(ma_device_get_log(pDevice), MA_LOG_LEVEL_ERROR, "[ALSA] Failed to start playback device.");
+            return ma_result_from_errno(-resultALSA);
+        }
     }
 
     return MA_SUCCESS;
@@ -28290,7 +28303,6 @@ static ma_result ma_device_stop__alsa(ma_device* pDevice)
                 ma_log_postf(ma_device_get_log(pDevice), MA_LOG_LEVEL_DEBUG, "[ALSA] Failed to read from playback wakeupfd. read() = %d\n", resultRead);
             }
         }
-
     }
 
     return MA_SUCCESS;
@@ -28316,7 +28328,7 @@ static ma_result ma_device_wait__alsa(ma_device* pDevice, ma_snd_pcm_t* pPCM, st
 
         /*
         Before checking the ALSA poll descriptor flag we need to check if the wakeup descriptor
-        has had it's POLLIN flag set. If so, we need to actually read the data and then exit
+        has had it's POLLIN flag set. If so, we need to actually read the data and then exit the
         function. The wakeup descriptor will be the first item in the descriptors buffer.
         */
         if ((pPollDescriptors[0].revents & POLLIN) != 0) {
@@ -28345,7 +28357,7 @@ static ma_result ma_device_wait__alsa(ma_device* pDevice, ma_snd_pcm_t* pPCM, st
             ma_snd_pcm_state_t state = ((ma_snd_pcm_state_proc)pDevice->pContext->alsa.snd_pcm_state)(pPCM);
             if (state == MA_SND_PCM_STATE_XRUN) {
                 /* The PCM is in a xrun state. This will be recovered from at a higher level. We can disregard this. */
-        } else {
+            } else {
                 ma_log_postf(ma_device_get_log(pDevice), MA_LOG_LEVEL_WARNING, "[ALSA] POLLERR detected. status = %d\n", ((ma_snd_pcm_state_proc)pDevice->pContext->alsa.snd_pcm_state)(pPCM));
             }
         }
@@ -28778,7 +28790,7 @@ static ma_result ma_context_init__alsa(ma_context* pContext, const ma_context_co
 
     return MA_SUCCESS;
 }
-#endif  /* ALSA */
+#endif  /* MA_HAS_ALSA */
 
 
 
@@ -31973,7 +31985,7 @@ static ma_result ma_context_init__jack(ma_context* pContext, const ma_context_co
 
     return MA_SUCCESS;
 }
-#endif  /* JACK */
+#endif  /* MA_HAS_JACK */
 
 
 
@@ -35218,7 +35230,7 @@ static ma_result ma_context_init__coreaudio(ma_context* pContext, const ma_conte
 
     return MA_SUCCESS;
 }
-#endif  /* Core Audio */
+#endif  /* MA_HAS_COREAUDIO */
 
 
 
@@ -36065,7 +36077,7 @@ static ma_result ma_context_init__sndio(ma_context* pContext, const ma_context_c
     (void)pConfig;
     return MA_SUCCESS;
 }
-#endif  /* sndio */
+#endif  /* MA_HAS_SNDIO */
 
 
 
@@ -36963,7 +36975,7 @@ static ma_result ma_context_init__audio4(ma_context* pContext, const ma_context_
 
     return MA_SUCCESS;
 }
-#endif  /* audio4 */
+#endif  /* MA_HAS_AUDIO4 */
 
 
 /******************************************************************************
@@ -37594,7 +37606,7 @@ static ma_result ma_context_init__oss(ma_context* pContext, const ma_context_con
 
     return MA_SUCCESS;
 }
-#endif  /* OSS */
+#endif  /* MA_HAS_OSS */
 
 
 
@@ -37823,25 +37835,30 @@ static void ma_stream_error_callback__aaudio(ma_AAudioStream* pStream, void* pUs
 
     (void)error;
     ma_log_postf(ma_device_get_log(pDevice), MA_LOG_LEVEL_INFO, "[AAudio] ERROR CALLBACK: error=%d, AAudioStream_getState()=%d\n", error, ((MA_PFN_AAudioStream_getState)pDevice->pContext->aaudio.AAudioStream_getState)(pStream));
+    
     /*
     When we get an error, we'll assume that the stream is in an erroneous state and needs to be restarted. From the documentation,
     we cannot do this from the error callback. Therefore we are going to use an event thread for the AAudio backend to do this
     cleanly and safely.
     */
-    job = ma_job_init(MA_JOB_TYPE_DEVICE_AAUDIO_REROUTE);
-    job.data.device.aaudio.reroute.pDevice = pDevice;
-
-    if (pStream == pDevice->aaudio.pStreamCapture) {
-        job.data.device.aaudio.reroute.deviceType = ma_device_type_capture;
+    if (ma_atomic_bool32_get(&pDevice->aaudio.isTearingDown)) {
+        ma_log_postf(ma_device_get_log(pDevice), MA_LOG_LEVEL_INFO, "[AAudio] Device Disconnected. Tearing down device.\n");
     }
     else {
-        job.data.device.aaudio.reroute.deviceType = ma_device_type_playback;
-    }
-
-    result = ma_device_job_thread_post(&pDevice->pContext->aaudio.jobThread, &job);
-    if (result != MA_SUCCESS) {
-        ma_log_postf(ma_device_get_log(pDevice), MA_LOG_LEVEL_INFO, "[AAudio] Device Disconnected. Failed to post job for rerouting.\n");
-        return;
+        job = ma_job_init(MA_JOB_TYPE_DEVICE_AAUDIO_REROUTE);
+        job.data.device.aaudio.reroute.pDevice = pDevice;
+    
+        if (pStream == pDevice->aaudio.pStreamCapture) {
+            job.data.device.aaudio.reroute.deviceType = ma_device_type_capture;
+        } else {
+            job.data.device.aaudio.reroute.deviceType = ma_device_type_playback;
+        }
+    
+        result = ma_device_job_thread_post(&pDevice->pContext->aaudio.jobThread, &job);
+        if (result != MA_SUCCESS) {
+            ma_log_postf(ma_device_get_log(pDevice), MA_LOG_LEVEL_INFO, "[AAudio] Device Disconnected. Failed to post job for rerouting.\n");
+            return;
+        }
     }
 }
 
@@ -37905,20 +37922,12 @@ static ma_result ma_create_and_configure_AAudioStreamBuilder__aaudio(ma_context*
             ((MA_PFN_AAudioStreamBuilder_setSampleRate)pContext->aaudio.AAudioStreamBuilder_setSampleRate)(pBuilder, pDescriptor->sampleRate);
         }
 
-        if (deviceType == ma_device_type_capture) {
-            if (pDescriptor->channels != 0) {
-                ((MA_PFN_AAudioStreamBuilder_setChannelCount)pContext->aaudio.AAudioStreamBuilder_setChannelCount)(pBuilder, pDescriptor->channels);
-            }
-            if (pDescriptor->format != ma_format_unknown) {
-                ((MA_PFN_AAudioStreamBuilder_setFormat)pContext->aaudio.AAudioStreamBuilder_setFormat)(pBuilder, (pDescriptor->format == ma_format_s16) ? MA_AAUDIO_FORMAT_PCM_I16 : MA_AAUDIO_FORMAT_PCM_FLOAT);
-            }
-        } else {
-            if (pDescriptor->channels != 0) {
-                ((MA_PFN_AAudioStreamBuilder_setChannelCount)pContext->aaudio.AAudioStreamBuilder_setChannelCount)(pBuilder, pDescriptor->channels);
-            }
-            if (pDescriptor->format != ma_format_unknown) {
-                ((MA_PFN_AAudioStreamBuilder_setFormat)pContext->aaudio.AAudioStreamBuilder_setFormat)(pBuilder, (pDescriptor->format == ma_format_s16) ? MA_AAUDIO_FORMAT_PCM_I16 : MA_AAUDIO_FORMAT_PCM_FLOAT);
-            }
+        if (pDescriptor->channels != 0) {
+            ((MA_PFN_AAudioStreamBuilder_setChannelCount)pContext->aaudio.AAudioStreamBuilder_setChannelCount)(pBuilder, pDescriptor->channels);
+        }
+
+        if (pDescriptor->format != ma_format_unknown) {
+            ((MA_PFN_AAudioStreamBuilder_setFormat)pContext->aaudio.AAudioStreamBuilder_setFormat)(pBuilder, (pDescriptor->format == ma_format_s16) ? MA_AAUDIO_FORMAT_PCM_I16 : MA_AAUDIO_FORMAT_PCM_FLOAT);
         }
 
 
@@ -38166,7 +38175,7 @@ static ma_result ma_close_streams__aaudio(ma_device* pDevice)
 {
     MA_ASSERT(pDevice != NULL);
 
-    /* When re-routing, streams may have been closed and never re-opened. Hence the extra checks below. */
+    /* When rerouting, streams may have been closed and never re-opened. Hence the extra checks below. */
     if (pDevice->type == ma_device_type_capture || pDevice->type == ma_device_type_duplex) {
         ma_close_stream__aaudio(pDevice->pContext, (ma_AAudioStream*)pDevice->aaudio.pStreamCapture);
         pDevice->aaudio.pStreamCapture = NULL;
@@ -38183,6 +38192,12 @@ static ma_result ma_device_uninit__aaudio(ma_device* pDevice)
 {
     MA_ASSERT(pDevice != NULL);
 
+    /*
+    Note: Closing the streams may cause a timeout error, which would then trigger rerouting in our error callback.
+    We must not schedule a reroute when device is getting destroyed.
+    */
+    ma_atomic_bool32_set(&pDevice->aaudio.isTearingDown, MA_TRUE);
+
     /* Wait for any rerouting to finish before attempting to close the streams. */
     ma_mutex_lock(&pDevice->aaudio.rerouteLock);
     {
@@ -38190,7 +38205,7 @@ static ma_result ma_device_uninit__aaudio(ma_device* pDevice)
     }
     ma_mutex_unlock(&pDevice->aaudio.rerouteLock);
 
-    /* Destroy re-routing lock. */
+    /* Destroy rerouting lock. */
     ma_mutex_uninit(&pDevice->aaudio.rerouteLock);
 
     return MA_SUCCESS;
@@ -38426,17 +38441,22 @@ static ma_result ma_device_stop__aaudio(ma_device* pDevice)
 
 static ma_result ma_device_reinit__aaudio(ma_device* pDevice, ma_device_type deviceType)
 {
+    const ma_int32 maxAttempts = 4; /* Reasonable retry limit. */
+
     ma_result result;
-    int32_t retries = 0;
+    ma_int32 iAttempt;
 
     MA_ASSERT(pDevice != NULL);
 
-    /*
-     TODO: Stop retrying if main thread is about to uninit device.
-    */
-    ma_mutex_lock(&pDevice->aaudio.rerouteLock);
-    {
-error_disconnected:
+    /* We got disconnected! Retry a few times, until we find a connected device! */
+    iAttempt = 0;
+    while (iAttempt++ < maxAttempts) {        
+        /* Device tearing down? No need to reroute! */
+        if (ma_atomic_bool32_get(&pDevice->aaudio.isTearingDown)) {
+            result = MA_SUCCESS; /* Caller should continue as normal. */
+            break;
+        }
+
         /* The first thing to do is close the streams. */
         ma_close_streams__aaudio(pDevice);
 
@@ -38492,14 +38512,16 @@ error_disconnected:
         result = ma_device_init_streams__aaudio(pDevice, &deviceConfig, &descriptorPlayback, &descriptorCapture);
         if (result != MA_SUCCESS) {
             ma_log_post(ma_device_get_log(pDevice), MA_LOG_LEVEL_WARNING, "[AAudio] Failed to create stream after route change.");
-            goto done;
+            /* Reroute failed! */
+            break;
         }
 
         result = ma_device_post_init(pDevice, deviceType, &descriptorPlayback, &descriptorCapture);
         if (result != MA_SUCCESS) {
             ma_log_post(ma_device_get_log(pDevice), MA_LOG_LEVEL_WARNING, "[AAudio] Failed to initialize device after route change.");
             ma_close_streams__aaudio(pDevice);
-            goto done;
+            /* Reroute failed! */
+            break;
         }
 
         /* We'll only ever do this in response to a reroute. */
@@ -38510,26 +38532,23 @@ error_disconnected:
             if (pDevice->aaudio.noAutoStartAfterReroute == MA_FALSE) {
                 result = ma_device_start__aaudio(pDevice);
                 if (result != MA_SUCCESS) {
-                    /* We got disconnected! Retry a few times, until we find a connected device! */
-                    retries += 1;
-                    if (retries <= 3) {
-                        ma_log_postf(ma_device_get_log(pDevice), MA_LOG_LEVEL_INFO, "[AAudio] Failed to start stream after route change, retrying(%d)", retries);
-                        goto error_disconnected;
+                    if (iAttempt < maxAttempts) {
+                        ma_log_postf(ma_device_get_log(pDevice), MA_LOG_LEVEL_INFO, "[AAudio] Failed to start stream after route change, retrying(%d)", iAttempt);
+                    } else {
+                        ma_log_post(ma_device_get_log(pDevice), MA_LOG_LEVEL_INFO, "[AAudio] Failed to start stream after route change, giving up.");
                     }
-                    ma_log_post(ma_device_get_log(pDevice), MA_LOG_LEVEL_INFO, "[AAudio] Failed to start stream after route change.");
-                    goto done;
                 }
             } else {
-                ma_device_stop(pDevice);    /* Do a full device stop so we set internal state correctly. */
+                ma_device_stop(pDevice); /* Do a full device stop so we set internal state correctly. */
             }
         }
-        
-        result = MA_SUCCESS;
-    }
-done:
-    /* Re-routing done */
-    ma_mutex_unlock(&pDevice->aaudio.rerouteLock);
 
+        if (result == MA_SUCCESS) {
+            /* Reroute successful! */
+            break;
+        }
+    }
+    
     return result;
 }
 
@@ -38695,7 +38714,7 @@ static ma_result ma_context_init__aaudio(ma_context* pContext, const ma_context_
 
 static ma_result ma_job_process__device__aaudio_reroute(ma_job* pJob)
 {
-    ma_result result;
+    ma_result result = MA_SUCCESS;
     ma_device* pDevice;
 
     MA_ASSERT(pJob != NULL);
@@ -38703,19 +38722,22 @@ static ma_result ma_job_process__device__aaudio_reroute(ma_job* pJob)
     pDevice = (ma_device*)pJob->data.device.aaudio.reroute.pDevice;
     MA_ASSERT(pDevice != NULL);
 
-    /* Here is where we need to reroute the device. To do this we need to uninitialize the stream and reinitialize it. */
-    result = ma_device_reinit__aaudio(pDevice, (ma_device_type)pJob->data.device.aaudio.reroute.deviceType);
-    if (result != MA_SUCCESS) {
-        /*
-        Getting here means we failed to reroute the device. The best thing I can think of here is to
-        just stop the device.
-        */
-        ma_log_post(ma_device_get_log(pDevice), MA_LOG_LEVEL_ERROR, "[AAudio] Stopping device due to reroute failure.");
-        ma_device_stop(pDevice);
-        return result;
+    ma_mutex_lock(&pDevice->aaudio.rerouteLock);
+    {
+        /* Here is where we need to reroute the device. To do this we need to uninitialize the stream and reinitialize it. */
+        result = ma_device_reinit__aaudio(pDevice, (ma_device_type)pJob->data.device.aaudio.reroute.deviceType);
+        if (result != MA_SUCCESS) {
+            /*
+            Getting here means we failed to reroute the device. The best thing I can think of here is to
+            just stop the device.
+            */
+            ma_log_post(ma_device_get_log(pDevice), MA_LOG_LEVEL_ERROR, "[AAudio] Stopping device due to reroute failure.");
+            ma_device_stop(pDevice);
+        }
     }
+    ma_mutex_unlock(&pDevice->aaudio.rerouteLock);
 
-    return MA_SUCCESS;
+    return result;
 }
 #else
 /* Getting here means there is no AAudio backend so we need a no-op job implementation. */
@@ -40918,7 +40940,7 @@ static ma_result ma_context_init__webaudio(ma_context* pContext, const ma_contex
 
     return MA_SUCCESS;
 }
-#endif  /* Web Audio */
+#endif  /* MA_HAS_WEBAUDIO */
 
 
 
@@ -52931,12 +52953,7 @@ static ma_channel_conversion_path ma_channel_map_get_conversion_path(const ma_ch
         ma_uint32 iChannelIn;
         ma_bool32 areAllChannelPositionsPresent = MA_TRUE;
         for (iChannelIn = 0; iChannelIn < channelsIn; ++iChannelIn) {
-            ma_bool32 isInputChannelPositionInOutput = MA_FALSE;
-            if (ma_channel_map_contains_channel_position(channelsOut, pChannelMapOut, ma_channel_map_get_channel(pChannelMapIn, channelsIn, iChannelIn))) {
-                isInputChannelPositionInOutput = MA_TRUE;
-                break;
-            }
-
+            ma_bool32 isInputChannelPositionInOutput = ma_channel_map_contains_channel_position(channelsOut, pChannelMapOut, ma_channel_map_get_channel(pChannelMapIn, channelsIn, iChannelIn));
             if (!isInputChannelPositionInOutput) {
                 areAllChannelPositionsPresent = MA_FALSE;
                 break;
@@ -60336,7 +60353,7 @@ extern "C" {
 #define MA_DR_WAV_XSTRINGIFY(x)     MA_DR_WAV_STRINGIFY(x)
 #define MA_DR_WAV_VERSION_MAJOR     0
 #define MA_DR_WAV_VERSION_MINOR     13
-#define MA_DR_WAV_VERSION_REVISION  17
+#define MA_DR_WAV_VERSION_REVISION  18
 #define MA_DR_WAV_VERSION_STRING    MA_DR_WAV_XSTRINGIFY(MA_DR_WAV_VERSION_MAJOR) "." MA_DR_WAV_XSTRINGIFY(MA_DR_WAV_VERSION_MINOR) "." MA_DR_WAV_XSTRINGIFY(MA_DR_WAV_VERSION_REVISION)
 #include <stddef.h>
 #define MA_DR_WAVE_FORMAT_PCM          0x1
@@ -65762,8 +65779,17 @@ MA_API ma_result ma_decoder_read_pcm_frames(ma_decoder* pDecoder, void* pFramesO
 
                     if (requiredInputFrameCount > 0) {
                         result = ma_data_source_read_pcm_frames(pDecoder->pBackend, pIntermediaryBuffer, framesToReadThisIterationIn, &framesReadThisIterationIn);
+
+                        /*
+                        Note here that even if we've reached the end, we don't want to abort because there might be more output frames needing to be
+                        generated from cached input data, which might happen if resampling is being performed.
+                        */
+                        if (result != MA_SUCCESS && result != MA_AT_END) {
+                            break;
+                        }
                     } else {
                         framesReadThisIterationIn = 0;
+                        pIntermediaryBuffer[0] = 0; /* <-- This is just to silence a static analysis warning. */
                     }
 
                     /*
@@ -68859,7 +68885,7 @@ static ma_result ma_resource_manager_data_buffer_node_decode_next_page(ma_resour
             }
 
             result = ma_decoder_read_pcm_frames(pDecoder, pPage->pAudioData, framesToTryReading, &framesRead);
-            if (framesRead > 0) {
+            if (result == MA_SUCCESS && framesRead > 0) {
                 pPage->sizeInFrames = framesRead;
 
                 result = ma_paged_audio_buffer_data_append_page(&pDataBufferNode->data.backend.decodedPaged.data, pPage);
@@ -71328,6 +71354,7 @@ static ma_result ma_job_process__resource_manager__load_data_buffer(ma_job* pJob
         goto done;  /* <-- This will ensure the execution pointer is incremented. */
     } else {
         result = MA_SUCCESS;    /* <-- Make sure this is reset. */
+        (void)result;           /* <-- This is to suppress a static analysis diagnostic about "result" not being used. But for safety when I do future maintenance I don't want to delete that assignment. */
     }
 
     /* Try initializing the connector if we haven't already. */
@@ -78063,7 +78090,7 @@ code below please report the bug to the respective repository for the relevant p
 ***************************************************************************************************************************************************************
 **************************************************************************************************************************************************************/
 #if !defined(MA_NO_WAV) && (!defined(MA_NO_DECODING) || !defined(MA_NO_ENCODING))
-#if !defined(MA_DR_WAV_IMPLEMENTATION) && !defined(MA_DR_WAV_IMPLEMENTATION) /* For backwards compatibility. Will be removed in version 0.11 for cleanliness. */
+#if !defined(MA_DR_WAV_IMPLEMENTATION)
 /* dr_wav_c begin */
 #ifndef ma_dr_wav_c
 #define ma_dr_wav_c
@@ -79653,7 +79680,9 @@ MA_PRIVATE ma_bool32 ma_dr_wav_init__internal(ma_dr_wav* pWav, ma_dr_wav_chunk_p
                     compressionFormat = MA_DR_WAVE_FORMAT_MULAW;
                 } else if (ma_dr_wav_fourcc_equal(type, "ima4")) {
                     compressionFormat = MA_DR_WAVE_FORMAT_DVI_ADPCM;
-                    sampleSizeInBits = 4;
+                    sampleSizeInBits  = 4;
+                    (void)compressionFormat;
+                    (void)sampleSizeInBits;
                     return MA_FALSE;
                 } else {
                     return MA_FALSE;
@@ -82894,7 +82923,7 @@ MA_API ma_bool32 ma_dr_wav_fourcc_equal(const ma_uint8* a, const char* b)
 #endif  /* MA_NO_WAV */
 
 #if !defined(MA_NO_FLAC) && !defined(MA_NO_DECODING)
-#if !defined(MA_DR_FLAC_IMPLEMENTATION) && !defined(MA_DR_FLAC_IMPLEMENTATION) /* For backwards compatibility. Will be removed in version 0.11 for cleanliness. */
+#if !defined(MA_DR_FLAC_IMPLEMENTATION)
 /* dr_flac_c begin */
 #ifndef ma_dr_flac_c
 #define ma_dr_flac_c
@@ -90643,7 +90672,7 @@ MA_API ma_bool32 ma_dr_flac_next_cuesheet_track(ma_dr_flac_cuesheet_track_iterat
 #endif  /* MA_NO_FLAC */
 
 #if !defined(MA_NO_MP3) && !defined(MA_NO_DECODING)
-#if !defined(MA_DR_MP3_IMPLEMENTATION) && !defined(MA_DR_MP3_IMPLEMENTATION) /* For backwards compatibility. Will be removed in version 0.11 for cleanliness. */
+#if !defined(MA_DR_MP3_IMPLEMENTATION)
 /* dr_mp3_c begin */
 #ifndef ma_dr_mp3_c
 #define ma_dr_mp3_c
