@@ -17,14 +17,6 @@
 
 #pragma once
 
-#ifndef MSDFGEN_NO_FREETYPE
-#define MSDFGEN_USE_FREETYPE
-#define MSDFGEN_DISABLE_VARIABLE_FONTS
-#endif
-#ifndef MSDFGEN_ENABLE_SVG
-#define MSDFGEN_DISABLE_SVG
-#endif
-
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
@@ -32,14 +24,7 @@
 #include <vector>
 #include <cfloat>
 
-#ifdef MSDFGEN_PARENT_NAMESPACE
-namespace MSDFGEN_PARENT_NAMESPACE {
-#endif
-
 // This file needs to be included first for all MSDFgen sources
-
-#ifndef MSDFGEN_PUBLIC
-#endif
 
 namespace msdfgen {
 
@@ -156,15 +141,9 @@ struct Vector2 {
         return polarity ? Vector2(0, !allowZero) : Vector2(0, -!allowZero);
     }
 
-#ifdef MSDFGEN_USE_CPP11
-    inline explicit operator bool() const {
-        return x || y;
-    }
-#else
     inline operator const void *() const {
         return x || y ? this : NULL;
     }
-#endif
 
     inline Vector2 &operator+=(const Vector2 other) {
         x += other.x, y += other.y;
@@ -313,28 +292,17 @@ public:
     Bitmap(int width, int height);
     Bitmap(const BitmapConstRef<T, N> &orig);
     Bitmap(const Bitmap<T, N> &orig);
-#ifdef MSDFGEN_USE_CPP11
-    Bitmap(Bitmap<T, N> &&orig);
-#endif
     ~Bitmap();
     Bitmap<T, N> &operator=(const BitmapConstRef<T, N> &orig);
     Bitmap<T, N> &operator=(const Bitmap<T, N> &orig);
-#ifdef MSDFGEN_USE_CPP11
-    Bitmap<T, N> &operator=(Bitmap<T, N> &&orig);
-#endif
     /// Bitmap width in pixels.
     int width() const;
     /// Bitmap height in pixels.
     int height() const;
     T *operator()(int x, int y);
     const T *operator()(int x, int y) const;
-#ifdef MSDFGEN_USE_CPP11
-    explicit operator T *();
-    explicit operator const T *() const;
-#else
     operator T *();
     operator const T *() const;
-#endif
     operator BitmapRef<T, N>();
     operator BitmapConstRef<T, N>() const;
 
@@ -364,14 +332,6 @@ Bitmap<T, N>::Bitmap(const Bitmap<T, N> &orig) : w(orig.w), h(orig.h) {
     memcpy(pixels, orig.pixels, sizeof(T)*N*w*h);
 }
 
-#ifdef MSDFGEN_USE_CPP11
-template <typename T, int N>
-Bitmap<T, N>::Bitmap(Bitmap<T, N> &&orig) : pixels(orig.pixels), w(orig.w), h(orig.h) {
-    orig.pixels = NULL;
-    orig.w = 0, orig.h = 0;
-}
-#endif
-
 template <typename T, int N>
 Bitmap<T, N>::~Bitmap() {
     delete [] pixels;
@@ -398,19 +358,6 @@ Bitmap<T, N> &Bitmap<T, N>::operator=(const Bitmap<T, N> &orig) {
     }
     return *this;
 }
-
-#ifdef MSDFGEN_USE_CPP11
-template <typename T, int N>
-Bitmap<T, N> &Bitmap<T, N>::operator=(Bitmap<T, N> &&orig) {
-    if (this != &orig) {
-        delete [] pixels;
-        pixels = orig.pixels;
-        w = orig.w, h = orig.h;
-        orig.pixels = NULL;
-    }
-    return *this;
-}
-#endif
 
 template <typename T, int N>
 int Bitmap<T, N>::width() const {
@@ -618,9 +565,6 @@ public:
     Scanline();
     /// Populates the intersection list.
     void setIntersections(const std::vector<Intersection> &intersections);
-#ifdef MSDFGEN_USE_CPP11
-    void setIntersections(std::vector<Intersection> &&intersections);
-#endif
     /// Returns the number of intersections left of x.
     int countIntersections(double x) const;
     /// Returns the total sign of intersections left of x.
@@ -657,9 +601,7 @@ enum EdgeColor {
 
 #define MSDFGEN_QUADRATIC_RATIO_LIMIT 1e8
 
-#ifndef MSDFGEN_CUBE_ROOT
 #define MSDFGEN_CUBE_ROOT(x) pow((x), 1/3.)
-#endif
 
 namespace msdfgen {
 
@@ -769,8 +711,6 @@ public:
     /// Outputs a list of (at most three) intersections (their X coordinates) with an infinite horizontal scanline at y and returns how many there are.
     virtual int scanlineIntersections(double x[3], int dy[3], double y) const = 0;
     virtual int horizontalScanlineIntersections(double x[3], int dy[3], double y) const = 0;
-    /// Outputs a list of (at most three) intersections (their Y coordinates) with an infinite vertical scanline at x and returns how many there are.
-    virtual int verticalScanlineIntersections(double y[3], int dx[3], double x) const = 0;
     /// Adjusts the bounding box to fit the edge segment.
     virtual void bound(double &l, double &b, double &r, double &t) const = 0;
 
@@ -892,14 +832,8 @@ public:
     inline EdgeHolder(Point2 p0, Point2 p1, Point2 p2, EdgeColor edgeColor = WHITE) : edgeSegment(EdgeSegment::create(p0, p1, p2, edgeColor)) { }
     inline EdgeHolder(Point2 p0, Point2 p1, Point2 p2, Point2 p3, EdgeColor edgeColor = WHITE) : edgeSegment(EdgeSegment::create(p0, p1, p2, p3, edgeColor)) { }
     EdgeHolder(const EdgeHolder &orig);
-#ifdef MSDFGEN_USE_CPP11
-    EdgeHolder(EdgeHolder &&orig);
-#endif
     ~EdgeHolder();
     EdgeHolder &operator=(const EdgeHolder &orig);
-#ifdef MSDFGEN_USE_CPP11
-    EdgeHolder &operator=(EdgeHolder &&orig);
-#endif
     EdgeSegment &operator*();
     const EdgeSegment &operator*() const;
     EdgeSegment *operator->();
@@ -921,9 +855,6 @@ public:
 
     /// Adds an edge to the contour.
     void addEdge(const EdgeHolder &edge);
-#ifdef MSDFGEN_USE_CPP11
-    void addEdge(EdgeHolder &&edge);
-#endif
     /// Creates a new edge in the contour and returns its reference.
     EdgeHolder &addEdge();
     /// Adjusts the bounding box to fit the contour.
@@ -956,9 +887,6 @@ public:
     Shape();
     /// Adds a contour.
     void addContour(const Contour &contour);
-#ifdef MSDFGEN_USE_CPP11
-    void addContour(Contour &&contour);
-#endif
     /// Adds a blank contour and returns its reference.
     Contour &addContour();
     /// Normalizes the shape geometry for distance field generation.
@@ -1195,11 +1123,7 @@ ShapeDistanceFinder<ContourCombiner>::ShapeDistanceFinder(const Shape &shape) : 
 template <class ContourCombiner>
 typename ShapeDistanceFinder<ContourCombiner>::DistanceType ShapeDistanceFinder<ContourCombiner>::distance(const Point2 &origin) {
     contourCombiner.reset(origin);
-#ifdef MSDFGEN_USE_CPP11
-    typename ContourCombiner::EdgeSelectorType::EdgeCache *edgeCache = shapeEdgeCache.data();
-#else
     typename ContourCombiner::EdgeSelectorType::EdgeCache *edgeCache = shapeEdgeCache.empty() ? NULL : &shapeEdgeCache[0];
-#endif
 
     for (std::vector<Contour>::const_iterator contour = shape.contours.begin(); contour != shape.contours.end(); ++contour) {
         if (!contour->edges.empty()) {
@@ -1248,9 +1172,7 @@ void approximateSDF(const BitmapRef<float, 1> &output, const Shape &shape, const
 
 }
 
-#ifndef MSDFGEN_PUBLIC
 #define MSDFGEN_PUBLIC // for DLL import/export
-#endif
 
 namespace msdfgen {
 
@@ -1377,184 +1299,9 @@ private:
 
 }
 
-#ifdef MSDFGEN_USE_FREETYPE
-
 namespace msdfgen {
-
-#define MSDFGEN_LEGACY_FONT_COORDINATE_SCALE (1/64.)
-
-typedef unsigned unicode_t;
-
-class FreetypeHandle;
-class FontHandle;
-
-class GlyphIndex {
-
-public:
-    explicit GlyphIndex(unsigned index = 0);
-    unsigned getIndex() const;
-
-private:
-    unsigned index;
-
-};
-
-/// Global metrics of a typeface (in font units).
-struct FontMetrics {
-    /// The size of one EM.
-    double emSize;
-    /// The vertical position of the ascender and descender relative to the baseline.
-    double ascenderY, descenderY;
-    /// The vertical difference between consecutive baselines.
-    double lineHeight;
-    /// The vertical position and thickness of the underline.
-    double underlineY, underlineThickness;
-};
-
-/// A structure to model a given axis of a variable font.
-struct FontVariationAxis {
-    /// The name of the variation axis.
-    const char *name;
-    /// The axis's minimum coordinate value.
-    double minValue;
-    /// The axis's maximum coordinate value.
-    double maxValue;
-    /// The axis's default coordinate value. FreeType computes meaningful default values for Adobe MM fonts.
-    double defaultValue;
-};
-
-/// The scaling applied to font glyph coordinates when loading a glyph
-enum FontCoordinateScaling {
-    /// The coordinates are kept as the integer values native to the font file
-    FONT_SCALING_NONE,
-    /// The coordinates will be normalized to the em size, i.e. 1 = 1 em
-    FONT_SCALING_EM_NORMALIZED,
-    /// The incorrect legacy version that was in effect before version 1.12, coordinate values are divided by 64 - DO NOT USE - for backwards compatibility only
-    FONT_SCALING_LEGACY
-};
-
-/// Initializes the FreeType library.
-FreetypeHandle *initializeFreetype();
-/// Deinitializes the FreeType library.
-void deinitializeFreetype(FreetypeHandle *library);
-
-#ifdef FT_LOAD_DEFAULT // FreeType included
-/// Creates a FontHandle from FT_Face that was loaded by the user. destroyFont must still be called but will not affect the FT_Face.
-FontHandle *adoptFreetypeFont(FT_Face ftFace);
-/// Converts the geometry of FreeType's FT_Outline to a Shape object.
-FT_Error readFreetypeOutline(Shape &output, FT_Outline *outline, double scale = MSDFGEN_LEGACY_FONT_COORDINATE_SCALE);
-#endif
-
-/// Loads a font file and returns its handle.
-FontHandle *loadFont(FreetypeHandle *library, const char *filename);
-/// Loads a font from binary data and returns its handle.
-FontHandle *loadFontData(FreetypeHandle *library, const byte *data, int length);
-/// Unloads a font.
-void destroyFont(FontHandle *font);
-/// Outputs the metrics of a font.
-bool getFontMetrics(FontMetrics &metrics, FontHandle *font, FontCoordinateScaling coordinateScaling = FONT_SCALING_LEGACY);
-/// Outputs the width of the space and tab characters.
-bool getFontWhitespaceWidth(double &spaceAdvance, double &tabAdvance, FontHandle *font, FontCoordinateScaling coordinateScaling = FONT_SCALING_LEGACY);
-/// Outputs the total number of glyphs available in the font.
-bool getGlyphCount(unsigned &output, FontHandle *font);
-/// Outputs the glyph index corresponding to the specified Unicode character.
-bool getGlyphIndex(GlyphIndex &glyphIndex, FontHandle *font, unicode_t unicode);
-/// Loads the geometry of a glyph from a font.
-bool loadGlyph(Shape &output, FontHandle *font, GlyphIndex glyphIndex, FontCoordinateScaling coordinateScaling, double *outAdvance = NULL);
-bool loadGlyph(Shape &output, FontHandle *font, unicode_t unicode, FontCoordinateScaling coordinateScaling, double *outAdvance = NULL);
-// Legacy API - FontCoordinateScaling is LEGACY
-bool loadGlyph(Shape &output, FontHandle *font, GlyphIndex glyphIndex, double *outAdvance = NULL);
-bool loadGlyph(Shape &output, FontHandle *font, unicode_t unicode, double *outAdvance = NULL);
-/// Outputs the kerning distance adjustment between two specific glyphs.
-bool getKerning(double &output, FontHandle *font, GlyphIndex glyphIndex0, GlyphIndex glyphIndex1, FontCoordinateScaling coordinateScaling = FONT_SCALING_LEGACY);
-bool getKerning(double &output, FontHandle *font, unicode_t unicode0, unicode_t unicode1, FontCoordinateScaling coordinateScaling = FONT_SCALING_LEGACY);
-
-#ifndef MSDFGEN_DISABLE_VARIABLE_FONTS
-/// Sets a single variation axis of a variable font.
-bool setFontVariationAxis(FreetypeHandle *library, FontHandle *font, const char *name, double coordinate);
-/// Lists names and ranges of variation axes of a variable font.
-bool listFontVariationAxes(std::vector<FontVariationAxis> &axes, FreetypeHandle *library, FontHandle *font);
-#endif
-
-}
-
-#endif
-
-#ifdef MSDFGEN_USE_SKIA
-
-namespace msdfgen {
-
-/// Resolves any intersections within the shape by subdividing its contours using the Skia library and makes sure its contours have a consistent winding.
-bool resolveShapeGeometry(Shape &shape);
-
-}
-
-#endif
-
-#ifndef MSDFGEN_DISABLE_SVG
-
-#ifndef MSDFGEN_EXT_PUBLIC
-#define MSDFGEN_EXT_PUBLIC // for DLL import/export
-#endif
-
-namespace msdfgen {
-
-extern MSDFGEN_EXT_PUBLIC const int SVG_IMPORT_FAILURE;
-extern MSDFGEN_EXT_PUBLIC const int SVG_IMPORT_SUCCESS_FLAG;
-extern MSDFGEN_EXT_PUBLIC const int SVG_IMPORT_PARTIAL_FAILURE_FLAG;
-extern MSDFGEN_EXT_PUBLIC const int SVG_IMPORT_INCOMPLETE_FLAG;
-extern MSDFGEN_EXT_PUBLIC const int SVG_IMPORT_UNSUPPORTED_FEATURE_FLAG;
-extern MSDFGEN_EXT_PUBLIC const int SVG_IMPORT_TRANSFORMATION_IGNORED_FLAG;
-
-/// Builds a shape from an SVG path string
-bool buildShapeFromSvgPath(Shape &shape, const char *pathDef, double endpointSnapRange = 0);
-
-/// Reads a single <path> element found in the specified SVG file and converts it to output Shape
-bool loadSvgShape(Shape &output, const char *filename, int pathIndex = 0, Vector2 *dimensions = NULL);
-
-/// New version - if Skia is available, reads the entire geometry of the SVG file into the output Shape, otherwise may only read one path, returns SVG import flags
-int loadSvgShape(Shape &output, Shape::Bounds &viewBox, const char *filename);
-
-}
-
-#endif
-
-namespace msdfgen {
-
-/// Generates a conventional single-channel signed distance field.
-void generateSDF(const BitmapRef<float, 1> &output, const Shape &shape, const SDFTransformation &transformation, const GeneratorConfig &config = GeneratorConfig());
-
-/// Generates a single-channel signed perpendicular distance field.
-void generatePSDF(const BitmapRef<float, 1> &output, const Shape &shape, const SDFTransformation &transformation, const GeneratorConfig &config = GeneratorConfig());
-
-/// Generates a multi-channel signed distance field. Edge colors must be assigned first! (See edgeColoringSimple)
-void generateMSDF(const BitmapRef<float, 3> &output, const Shape &shape, const SDFTransformation &transformation, const MSDFGeneratorConfig &config = MSDFGeneratorConfig());
 
 /// Generates a multi-channel signed distance field with true distance in the alpha channel. Edge colors must be assigned first.
 void generateMTSDF(const BitmapRef<float, 4> &output, const Shape &shape, const SDFTransformation &transformation, const MSDFGeneratorConfig &config = MSDFGeneratorConfig());
 
-// Old version of the function API's kept for backwards compatibility
-void generateSDF(const BitmapRef<float, 1> &output, const Shape &shape, const Projection &projection, Range range, const GeneratorConfig &config = GeneratorConfig());
-void generatePSDF(const BitmapRef<float, 1> &output, const Shape &shape, const Projection &projection, Range range, const GeneratorConfig &config = GeneratorConfig());
-void generatePseudoSDF(const BitmapRef<float, 1> &output, const Shape &shape, const Projection &projection, Range range, const GeneratorConfig &config = GeneratorConfig());
-void generateMSDF(const BitmapRef<float, 3> &output, const Shape &shape, const Projection &projection, Range range, const MSDFGeneratorConfig &config = MSDFGeneratorConfig());
-void generateMTSDF(const BitmapRef<float, 4> &output, const Shape &shape, const Projection &projection, Range range, const MSDFGeneratorConfig &config = MSDFGeneratorConfig());
-
-void generateSDF(const BitmapRef<float, 1> &output, const Shape &shape, Range range, const Vector2 &scale, const Vector2 &translate, bool overlapSupport = true);
-void generatePSDF(const BitmapRef<float, 1> &output, const Shape &shape, Range range, const Vector2 &scale, const Vector2 &translate, bool overlapSupport = true);
-void generatePseudoSDF(const BitmapRef<float, 1> &output, const Shape &shape, Range range, const Vector2 &scale, const Vector2 &translate, bool overlapSupport = true);
-void generateMSDF(const BitmapRef<float, 3> &output, const Shape &shape, Range range, const Vector2 &scale, const Vector2 &translate, const ErrorCorrectionConfig &errorCorrectionConfig = ErrorCorrectionConfig(), bool overlapSupport = true);
-void generateMTSDF(const BitmapRef<float, 4> &output, const Shape &shape, Range range, const Vector2 &scale, const Vector2 &translate, const ErrorCorrectionConfig &errorCorrectionConfig = ErrorCorrectionConfig(), bool overlapSupport = true);
-
-// Original simpler versions of the previous functions, which work well under normal circumstances, but cannot deal with overlapping contours.
-void generateSDF_legacy(const BitmapRef<float, 1> &output, const Shape &shape, Range range, const Vector2 &scale, const Vector2 &translate);
-void generatePSDF_legacy(const BitmapRef<float, 1> &output, const Shape &shape, Range range, const Vector2 &scale, const Vector2 &translate);
-void generatePseudoSDF_legacy(const BitmapRef<float, 1> &output, const Shape &shape, Range range, const Vector2 &scale, const Vector2 &translate);
-void generateMSDF_legacy(const BitmapRef<float, 3> &output, const Shape &shape, Range range, const Vector2 &scale, const Vector2 &translate, ErrorCorrectionConfig errorCorrectionConfig = ErrorCorrectionConfig());
-void generateMTSDF_legacy(const BitmapRef<float, 4> &output, const Shape &shape, Range range, const Vector2 &scale, const Vector2 &translate, ErrorCorrectionConfig errorCorrectionConfig = ErrorCorrectionConfig());
-
 }
-
-#ifdef MSDFGEN_PARENT_NAMESPACE
-} // namespace MSDFGEN_PARENT_NAMESPACE
-#endif
