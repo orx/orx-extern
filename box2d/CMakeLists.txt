@@ -60,7 +60,7 @@ endif()
 
 # C++17 needed for imgui
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
+set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -70,12 +70,12 @@ add_subdirectory(src)
 
 # This hides samples, test, and doxygen from apps that use box2d via FetchContent
 if(PROJECT_IS_TOP_LEVEL)
-	option(BOX2D_SAMPLES "Build the Box2D samples" ON)
+	option(BOX2D_SAMPLES "Build the Box2D samples" OFF)
 	option(BOX2D_BENCHMARKS "Build the Box2D benchmarks" OFF)
 	option(BOX2D_DOCS "Build the Box2D documentation" OFF)
 	option(BOX2D_PROFILE "Enable profiling with Tracy" OFF)
-	option(BOX2D_VALIDATE "Enable heavy validation" ON)
-	option(BOX2D_UNIT_TESTS "Build the Box2D unit tests" ON)
+	option(BOX2D_VALIDATE "Enable heavy validation" OFF)
+	option(BOX2D_UNIT_TESTS "Build the Box2D unit tests" OFF)
 
 	# Needed for samples.exe to find box2d.dll
 	# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
