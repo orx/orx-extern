@@ -101,6 +101,14 @@
 
 				local allowed_flags = {
 					ATL = 1,
+					C11 = 1,
+					C17 = 1,
+					C23 = 1,
+					CXX11 = 1,
+					CXX14 = 1,
+					CXX17 = 1,
+					CXX20 = 1,
+					CXX23 = 1,
 					DebugEnvsDontMerge = 1,
 					DebugEnvsInherit = 1,
 					EnableSSE = 1,

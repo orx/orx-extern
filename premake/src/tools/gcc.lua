@@ -23,6 +23,9 @@
 
 	local cflags =
 	{
+		C11            = "-std=c11",
+		C17            = "-std=c17",
+		C23            = "-std=c23",
 		EnableSSE      = "-msse",
 		EnableSSE2     = "-msse2",
 		ExtraWarnings  = "-Wall -Wextra",
@@ -38,6 +41,11 @@
 
 	local cxxflags =
 	{
+		CXX11          = "-std=c++11",
+		CXX14          = "-std=c++14",
+		CXX17          = "-std=c++17",
+		CXX20          = "-std=c++20",
+		CXX23          = "-std=c++23",
 		NoExceptions   = "-fno-exceptions",
 		NoRTTI         = "-fno-rtti",
 	}
