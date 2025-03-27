@@ -176,7 +176,9 @@ b2BodyId b2CreateBody( b2WorldId worldId, const b2BodyDef* def )
 	B2_ASSERT( b2IsValidFloat( def->linearDamping ) && def->linearDamping >= 0.0f );
 	B2_ASSERT( b2IsValidFloat( def->angularDamping ) && def->angularDamping >= 0.0f );
 	B2_ASSERT( b2IsValidFloat( def->sleepThreshold ) && def->sleepThreshold >= 0.0f );
-	B2_ASSERT( b2IsValidFloat( def->gravityScale ) );
+	//!<orx
+	B2_ASSERT( !def->hasCustomGravity || b2IsValidVec2( def->customGravity ) );
+	//!>orx
 
 	b2World* world = b2GetWorldFromId( worldId );
 	B2_ASSERT( world->locked == false );
@@ -236,7 +238,10 @@ b2BodyId b2CreateBody( b2WorldId worldId, const b2BodyDef* def )
 	bodySim->maxExtent = 0.0f;
 	bodySim->linearDamping = def->linearDamping;
 	bodySim->angularDamping = def->angularDamping;
-	bodySim->gravityScale = def->gravityScale;
+	//!<orx
+	bodySim->customGravity = def->customGravity;
+	bodySim->hasCustomGravity = def->hasCustomGravity;
+	//!>orx
 	bodySim->bodyId = bodyId;
 	bodySim->isBullet = def->isBullet;
 	bodySim->allowFastRotation = def->allowFastRotation;
@@ -1386,10 +1391,11 @@ float b2Body_GetAngularDamping( b2BodyId bodyId )
 	return bodySim->angularDamping;
 }
 
-void b2Body_SetGravityScale( b2BodyId bodyId, float gravityScale )
+//!<orx
+void b2Body_SetCustomGravity( b2BodyId bodyId, b2Vec2 *customGravity )
 {
 	B2_ASSERT( b2Body_IsValid( bodyId ) );
-	B2_ASSERT( b2IsValidFloat( gravityScale ) );
+	B2_ASSERT( customGravity == NULL || b2IsValidVec2( *customGravity ) );
 
 	b2World* world = b2GetWorldLocked( bodyId.world0 );
 	if ( world == NULL )
@@ -1399,17 +1405,26 @@ void b2Body_SetGravityScale( b2BodyId bodyId, float gravityScale )
 
 	b2Body* body = b2GetBodyFullId( world, bodyId );
 	b2BodySim* bodySim = b2GetBodySim( world, body );
-	bodySim->gravityScale = gravityScale;
+	if(customGravity)
+	{
+		bodySim->customGravity = *customGravity;
+		bodySim->hasCustomGravity = true;
+	}
+	else
+	{
+		bodySim->hasCustomGravity = false;
+	}
 }
 
-float b2Body_GetGravityScale( b2BodyId bodyId )
+b2Vec2 *b2Body_GetCustomGravity( b2BodyId bodyId )
 {
 	B2_ASSERT( b2Body_IsValid( bodyId ) );
 	b2World* world = b2GetWorld( bodyId.world0 );
 	b2Body* body = b2GetBodyFullId( world, bodyId );
 	b2BodySim* bodySim = b2GetBodySim( world, body );
-	return bodySim->gravityScale;
+	return bodySim->hasCustomGravity ? &bodySim->customGravity : NULL;
 }
+//!>orx
 
 bool b2Body_IsAwake( b2BodyId bodyId )
 {

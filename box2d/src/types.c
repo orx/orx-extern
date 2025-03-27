@@ -32,7 +32,9 @@ b2BodyDef b2DefaultBodyDef( void )
 	def.type = b2_staticBody;
 	def.rotation = b2Rot_identity;
 	def.sleepThreshold = 0.05f * b2_lengthUnitsPerMeter;
-	def.gravityScale = 1.0f;
+	//!<orx
+	def.hasCustomGravity = false;
+	//!>orx
 	def.enableSleep = true;
 	def.isAwake = true;
 	def.isEnabled = true;

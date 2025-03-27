@@ -144,7 +144,9 @@ typedef struct b2BodySim
 	float maxExtent;
 	float linearDamping;
 	float angularDamping;
-	float gravityScale;
+	//!<orx
+	b2Vec2 customGravity;
+	//!>orx
 
 	// body data can be moved around, the id is stable (used in b2BodyId)
 	int bodyId;
@@ -156,6 +158,9 @@ typedef struct b2BodySim
 	bool isSpeedCapped;
 	bool allowFastRotation;
 	bool enlargeAABB;
+	//!<orx
+	bool hasCustomGravity;
+	//!>orx
 } b2BodySim;
 
 // Get a validated body from a world using an id.

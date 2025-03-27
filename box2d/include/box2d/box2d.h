@@ -398,12 +398,10 @@ B2_API void b2Body_SetAngularDamping( b2BodyId bodyId, float angularDamping );
 /// Get the current angular damping.
 B2_API float b2Body_GetAngularDamping( b2BodyId bodyId );
 
-/// Adjust the gravity scale. Normally this is set in b2BodyDef before creation.
-/// @see b2BodyDef::gravityScale
-B2_API void b2Body_SetGravityScale( b2BodyId bodyId, float gravityScale );
-
-/// Get the current gravity scale
-B2_API float b2Body_GetGravityScale( b2BodyId bodyId );
+//!<orx
+B2_API void b2Body_SetCustomGravity( b2BodyId bodyId, b2Vec2 *customGravity );
+B2_API b2Vec2 *b2Body_GetCustomGravity( b2BodyId bodyId );
+//!>orx
 
 /// @return true if this body is awake
 B2_API bool b2Body_IsAwake( b2BodyId bodyId );

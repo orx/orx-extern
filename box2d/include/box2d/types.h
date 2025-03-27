@@ -204,8 +204,9 @@ typedef struct b2BodyDef
 	/// Angular damping can be use slow down rotating bodies.
 	float angularDamping;
 
-	/// Scale the gravity applied to this body. Non-dimensional.
-	float gravityScale;
+	//!<orx
+	b2Vec2 customGravity;
+	//!>orx
 
 	/// Sleep speed threshold, default is 0.05 meters per second
 	float sleepThreshold;
@@ -237,6 +238,10 @@ typedef struct b2BodyDef
 	/// This allows this body to bypass rotational speed limits. Should only be used
 	/// for circular objects, like wheels.
 	bool allowFastRotation;
+
+	//!<orx
+	bool hasCustomGravity;
+	//!>orx
 
 	/// Used internally to detect a valid definition. DO NOT SET.
 	int internalValue;

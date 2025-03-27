@@ -91,11 +91,10 @@ static void b2IntegrateVelocitiesTask( int startIndex, int endIndex, b2StepConte
 		float linearDamping = 1.0f / ( 1.0f + h * sim->linearDamping );
 		float angularDamping = 1.0f / ( 1.0f + h * sim->angularDamping );
 
-		// Gravity scale will be zero for kinematic bodies
-		float gravityScale = sim->invMass > 0.0f ? sim->gravityScale : 0.0f;
-
 		// lvd = h * im * f + h * g
-		b2Vec2 linearVelocityDelta = b2Add( b2MulSV( h * sim->invMass, sim->force ), b2MulSV( h * gravityScale, gravity ) );
+		//!<orx
+		b2Vec2 linearVelocityDelta = sim->invMass > 0.0f ? b2Add( b2MulSV( h * sim->invMass, sim->force ), b2MulSV( h, sim->hasCustomGravity ? sim->customGravity : gravity ) ) : b2Vec2_zero;
+		//!>orx
 		float angularVelocityDelta = h * sim->invInertia * sim->torque;
 
 		v = b2MulAdd( linearVelocityDelta, linearDamping, v );
