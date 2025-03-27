@@ -273,6 +273,25 @@
 		if cfg.language == "C++" then
 			_p(3,'<CompileAs>CompileAsCpp</CompileAs>')
 		end
+		if cfg.flags.C11 then
+			_p(3,'<LanguageStandard>c11</LanguageStandard>')
+		elseif cfg.flags.C17 then
+			_p(3,'<LanguageStandard>c17</LanguageStandard>')
+		elseif cfg.flags.C23 then
+			_p(3,'<LanguageStandard>c23</LanguageStandard>')
+		end
+
+		if cfg.flags.CXX11 then
+			_p(3,'<LanguageStandard>c++11</LanguageStandard>')
+		elseif cfg.flags.CXX14 then
+			_p(3,'<LanguageStandard>c++14</LanguageStandard>')
+		elseif cfg.flags.CXX17 then
+			_p(3,'<LanguageStandard>c++17</LanguageStandard>')
+		elseif cfg.flags.CXX20 then
+			_p(3,'<LanguageStandard>c++20</LanguageStandard>')
+		elseif cfg.flags.CXX23 then
+			_p(3,'<LanguageStandard>c++23</LanguageStandard>')
+		end
 	end
 
 	local function vs10_clcompile(cfg)
