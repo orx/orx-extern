@@ -795,15 +795,20 @@
 		end
 
 		if cfg.flags.CXX11 then
-			_p(4,'GCC_CXX_LANGUAGE_STANDARD = c++11;')
+			_p(4,'GCC_CXX_LANGUAGE_STANDARD = "c++11";')
+			_p(4,'CLANG_CXX_LANGUAGE_STANDARD = "c++11";')
 		elseif cfg.flags.CXX14 then
-			_p(4,'GCC_CXX_LANGUAGE_STANDARD = c++14;')
+			_p(4,'GCC_CXX_LANGUAGE_STANDARD = "c++14";')
+			_p(4,'CLANG_CXX_LANGUAGE_STANDARD = "c++14";')
 		elseif cfg.flags.CXX17 then
-			_p(4,'GCC_CXX_LANGUAGE_STANDARD = c++17;')
+			_p(4,'GCC_CXX_LANGUAGE_STANDARD = "c++17";')
+			_p(4,'CLANG_CXX_LANGUAGE_STANDARD = "c++17";')
 		elseif cfg.flags.CXX20 then
-			_p(4,'GCC_CXX_LANGUAGE_STANDARD = c++20;')
+			_p(4,'GCC_CXX_LANGUAGE_STANDARD = "c++20";')
+			_p(4,'CLANG_CXX_LANGUAGE_STANDARD = "c++20";')
 		elseif cfg.flags.CXX23 then
-			_p(4,'GCC_CXX_LANGUAGE_STANDARD = c++23;')
+			_p(4,'GCC_CXX_LANGUAGE_STANDARD = "c++23";')
+			_p(4,'CLANG_CXX_LANGUAGE_STANDARD = "c++23";')
 		end
 		
 		if cfg.flags.NoExceptions then
