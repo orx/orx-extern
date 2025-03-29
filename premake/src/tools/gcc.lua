@@ -23,9 +23,6 @@
 
 	local cflags =
 	{
-		C11            = "-std=c11",
-		C17            = "-std=c17",
-		C23            = "-std=c23",
 		EnableSSE      = "-msse",
 		EnableSSE2     = "-msse2",
 		ExtraWarnings  = "-Wall -Wextra",
@@ -37,6 +34,13 @@
 		OptimizeSize   = "-Os",
 		OptimizeSpeed  = "-O3",
 		Symbols        = "-g",
+	}
+
+	local cstdflags =
+	{
+		C11            = "-std=c11",
+		C17            = "-std=c17",
+		C23            = "-std=c23",
 	}
 
 	local cxxflags =
@@ -134,6 +138,12 @@
 		if cfg.system ~= "windows" and cfg.kind == "SharedLib" then
 			table.insert(result, "-fPIC")
 		end
+		return result
+	end
+
+
+	function premake.gcc.getcstdflags(cfg)
+		local result = table.translate(cfg.flags, cstdflags)
 		return result
 	end
 

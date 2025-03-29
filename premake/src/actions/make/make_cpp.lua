@@ -246,8 +246,8 @@
 
 		_p('  ALL_CPPFLAGS  += $(CPPFLAGS) %s $(DEFINES) $(INCLUDES)', table.concat(cc.getcppflags(cfg), " "))
 
-		_p('  ALL_CFLAGS    += $(CFLAGS) $(ALL_CPPFLAGS)%s', make.list(table.join(cc.getcflags(cfg), cfg.buildoptions)))
-		_p('  ALL_CXXFLAGS  += $(CXXFLAGS) $(ALL_CFLAGS)%s', make.list(cc.getcxxflags(cfg)))
+		_p('  ALL_CFLAGS    += $(CFLAGS) $(ALL_CPPFLAGS)%s', make.list(table.join(cc.getcflags(cfg), cc.getcstdflags(cfg), cfg.buildoptions)))
+		_p('  ALL_CXXFLAGS  += $(CXXFLAGS) $(CFLAGS) $(ALL_CPPFLAGS)%s', make.list(table.join(cc.getcflags(cfg), cc.getcxxflags(cfg), cfg.buildoptions)))
 
 		_p('  ALL_RESFLAGS  += $(RESFLAGS) $(DEFINES) $(INCLUDES)%s',
 		        make.list(table.join(cc.getdefines(cfg.resdefines),
