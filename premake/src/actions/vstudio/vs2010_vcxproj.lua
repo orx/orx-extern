@@ -282,7 +282,7 @@
 		end
 
 		if cfg.flags.CXX11 then
-			_p(3,'<LanguageStandard>stdcpp11</LanguageStandard>')
+			_p(3,'<LanguageStandard>stdcpp14</LanguageStandard>')
 		elseif cfg.flags.CXX14 then
 			_p(3,'<LanguageStandard>stdcpp14</LanguageStandard>')
 		elseif cfg.flags.CXX17 then
