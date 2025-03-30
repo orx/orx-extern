@@ -78,7 +78,7 @@
 				_p('      <General OutputFile="%s" IntermediateDirectory="$(ConfigurationName)" Command="./%s" CommandArguments="%s" WorkingDirectory="%s" PauseExecWhenProcTerminates="%s"/>', fname, runcmd, runargs, rundir, pause)
 
 				-- begin compiler block --
-				local cflags = premake.esc(table.join(premake.gcc.getcflags(cfg), cfg.buildoptions))
+				local cflags = premake.esc(table.join(premake.gcc.getcflags(cfg), premake.gcc.getcstdflags(cfg), cfg.buildoptions))
 				local cppflags = premake.esc(table.join(premake.gcc.getcflags(cfg), premake.gcc.getcxxflags(cfg), cfg.buildoptions))
 				_p('      <Compiler Required="yes" Options="%s" C_Options="%s">', table.concat(cppflags, ";"), table.concat(cflags, ";"))
 				for _,v in ipairs(cfg.includedirs) do
