@@ -319,33 +319,17 @@ namespace basisu
 				{
 					return (m_bytes[2] << 16U) | (m_bytes[1] << 8U) | m_bytes[0];
 				}
+				case 5:
+				case 6:
+				case 7:
+				case 8:  
+				{
+					assert(read_le_dword(m_bytes + 4) == 0);
+					// fall through
+				}
 				case 4:  
 				{
 					return read_le_dword(m_bytes);
-				}
-				case 5:
-				{
-					uint32_t l = read_le_dword(m_bytes);
-					uint32_t h = m_bytes[4];
-					return static_cast<uint64_t>(l) | (static_cast<uint64_t>(h) << 32U);
-				}
-				case 6:
-				{
-					uint32_t l = read_le_dword(m_bytes);
-					uint32_t h = (m_bytes[5] << 8U) | m_bytes[4];
-					return static_cast<uint64_t>(l) | (static_cast<uint64_t>(h) << 32U);
-				}
-				case 7:
-				{
-					uint32_t l = read_le_dword(m_bytes);
-					uint32_t h = (m_bytes[6] << 16U) | (m_bytes[5] << 8U) | m_bytes[4];
-					return static_cast<uint64_t>(l) | (static_cast<uint64_t>(h) << 32U);
-				}
-				case 8:  
-				{
-					uint32_t l = read_le_dword(m_bytes);
-					uint32_t h = read_le_dword(m_bytes + 4);
-					return static_cast<uint64_t>(l) | (static_cast<uint64_t>(h) << 32U);
 				}
 				default: 
 				{
