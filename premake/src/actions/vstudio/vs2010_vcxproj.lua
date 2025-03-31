@@ -270,9 +270,6 @@
 	end
 
 	local function compile_language(cfg)
-		if cfg.language == "C++" then
-			_p(3,'<CompileAs>CompileAsCpp</CompileAs>')
-		end
 		if cfg.flags.C11 then
 			_p(3,'<LanguageStandard_C>stdc11</LanguageStandard_C>')
 		elseif cfg.flags.C17 then

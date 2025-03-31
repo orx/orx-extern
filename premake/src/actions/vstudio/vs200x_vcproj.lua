@@ -149,9 +149,6 @@
 							_p(depth, '\t\tName="%s"', iif(cfg.system == "Xbox360", 
 							                                 "VCCLX360CompilerTool", 
 							                                 "VCCLCompilerTool"))
-							if premake.project.iscppproject(prj) then
-								_p(depth, '\t\tCompileAs="2"')
-							end
 							
 							if usePCH then
 								if cfg.system == "PS3" then
@@ -328,9 +325,6 @@
 		
 		_p(4,'ProgramDataBaseFileName="$(OutDir)\\%s.pdb"', path.getbasename(cfg.buildtarget.name))
 		_p(4,'DebugInformationFormat="%s"', vc200x.Symbols(cfg))
-		if cfg.language == "C" then
-			_p(4, 'CompileAs="1"')
-		end
 		_p(3,'/>')
 	end
 	
