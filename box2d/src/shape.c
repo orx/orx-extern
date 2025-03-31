@@ -1506,6 +1506,52 @@ float b2Chain_GetRestitution( b2ChainId chainId )
 	return chainShape->materials[0].restitution;
 }
 
+//!<orx
+void b2Chain_SetFilter( b2ChainId chainId, b2Filter filter )
+{
+
+	b2World* world = b2GetWorldLocked( chainId.world0 );
+	if ( world == NULL )
+	{
+		return;
+	}
+
+	b2ChainShape* chainShape = b2GetChainShape( world, chainId );
+
+	int count = chainShape->count;
+
+	for ( int i = 0; i < count; ++i )
+	{
+		int shapeId = chainShape->shapeIndices[i];
+		b2Shape* shape = b2ShapeArray_Get( &world->shapes, shapeId );
+
+  	if ( filter.maskBits == shape->filter.maskBits && filter.categoryBits == shape->filter.categoryBits &&
+			 filter.groupIndex == shape->filter.groupIndex )
+		{
+			continue;
+		}
+
+		// If the category bits change, I need to destroy the proxy because it affects the tree sorting.
+		bool destroyProxy = filter.categoryBits != shape->filter.categoryBits;
+
+		shape->filter = filter;
+
+		// need to wake bodies because a filter change may destroy contacts
+		bool wakeBodies = true;
+		b2ResetProxy( world, shape, wakeBodies, destroyProxy );
+	}
+}
+
+b2Filter b2Chain_GetFilter( b2ChainId chainId )
+{
+	b2World* world = b2GetWorld( chainId.world0 );
+	b2ChainShape* chainShape = b2GetChainShape( world, chainId );
+	int shapeId = chainShape->shapeIndices[0];
+  b2Shape* shape = b2ShapeArray_Get( &world->shapes, shapeId );
+  return shape->filter;
+}
+//!>orx
+
 void b2Chain_SetMaterial( b2ChainId chainId, int material )
 {
 	b2World* world = b2GetWorldLocked( chainId.world0 );

@@ -719,6 +719,15 @@ B2_API void b2Chain_SetRestitution( b2ChainId chainId, float restitution );
 /// Get the chain restitution
 B2_API float b2Chain_GetRestitution( b2ChainId chainId );
 
+//!<orx
+/// Set the chain filter
+/// @see b2ShapeDef::filter
+B2_API void b2Chain_SetFilter( b2ChainId chainId, b2Filter filter );
+
+/// Get the chain filter
+B2_API b2Filter b2Chain_GetFilter( b2ChainId chainId );
+//!>orx
+
 /// Set the chain material
 /// @see b2ChainDef::material
 B2_API void b2Chain_SetMaterial( b2ChainId chainId, int material );
