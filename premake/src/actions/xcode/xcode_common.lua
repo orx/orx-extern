@@ -784,7 +784,32 @@
 			_p(4,'COPY_PHASE_STRIP = NO;')
 		end
 		
-		_p(4,'GCC_C_LANGUAGE_STANDARD = gnu99;')
+		if cfg.flags.C11 then
+			_p(4,'GCC_C_LANGUAGE_STANDARD = c11;')
+		elseif cfg.flags.C17 then
+			_p(4,'GCC_C_LANGUAGE_STANDARD = c17;')
+		elseif cfg.flags.C23 then
+			_p(4,'GCC_C_LANGUAGE_STANDARD = c23;')
+		else
+			_p(4,'GCC_C_LANGUAGE_STANDARD = gnu99;')
+		end
+
+		if cfg.flags.CXX11 then
+			_p(4,'GCC_CXX_LANGUAGE_STANDARD = "c++11";')
+			_p(4,'CLANG_CXX_LANGUAGE_STANDARD = "c++11";')
+		elseif cfg.flags.CXX14 then
+			_p(4,'GCC_CXX_LANGUAGE_STANDARD = "c++14";')
+			_p(4,'CLANG_CXX_LANGUAGE_STANDARD = "c++14";')
+		elseif cfg.flags.CXX17 then
+			_p(4,'GCC_CXX_LANGUAGE_STANDARD = "c++17";')
+			_p(4,'CLANG_CXX_LANGUAGE_STANDARD = "c++17";')
+		elseif cfg.flags.CXX20 then
+			_p(4,'GCC_CXX_LANGUAGE_STANDARD = "c++20";')
+			_p(4,'CLANG_CXX_LANGUAGE_STANDARD = "c++20";')
+		elseif cfg.flags.CXX23 then
+			_p(4,'GCC_CXX_LANGUAGE_STANDARD = "c++23";')
+			_p(4,'CLANG_CXX_LANGUAGE_STANDARD = "c++23";')
+		end
 		
 		if cfg.flags.NoExceptions then
 			_p(4,'GCC_ENABLE_CPP_EXCEPTIONS = NO;')

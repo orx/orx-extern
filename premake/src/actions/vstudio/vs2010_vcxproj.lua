@@ -270,8 +270,24 @@
 	end
 
 	local function compile_language(cfg)
-		if cfg.language == "C++" then
-			_p(3,'<CompileAs>CompileAsCpp</CompileAs>')
+		if cfg.flags.C11 then
+			_p(3,'<LanguageStandard_C>stdc11</LanguageStandard_C>')
+		elseif cfg.flags.C17 then
+			_p(3,'<LanguageStandard_C>stdc17</LanguageStandard_C>')
+		elseif cfg.flags.C23 then
+			_p(3,'<LanguageStandard_C>stdc23</LanguageStandard_C>')
+		end
+
+		if cfg.flags.CXX11 then
+			_p(3,'<LanguageStandard>stdcpp14</LanguageStandard>')
+		elseif cfg.flags.CXX14 then
+			_p(3,'<LanguageStandard>stdcpp14</LanguageStandard>')
+		elseif cfg.flags.CXX17 then
+			_p(3,'<LanguageStandard>stdcpp17</LanguageStandard>')
+		elseif cfg.flags.CXX20 then
+			_p(3,'<LanguageStandard>stdcpp20</LanguageStandard>')
+		elseif cfg.flags.CXX23 then
+			_p(3,'<LanguageStandard>stdcpp23</LanguageStandard>')
 		end
 	end
 

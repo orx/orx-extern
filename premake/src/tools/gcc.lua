@@ -36,8 +36,20 @@
 		Symbols        = "-g",
 	}
 
+	local cstdflags =
+	{
+		C11            = "-std=c11",
+		C17            = "-std=c17",
+		C23            = "-std=c23",
+	}
+
 	local cxxflags =
 	{
+		CXX11          = "-std=c++11",
+		CXX14          = "-std=c++14",
+		CXX17          = "-std=c++17",
+		CXX20          = "-std=c++20",
+		CXX23          = "-std=c++23",
 		NoExceptions   = "-fno-exceptions",
 		NoRTTI         = "-fno-rtti",
 	}
@@ -126,6 +138,12 @@
 		if cfg.system ~= "windows" and cfg.kind == "SharedLib" then
 			table.insert(result, "-fPIC")
 		end
+		return result
+	end
+
+
+	function premake.gcc.getcstdflags(cfg)
+		local result = table.translate(cfg.flags, cstdflags)
 		return result
 	end
 
