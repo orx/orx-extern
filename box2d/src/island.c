@@ -12,8 +12,8 @@
 
 #include <stddef.h>
 
-B2_ARRAY_SOURCE( b2Island, b2Island );
-B2_ARRAY_SOURCE( b2IslandSim, b2IslandSim );
+B2_ARRAY_SOURCE( b2Island, b2Island )
+B2_ARRAY_SOURCE( b2IslandSim, b2IslandSim )
 
 b2Island* b2CreateIsland( b2World* world, int setIndex )
 {
@@ -213,6 +213,8 @@ void b2LinkContact( b2World* world, b2Contact* contact )
 	{
 		b2AddContactToIsland( world, islandIdB, contact );
 	}
+
+	// todo why not merge the islands right here?
 }
 
 // This is called when a contact no longer has contact points or when a contact is destroyed.

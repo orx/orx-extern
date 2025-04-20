@@ -3,13 +3,15 @@
 set(BOX2D_SHARED_FILES
 	benchmarks.c
 	benchmarks.h
+	determinism.c
+	determinism.h
 	human.c
 	human.h
 	random.c
 	random.h
 )
 
-add_library(shared ${BOX2D_SHARED_FILES})
+add_library(shared STATIC ${BOX2D_SHARED_FILES})
 
 set_target_properties(shared PROPERTIES
 	C_STANDARD 17

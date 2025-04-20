@@ -204,9 +204,11 @@ struct b2ContinuousContext
 };
 
 // This is called from b2DynamicTree_Query for continuous collision
-static bool b2ContinuousQueryCallback( int proxyId, int shapeId, void* context )
+static bool b2ContinuousQueryCallback( int proxyId, uint64_t userData, void* context )
 {
 	B2_UNUSED( proxyId );
+
+	int shapeId = (int)userData;
 
 	struct b2ContinuousContext* continuousContext = context;
 	b2Shape* fastShape = continuousContext->fastShape;
@@ -289,6 +291,7 @@ static bool b2ContinuousQueryCallback( int proxyId, int shapeId, void* context )
 			b2Vec2 c2 = continuousContext->centroid2;
 			float offset2 = b2Cross( b2Sub( c2, p1 ), e );
 
+			// todo this should use the min extent of the fast shape, not the body
 			const float allowedFraction = 0.25f;
 			if ( offset1 < 0.0f || offset1 - offset2 < allowedFraction * fastBodySim->minExtent )
 			{
@@ -547,7 +550,7 @@ static void b2FinalizeBodiesTask( int startIndex, int endIndex, uint32_t threadI
 
 	uint16_t worldId = world->worldId;
 
-	// The body move event array has should already have the correct size
+	// The body move event array should already have the correct size
 	B2_ASSERT( endIndex <= world->bodyMoveEvents.count );
 	b2BodyMoveEvent* moveEvents = world->bodyMoveEvents.data;
 
@@ -1771,8 +1774,8 @@ void b2Solve( b2World* world, b2StepContext* stepContext )
 					b2ManifoldPoint* mp = contactSim->manifold.points + k;
 					float approachSpeed = -mp->normalVelocity;
 
-					// Need to check max impulse because the point may be speculative and not colliding
-					if ( approachSpeed > event.approachSpeed && mp->maxNormalImpulse > 0.0f )
+					// Need to check total impulse because the point may be speculative and not colliding
+					if ( approachSpeed > event.approachSpeed && mp->totalNormalImpulse > 0.0f )
 					{
 						event.approachSpeed = approachSpeed;
 						event.point = mp->point;

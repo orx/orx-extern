@@ -537,9 +537,9 @@ int main( int, char** )
 	_CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDOUT );
 	//_CrtSetAllocHook(MyAllocHook);
 
-	// How to break at the leaking allocation, in the watch window enter this variable
-	// and set it to the allocation number in {}. Do this at the first line in main.
-	// {,,ucrtbased.dll}_crtBreakAlloc = <allocation number>
+// How to break at the leaking allocation, in the watch window enter this variable
+// and set it to the allocation number in {}. Do this at the first line in main.
+// {,,ucrtbased.dll}_crtBreakAlloc = <allocation number>
 #endif
 
 	// Install memory hooks
@@ -576,7 +576,7 @@ int main( int, char** )
 	glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
 
 	// MSAA
-	glfwWindowHint( GLFW_SAMPLES, 4 );
+	//glfwWindowHint( GLFW_SAMPLES, 4 );
 
 	b2Version version = b2GetVersion();
 	snprintf( buffer, 128, "Box2D Version %d.%d.%d", version.major, version.minor, version.revision );
@@ -625,8 +625,19 @@ int main( int, char** )
 		return -1;
 	}
 
-	printf( "GL %d.%d\n", GLVersion.major, GLVersion.minor );
-	printf( "OpenGL %s, GLSL %s\n", glGetString( GL_VERSION ), glGetString( GL_SHADING_LANGUAGE_VERSION ) );
+	{
+		//float temp1[2] = {};
+		//glGetFloatv( GL_ALIASED_LINE_WIDTH_RANGE, temp1 );
+
+		//float temp2[2] = {};
+		//glGetFloatv( GL_SMOOTH_LINE_WIDTH_RANGE, temp2 );
+
+		const char* glVersionString = (const char*)glGetString( GL_VERSION );
+		const char* glslVersionString = (const char*)glGetString( GL_SHADING_LANGUAGE_VERSION );
+		printf( "OpenGL %s, GLSL %s\n", glVersionString, glslVersionString );
+		//printf( "OpenGL aliased line width range : [%g, %g]\n", temp1[0], temp1[1] );
+		//printf( "OpenGL smooth line width range : [%g, %g]\n", temp2[0], temp2[1] );
+	}
 
 	glfwSetWindowSizeCallback( g_mainWindow, ResizeWindowCallback );
 	glfwSetKeyCallback( g_mainWindow, KeyCallback );

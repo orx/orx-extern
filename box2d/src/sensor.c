@@ -15,9 +15,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-B2_ARRAY_SOURCE( b2ShapeRef, b2ShapeRef );
-B2_ARRAY_SOURCE( b2Sensor, b2Sensor );
-B2_ARRAY_SOURCE( b2SensorTaskContext, b2SensorTaskContext );
+B2_ARRAY_SOURCE( b2ShapeRef, b2ShapeRef )
+B2_ARRAY_SOURCE( b2Sensor, b2Sensor )
+B2_ARRAY_SOURCE( b2SensorTaskContext, b2SensorTaskContext )
 
 struct b2SensorQueryContext
 {
@@ -44,9 +44,11 @@ struct b2SensorQueryContext
 // Each sensor has an double buffered array of overlaps
 // These overlaps use a shape reference with index and generation
 
-static bool b2SensorQueryCallback( int proxyId, int shapeId, void* context )
+static bool b2SensorQueryCallback( int proxyId, uint64_t userData, void* context )
 {
 	B2_UNUSED( proxyId );
+
+	int shapeId = (int)userData;
 
 	struct b2SensorQueryContext* queryContext = context;
 	b2Shape* sensorShape = queryContext->sensorShape;
@@ -87,7 +89,7 @@ static bool b2SensorQueryCallback( int proxyId, int shapeId, void* context )
 	input.transformB = otherTransform;
 	input.useRadii = true;
 	b2SimplexCache cache = { 0 };
-	b2DistanceOutput output = b2ShapeDistance( &cache, &input, NULL, 0 );
+	b2DistanceOutput output = b2ShapeDistance(&input, &cache, NULL, 0 );
 
 	bool overlaps = output.distance < 10.0f * FLT_EPSILON;
 	if ( overlaps == false )

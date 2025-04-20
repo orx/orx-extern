@@ -114,8 +114,8 @@ public:
 
 				b2Polygon box = b2MakeBox( 6.0f, 0.5f );
 				b2ShapeDef shapeDef = b2DefaultShapeDef();
-				shapeDef.friction = 0.1f;
-				shapeDef.restitution = 1.0f;
+				shapeDef.material.friction = 0.1f;
+				shapeDef.material.restitution = 1.0f;
 				shapeDef.density = 1.0f;
 
 				b2CreatePolygonShape( bodyId, &shapeDef, &box );
@@ -727,7 +727,7 @@ public:
 			b2ShapeDef shapeDef = b2DefaultShapeDef();
 			shapeDef.filter.categoryBits = PLAYER;
 			shapeDef.filter.maskBits = GROUND;
-			shapeDef.friction = 0.3f;
+			shapeDef.material.friction = 0.3f;
 			b2Capsule capsule = { { 0.0f, -0.5f }, { 0.0f, 0.5f }, 0.5f };
 			b2CreateCapsuleShape( m_playerId, &shapeDef, &capsule );
 
@@ -904,7 +904,7 @@ public:
 		m_debrisIds[index] = b2CreateBody( m_worldId, &bodyDef );
 
 		b2ShapeDef shapeDef = b2DefaultShapeDef();
-		shapeDef.restitution = 0.8f;
+		shapeDef.material.restitution = 0.8f;
 
 		// No events when debris hits debris
 		shapeDef.enableContactEvents = false;
@@ -1016,7 +1016,7 @@ public:
 						for ( int k = 0; k < manifold.pointCount; ++k )
 						{
 							b2ManifoldPoint point = manifold.points[k];
-							g_draw.DrawSegment( point.point, point.point + point.maxNormalImpulse * normal, b2_colorBlueViolet );
+							g_draw.DrawSegment( point.point, point.point + point.totalNormalImpulse * normal, b2_colorBlueViolet );
 							g_draw.DrawPoint( point.point, 10.0f, b2_colorWhite );
 						}
 					}
@@ -1046,7 +1046,7 @@ public:
 						for ( int k = 0; k < manifold.pointCount; ++k )
 						{
 							b2ManifoldPoint point = manifold.points[k];
-							g_draw.DrawSegment( point.point, point.point + point.maxNormalImpulse * normal, b2_colorYellowGreen );
+							g_draw.DrawSegment( point.point, point.point + point.totalNormalImpulse * normal, b2_colorYellowGreen );
 							g_draw.DrawPoint( point.point, 10.0f, b2_colorWhite );
 						}
 					}
@@ -1298,7 +1298,7 @@ public:
 			m_radius = 0.5f;
 			b2Capsule capsule = { { 0.0f, 0.0f }, { 0.0f, 1.0f }, m_radius };
 			b2ShapeDef shapeDef = b2DefaultShapeDef();
-			shapeDef.friction = 0.1f;
+			shapeDef.material.friction = 0.1f;
 
 			m_playerShapeId = b2CreateCapsuleShape( m_playerId, &shapeDef, &capsule );
 		}
@@ -1504,7 +1504,7 @@ public:
 			b2BodyId groundId = b2CreateBody( m_worldId, &bodyDef );
 
 			b2ShapeDef shapeDef = b2DefaultShapeDef();
-			shapeDef.friction = 0.1f;
+			shapeDef.material.friction = 0.1f;
 
 			b2Polygon box = b2MakeOffsetBox( 12.0f, 0.1f, { -10.0f, -0.1f }, b2MakeRot( -0.15f * B2_PI ) );
 			b2CreatePolygonShape( groundId, &shapeDef, &box );
@@ -1512,7 +1512,7 @@ public:
 			box = b2MakeOffsetBox( 12.0f, 0.1f, { 10.0f, -0.1f }, b2MakeRot( 0.15f * B2_PI ) );
 			b2CreatePolygonShape( groundId, &shapeDef, &box );
 
-			shapeDef.restitution = 0.8f;
+			shapeDef.material.restitution = 0.8f;
 
 			box = b2MakeOffsetBox( 0.1f, 10.0f, { 19.9f, 10.0f }, b2Rot_identity );
 			b2CreatePolygonShape( groundId, &shapeDef, &box );

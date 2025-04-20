@@ -57,10 +57,11 @@ b2QueryFilter b2DefaultQueryFilter( void )
 b2ShapeDef b2DefaultShapeDef( void )
 {
 	b2ShapeDef def = { 0 };
-	def.friction = 0.6f;
+	def.material.friction = 0.6f;
 	def.density = 1.0f;
 	def.filter = b2DefaultFilter();
 	def.updateBodyMass = true;
+	def.invokeContactCreation = true;
 	def.internalValue = B2_SECRET_COOKIE;
 	return def;
 }

@@ -16,15 +16,16 @@
 
 // needed for dll export
 #include "sensor.h"
+
 #include "box2d/box2d.h"
 #include "box2d/id.h"
 
 #include <string.h>
 
 // Implement functions for b2BodyArray
-B2_ARRAY_SOURCE( b2Body, b2Body );
-B2_ARRAY_SOURCE( b2BodySim, b2BodySim );
-B2_ARRAY_SOURCE( b2BodyState, b2BodyState );
+B2_ARRAY_SOURCE( b2Body, b2Body )
+B2_ARRAY_SOURCE( b2BodySim, b2BodySim )
+B2_ARRAY_SOURCE( b2BodyState, b2BodyState )
 
 // Get a validated body from a world using an id.
 b2Body* b2GetBodyFullId( b2World* world, b2BodyId bodyId )
@@ -52,7 +53,7 @@ b2Transform b2GetBodyTransform( b2World* world, int bodyId )
 b2BodyId b2MakeBodyId( b2World* world, int bodyId )
 {
 	b2Body* body = b2BodyArray_Get( &world->bodies, bodyId );
-	return ( b2BodyId ){ bodyId + 1, world->worldId, body->generation };
+	return (b2BodyId){ bodyId + 1, world->worldId, body->generation };
 }
 
 b2BodySim* b2GetBodySim( b2World* world, b2Body* body )
@@ -212,7 +213,7 @@ b2BodyId b2CreateBody( b2WorldId worldId, const b2BodyDef* def )
 		if ( setId == world->solverSets.count )
 		{
 			// Create a zero initialized solver set. All sub-arrays are also zero initialized.
-			b2SolverSetArray_Push( &world->solverSets, ( b2SolverSet ){ 0 } );
+			b2SolverSetArray_Push( &world->solverSets, (b2SolverSet){ 0 } );
 		}
 		else
 		{
@@ -228,7 +229,7 @@ b2BodyId b2CreateBody( b2WorldId worldId, const b2BodyDef* def )
 
 	b2SolverSet* set = b2SolverSetArray_Get( &world->solverSets, setId );
 	b2BodySim* bodySim = b2BodySimArray_Add( &set->bodySims );
-	*bodySim = ( b2BodySim ){ 0 };
+	*bodySim = (b2BodySim){ 0 };
 	bodySim->transform.p = def->position;
 	bodySim->transform.q = def->rotation;
 	bodySim->center = def->position;
@@ -251,7 +252,7 @@ b2BodyId b2CreateBody( b2WorldId worldId, const b2BodyDef* def )
 		b2BodyState* bodyState = b2BodyStateArray_Add( &set->bodyStates );
 		B2_ASSERT( ( (uintptr_t)bodyState & 0x1F ) == 0 );
 
-		*bodyState = ( b2BodyState ){ 0 };
+		*bodyState = (b2BodyState){ 0 };
 		bodyState->linearVelocity = def->linearVelocity;
 		bodyState->angularVelocity = def->angularVelocity;
 		bodyState->deltaRotation = b2Rot_identity;
@@ -259,7 +260,7 @@ b2BodyId b2CreateBody( b2WorldId worldId, const b2BodyDef* def )
 
 	if ( bodyId == world->bodies.count )
 	{
-		b2BodyArray_Push( &world->bodies, ( b2Body ){ 0 } );
+		b2BodyArray_Push( &world->bodies, (b2Body){ 0 } );
 	}
 	else
 	{
@@ -270,12 +271,18 @@ b2BodyId b2CreateBody( b2WorldId worldId, const b2BodyDef* def )
 
 	if ( def->name )
 	{
-		for ( int i = 0; i < 31; ++i )
+		int i = 0;
+		while ( i < 31 && def->name[i] != 0 )
 		{
 			body->name[i] = def->name[i];
+			i += 1;
 		}
 
-		body->name[31] = 0;
+		while ( i < 32)
+		{
+			body->name[i] = 0;
+			i += 1;
+		}
 	}
 	else
 	{
@@ -318,12 +325,6 @@ b2BodyId b2CreateBody( b2WorldId worldId, const b2BodyDef* def )
 
 	b2BodyId id = { bodyId + 1, world->worldId, body->generation };
 	return id;
-}
-
-bool b2IsBodyAwake( b2World* world, b2Body* body )
-{
-	B2_UNUSED( world );
-	return body->setIndex == b2_awakeSet;
 }
 
 bool b2WakeBody( b2World* world, b2Body* body )
@@ -373,7 +374,7 @@ void b2DestroyBody( b2BodyId bodyId )
 	{
 		b2Shape* shape = b2ShapeArray_Get( &world->shapes, shapeId );
 
-		if (shape->sensorIndex != B2_NULL_INDEX)
+		if ( shape->sensorIndex != B2_NULL_INDEX )
 		{
 			b2DestroySensor( world, shape );
 		}
@@ -421,8 +422,8 @@ void b2DestroyBody( b2BodyId bodyId )
 	if ( body->setIndex == b2_awakeSet )
 	{
 		int result = b2BodyStateArray_RemoveSwap( &set->bodyStates, body->localIndex );
-		B2_UNUSED( result );
 		B2_ASSERT( result == movedIndex );
+		B2_UNUSED( result );
 	}
 	else if ( set->setIndex >= b2_firstSleepingSet && set->bodySims.count == 0 )
 	{
@@ -479,8 +480,8 @@ int b2Body_GetContactData( b2BodyId bodyId, b2ContactData* contactData, int capa
 			b2Shape* shapeA = b2ShapeArray_Get( &world->shapes, contact->shapeIdA );
 			b2Shape* shapeB = b2ShapeArray_Get( &world->shapes, contact->shapeIdB );
 
-			contactData[index].shapeIdA = ( b2ShapeId ){ shapeA->id + 1, bodyId.world0, shapeA->generation };
-			contactData[index].shapeIdB = ( b2ShapeId ){ shapeB->id + 1, bodyId.world0, shapeB->generation };
+			contactData[index].shapeIdA = (b2ShapeId){ shapeA->id + 1, bodyId.world0, shapeA->generation };
+			contactData[index].shapeIdB = (b2ShapeId){ shapeB->id + 1, bodyId.world0, shapeB->generation };
 
 			b2ContactSim* contactSim = b2GetContactSim( world, contact );
 			contactData[index].manifold = contactSim->manifold;
@@ -501,14 +502,14 @@ b2AABB b2Body_ComputeAABB( b2BodyId bodyId )
 	b2World* world = b2GetWorldLocked( bodyId.world0 );
 	if ( world == NULL )
 	{
-		return ( b2AABB ){ 0 };
+		return (b2AABB){ 0 };
 	}
 
 	b2Body* body = b2GetBodyFullId( world, bodyId );
 	if ( body->headShapeId == B2_NULL_INDEX )
 	{
 		b2Transform transform = b2GetBodyTransform( world, body->id );
-		return ( b2AABB ){ transform.p, transform.p };
+		return (b2AABB){ transform.p, transform.p };
 	}
 
 	b2Shape* shape = b2ShapeArray_Get( &world->shapes, body->headShapeId );
@@ -603,6 +604,7 @@ void b2UpdateBodyMassData( b2World* world, b2Body* body )
 	b2Vec2 oldCenter = bodySim->center;
 	bodySim->localCenter = localCenter;
 	bodySim->center = b2TransformPoint( bodySim->transform, bodySim->localCenter );
+	bodySim->center0 = bodySim->center;
 
 	// Update center of mass velocity
 	b2BodyState* state = b2GetBodyState( world, body );
@@ -808,7 +810,54 @@ void b2Body_SetAngularVelocity( b2BodyId bodyId, float angularVelocity )
 	state->angularVelocity = angularVelocity;
 }
 
-b2Vec2 b2Body_GetLocalPointVelocity(b2BodyId bodyId, b2Vec2 localPoint)
+void b2Body_SetTargetTransform( b2BodyId bodyId, b2Transform target, float timeStep )
+{
+	b2World* world = b2GetWorld( bodyId.world0 );
+	b2Body* body = b2GetBodyFullId( world, bodyId );
+
+	if ( body->type == b2_staticBody || timeStep <= 0.0f )
+	{
+		return;
+	}
+
+	b2BodySim* sim = b2GetBodySim( world, body );
+
+	// Compute linear velocity
+	b2Vec2 center1 = sim->center;
+	b2Vec2 center2 = b2TransformPoint( target, sim->localCenter );
+	float invTimeStep = 1.0f / timeStep;
+	b2Vec2 linearVelocity = b2MulSV( invTimeStep, b2Sub( center2, center1 ) );
+
+	// Compute angular velocity
+	float angularVelocity = 0.0f;
+	if ( body->fixedRotation == false )
+	{
+		b2Rot q1 = sim->transform.q;
+		b2Rot q2 = target.q;
+		float deltaAngle = b2RelativeAngle( q2, q1 );
+		angularVelocity = invTimeStep * deltaAngle;
+	}
+
+	// Return if velocity would be zero
+	if ( b2LengthSquared( linearVelocity ) == 0.0f && b2AbsFloat( angularVelocity ) == 0.0f )
+	{
+		return;
+	}
+
+	// Must wake for state to exist
+	b2WakeBody( world, body );
+
+	b2BodyState* state = b2GetBodyState( world, body );
+	if ( state == NULL )
+	{
+		return;
+	}
+
+	state->linearVelocity = linearVelocity;
+	state->angularVelocity = angularVelocity;
+}
+
+b2Vec2 b2Body_GetLocalPointVelocity( b2BodyId bodyId, b2Vec2 localPoint )
 {
 	b2World* world = b2GetWorld( bodyId.world0 );
 	b2Body* body = b2GetBodyFullId( world, bodyId );
@@ -821,12 +870,12 @@ b2Vec2 b2Body_GetLocalPointVelocity(b2BodyId bodyId, b2Vec2 localPoint)
 	b2SolverSet* set = b2SolverSetArray_Get( &world->solverSets, body->setIndex );
 	b2BodySim* bodySim = b2BodySimArray_Get( &set->bodySims, body->localIndex );
 
-	b2Vec2 r = b2RotateVector( bodySim->transform.q, b2Sub(localPoint, bodySim->localCenter) );
-	b2Vec2 v = b2Add(state->linearVelocity, b2CrossSV( state->angularVelocity, r ));
+	b2Vec2 r = b2RotateVector( bodySim->transform.q, b2Sub( localPoint, bodySim->localCenter ) );
+	b2Vec2 v = b2Add( state->linearVelocity, b2CrossSV( state->angularVelocity, r ) );
 	return v;
 }
 
-b2Vec2 b2Body_GetWorldPointVelocity(b2BodyId bodyId, b2Vec2 worldPoint)
+b2Vec2 b2Body_GetWorldPointVelocity( b2BodyId bodyId, b2Vec2 worldPoint )
 {
 	b2World* world = b2GetWorld( bodyId.world0 );
 	b2Body* body = b2GetBodyFullId( world, bodyId );
@@ -1226,7 +1275,7 @@ void b2Body_SetType( b2BodyId bodyId, b2BodyType type )
 	b2ValidateSolverSets( world );
 }
 
-void b2Body_SetName(b2BodyId bodyId, const char* name)
+void b2Body_SetName( b2BodyId bodyId, const char* name )
 {
 	b2World* world = b2GetWorld( bodyId.world0 );
 	b2Body* body = b2GetBodyFullId( world, bodyId );
@@ -1246,7 +1295,7 @@ void b2Body_SetName(b2BodyId bodyId, const char* name)
 	}
 }
 
-const char* b2Body_GetName(b2BodyId bodyId)
+const char* b2Body_GetName( b2BodyId bodyId )
 {
 	b2World* world = b2GetWorld( bodyId.world0 );
 	b2Body* body = b2GetBodyFullId( world, bodyId );
@@ -1751,7 +1800,7 @@ void b2Body_EnableHitEvents( b2BodyId bodyId, bool flag )
 b2WorldId b2Body_GetWorld( b2BodyId bodyId )
 {
 	b2World* world = b2GetWorld( bodyId.world0 );
-	return ( b2WorldId ){ bodyId.world0 + 1, world->generation };
+	return (b2WorldId){ bodyId.world0 + 1, world->generation };
 }
 
 int b2Body_GetShapeCount( b2BodyId bodyId )
