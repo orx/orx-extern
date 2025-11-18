@@ -128,3 +128,16 @@
 	</PropertyGroup>
 		]]
 	end
+
+	function suite.structureIsCorrect_onDefaultValues_on2026()
+		_ACTION = "vs2026"
+		prepare()
+		test.capture [[
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+		<ConfigurationType>Application</ConfigurationType>
+		<UseDebugLibraries>true</UseDebugLibraries>
+		<CharacterSet>MultiByte</CharacterSet>
+		<PlatformToolset>v145</PlatformToolset>
+	</PropertyGroup>
+		]]
+	end
