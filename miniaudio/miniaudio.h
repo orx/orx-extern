@@ -28228,7 +28228,7 @@ static ma_result ma_device_start__alsa(ma_device* pDevice)
     }
 
     if (pDevice->type == ma_device_type_playback || pDevice->type == ma_device_type_duplex) {
-        /*        
+        /*
         When data is written to the device we wait for the device to get ready to receive data with poll(). In my testing
         I have observed that poll() can sometimes block forever unless the device is started explicitly with snd_pcm_start()
         or some data is written with snd_pcm_writei().
@@ -34521,7 +34521,7 @@ static ma_result ma_device_init_internal__coreaudio(ma_context* pContext, ma_dev
             #endif
         }
 
-        
+
         status = ((ma_AudioUnitSetProperty_proc)pContext->coreaudio.AudioUnitSetProperty)(pData->audioUnit, kAudioUnitProperty_StreamFormat, formatScope, formatElement, &bestFormat, sizeof(bestFormat));
         if (status != noErr) {
             ((ma_AudioComponentInstanceDispose_proc)pContext->coreaudio.AudioComponentInstanceDispose)(pData->audioUnit);
@@ -37835,7 +37835,7 @@ static void ma_stream_error_callback__aaudio(ma_AAudioStream* pStream, void* pUs
 
     (void)error;
     ma_log_postf(ma_device_get_log(pDevice), MA_LOG_LEVEL_INFO, "[AAudio] ERROR CALLBACK: error=%d, AAudioStream_getState()=%d\n", error, ((MA_PFN_AAudioStream_getState)pDevice->pContext->aaudio.AAudioStream_getState)(pStream));
-    
+
     /*
     When we get an error, we'll assume that the stream is in an erroneous state and needs to be restarted. From the documentation,
     we cannot do this from the error callback. Therefore we are going to use an event thread for the AAudio backend to do this
@@ -37847,13 +37847,13 @@ static void ma_stream_error_callback__aaudio(ma_AAudioStream* pStream, void* pUs
     else {
         job = ma_job_init(MA_JOB_TYPE_DEVICE_AAUDIO_REROUTE);
         job.data.device.aaudio.reroute.pDevice = pDevice;
-    
+
         if (pStream == pDevice->aaudio.pStreamCapture) {
             job.data.device.aaudio.reroute.deviceType = ma_device_type_capture;
         } else {
             job.data.device.aaudio.reroute.deviceType = ma_device_type_playback;
         }
-    
+
         result = ma_device_job_thread_post(&pDevice->pContext->aaudio.jobThread, &job);
         if (result != MA_SUCCESS) {
             ma_log_postf(ma_device_get_log(pDevice), MA_LOG_LEVEL_INFO, "[AAudio] Device Disconnected. Failed to post job for rerouting.\n");
@@ -38450,7 +38450,7 @@ static ma_result ma_device_reinit__aaudio(ma_device* pDevice, ma_device_type dev
 
     /* We got disconnected! Retry a few times, until we find a connected device! */
     iAttempt = 0;
-    while (iAttempt++ < maxAttempts) {        
+    while (iAttempt++ < maxAttempts) {
         /* Device tearing down? No need to reroute! */
         if (ma_atomic_bool32_get(&pDevice->aaudio.isTearingDown)) {
             result = MA_SUCCESS; /* Caller should continue as normal. */
@@ -38548,7 +38548,7 @@ static ma_result ma_device_reinit__aaudio(ma_device* pDevice, ma_device_type dev
             break;
         }
     }
-    
+
     return result;
 }
 
@@ -40020,12 +40020,23 @@ Web Audio Backend
 #ifdef MA_HAS_WEBAUDIO
 #include <emscripten/emscripten.h>
 
-#if (__EMSCRIPTEN_major__ > 3) || (__EMSCRIPTEN_major__ == 3 && (__EMSCRIPTEN_minor__ > 1 || (__EMSCRIPTEN_minor__ == 1 && __EMSCRIPTEN_tiny__ >= 32)))
-    #include <emscripten/webaudio.h>
-    #define MA_SUPPORT_AUDIO_WORKLETS
+#ifdef __EMSCRIPTEN_MAJOR__
+    #if (__EMSCRIPTEN_MAJOR__ > 3) || (__EMSCRIPTEN_MAJOR__ == 3 && (__EMSCRIPTEN_MINOR__ > 1 || (__EMSCRIPTEN_MINOR__ == 1 && __EMSCRIPTEN_TINY__ >= 32)))
+        #include <emscripten/webaudio.h>
+        #define MA_SUPPORT_AUDIO_WORKLETS
 
-    #if (__EMSCRIPTEN_major__ > 3) || (__EMSCRIPTEN_major__ == 3 && (__EMSCRIPTEN_minor__ > 1 || (__EMSCRIPTEN_minor__ == 1 && __EMSCRIPTEN_tiny__ >= 70)))
-        #define MA_SUPPORT_AUDIO_WORKLETS_VARIABLE_BUFFER_SIZE
+        #if (__EMSCRIPTEN_MAJOR__ > 3) || (__EMSCRIPTEN_MAJOR__ == 3 && (__EMSCRIPTEN_MINOR__ > 1 || (__EMSCRIPTEN_MINOR__ == 1 && __EMSCRIPTEN_TINY__ >= 70)))
+            #define MA_SUPPORT_AUDIO_WORKLETS_VARIABLE_BUFFER_SIZE
+        #endif
+    #endif
+#else
+    #if (__EMSCRIPTEN_major__ > 3) || (__EMSCRIPTEN_major__ == 3 && (__EMSCRIPTEN_minor__ > 1 || (__EMSCRIPTEN_minor__ == 1 && __EMSCRIPTEN_tiny__ >= 32)))
+        #include <emscripten/webaudio.h>
+        #define MA_SUPPORT_AUDIO_WORKLETS
+
+        #if (__EMSCRIPTEN_major__ > 3) || (__EMSCRIPTEN_major__ == 3 && (__EMSCRIPTEN_minor__ > 1 || (__EMSCRIPTEN_minor__ == 1 && __EMSCRIPTEN_tiny__ >= 70)))
+            #define MA_SUPPORT_AUDIO_WORKLETS_VARIABLE_BUFFER_SIZE
+        #endif
     #endif
 #endif
 
