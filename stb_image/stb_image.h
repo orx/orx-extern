@@ -5411,7 +5411,7 @@ static int stbi__webp_test(stbi__context *s)
 static int stbi__webp_info(stbi__context *s, int *x, int *y, int *comp)
 {
    WebPBitstreamFeatures features;
-   static uint8_t data[64];
+   uint8_t data[64];
 
    if(!stbi__getn(s, data, 64)) {
      stbi__rewind( s );
